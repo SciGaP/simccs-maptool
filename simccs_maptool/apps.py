@@ -1,10 +1,11 @@
-from django_airavata.app_config import AiravataAppConfig
+from django.apps import AppConfig
 
 
-class MapToolConfig(AiravataAppConfig):
-    name = 'django_airavata.apps.maptool'
-    label = 'django_airavata_maptool'
+class MapToolConfig(AppConfig):
+    name = 'simccs_maptool'
+    label = 'simccs_maptool'
     verbose_name = 'Map Tool'
+    url_prefix = 'maptool'
     url_app_name = label
     app_order = 20
     url_home = url_app_name + ':home'

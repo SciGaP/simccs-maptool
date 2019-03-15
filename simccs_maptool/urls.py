@@ -17,7 +17,7 @@ from django.conf.urls import url
 
 from .views import HomeView
 
-app_name = 'django_airavata_maptool'
+app_name = 'simccs_maptool'
 urlpatterns = [
     url(r'^$', HomeView.as_view(), name='home'),
 ]
