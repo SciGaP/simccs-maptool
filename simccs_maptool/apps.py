@@ -26,10 +26,6 @@ class MapToolConfig(AppConfig):
 
 
 def init_pyjnius():
-    # Bit of a hack to get 'JAVA_HOME' when in mod_wsgi environment where
-    # environment variables aren't picked up
-    if 'JAVA_HOME' not in os.environ:
-        os.environ['JAVA_HOME'] = '/usr/lib/jvm/java'
     if not jnius_config.vm_running:
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         jnius_config.set_classpath(
