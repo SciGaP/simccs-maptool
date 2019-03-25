@@ -86,7 +86,7 @@ function display_result_sample(){
 // L.Map.addInitHook('addHandler', 'cursor', L.CursorHandler);
 var layercontrol = new L.control.layers();
 
-map = L.map('map',{cursor:true}).setView([38.420836729,-87.762496593], 8);
+map = L.map('map',{cursor:true}).setView([32.00,-85.43], 6);
 // map=L.map('leaflet',{
 //     center:[38.420836729,-87.762496593],
 //     zoom:7,
@@ -102,7 +102,7 @@ map = L.map('map',{cursor:true}).setView([38.420836729,-87.762496593], 8);
     map.createPane("linesPane");
     map.createPane("pointsPane");
 
-    display_result_sample();
+    //display_result_sample();
 
     //Draw the cost area of 80km
     var boundry_circle_options={
@@ -415,21 +415,20 @@ var co2InjectionIcon = L.icon({
     // iconUrl: 'http://icons.iconarchive.com/icons/paomedia/small-n-flat/1024/map-marker-icon.png',
     // iconUrl:'http://goo.gl/images/Dp5YLA',
         iconUrl:'/static/images/power_plant.png',
-    iconSize:     [38, 35], // size of the icon
+    //iconSize:     [38, 35], // size of the icon
+    iconSize:     [30, 26], // size of the icon
     iconAnchor:   [0, 0], // point of the icon which will correspond to marker's location
 });
 
-    var powerPlantClusters=L.markerClusterGroup();
+    var powerPlantClusters=L.markerClusterGroup({ disableClusteringAtZoom: 7 });
     $.getJSON('/static/Data/Source_Power_Plants.json',function (data) {
 
 
         for(var i=0;i<data.length;i++){
-            var popup='<br><h2>Source</h2>'+'<br><b>Facility</b>:'+data[i].properties.Facility_N+
+            var popup='<h3>Source</h3>'+'<b>Facility</b>:'+data[i].properties.Facility_N+
                 '<br/><b>Place</b>:'+data[i].properties.City+
                 '<br/><b>IndustryType</b> :' + data[i].properties.Industry_T +
               '<br/><b>Co2 Emission</b> :' + data[i].properties.CO2_Emissi;
-
-
 
             var m=L.marker([data[i].geometry.coordinates[1],data[i].geometry.coordinates[0]],{icon:powerPlantIcon}).bindPopup(popup);
             powerPlantClusters.addLayer(m);
