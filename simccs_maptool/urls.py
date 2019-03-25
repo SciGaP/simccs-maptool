@@ -15,9 +15,10 @@ Including another URLconf
 """
 from django.conf.urls import url
 
-from .views import HomeView
+from .views import HomeView, simccs
 
-app_name = 'simccs_maptool'
+app_name = "simccs_maptool"
 urlpatterns = [
-    url(r'^$', HomeView.as_view(), name='home'),
+    url(r"^$", HomeView.as_view(), name="home"),
+    url(r"^simccs/$", simccs, name="simccs"),
 ]
