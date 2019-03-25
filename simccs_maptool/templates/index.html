@@ -383,7 +383,7 @@
                  for (i = 0, len = geom[0].length; i < len; i++) {
                  coordstr[i]= (geom[0][i].toString()).replace(',',' ');} 
                  //alert(coordstr.join(','));
-                 var geourl='http://gf8.ucs.indiana.edu/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:Source_Power_Plants&maxFeatures=500&outputFormat=text%2Fjavascript&format_options=callback:loadjson';
+                 var geourl='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:Source_Power_Plants&maxFeatures=500&outputFormat=text%2Fjavascript&format_options=callback:loadjson';
                  var cqlfilter = '&cql_filter=Intersects(the_geom,Polygon((';
                  cqlfilter += coordstr.join(',');
                  cqlfilter += ')))';
@@ -403,14 +403,14 @@
                        dataType: "jsonp"
                  });
                  //get sink layer
-                 var sinkurl='http://gf8.ucs.indiana.edu/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:NATCARB_SALINE&maxFeatures=1000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
+                 var sinkurl='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:NATCARB_SALINE&maxFeatures=1000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
                  sinkurl += cqlfilter;
                  $.ajax({
                        url: sinkurl,
                        jsonp: "callback",
                        dataType: "jsonp"
                  });
-                 var sinkurl2='http://gf8.ucs.indiana.edu/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:NATCARB_OG&maxFeatures=1000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer2';
+                 var sinkurl2='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:NATCARB_OG&maxFeatures=1000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer2';
                  sinkurl2 += cqlfilter;
                  $.ajax({
                        url: sinkurl2,
