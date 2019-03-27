@@ -459,7 +459,14 @@
             });
          };
 
-         function downloaddata(){
+         function downloadcsv(text, name, type,hyperid) {
+            var a = document.getElementById(hyperid);
+            var file = new Blob([text], {type: type});
+            a.href = URL.createObjectURL(file);
+            a.download = name;
+            }
+
+         function generateinputfile(){
             // Facility_N City State Latitude Longitude Industry_T CO2_Emissi
             //ID costFix ($M) fixO&M ($M/y) varO&M ($/tCO2) capMax (MtCO2/y) N/A LON LAT NAME
             if (selection.length == 0 ) {alert('No soruces are selected!');return}
@@ -474,11 +481,15 @@
                   tempstr += selection[i].feature.properties.Facility_N +"\t";
                   sourcedata += tempstr + "\n";
             } 
-            alert(sourcedata);
+            //alert(sourcedata);
             //sourceLayer.eachLayer(function(layer) {
             //      var target_id = selection.indexOf(layer);
             //      if (target_id >=0) {alert(layer.feature.properties.Facility_N);};
-            //});      
+            //});   
+            downloadcsv(sourcedata, "Sources.txt", "text/plain","sources_input"); 
+            
+            document.getElementById("downloadsource_div").style.display="block";
+   
          }
 
          function resetworkingarea(){
@@ -659,7 +670,8 @@
                <div class="panel-body">
                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="hideunselected()">Hide unselcted data</button>
                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="downloaddata()">Download data</button>
-               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="">Generate input file</button>
+               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="generateinputfile()">Generate input file</button>
+               <div id="downloadsource_div" hidden><a href="" id="sources_input">Download Source.txt</a></div>
                <br>    <br>  
                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="resetworkingarea()">Reset working area</button>
                </div>
