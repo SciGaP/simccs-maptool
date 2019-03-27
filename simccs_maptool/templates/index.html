@@ -419,14 +419,14 @@
                        dataType: "jsonp"
                  });
                  //get sink layer
-                 var sinkurl='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:NATCARB_SALINE&maxFeatures=1000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
+                 var sinkurl='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:NATCARB_SALINE&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
                  sinkurl += cqlfilter;
                  $.ajax({
                        url: sinkurl,
                        jsonp: "callback",
                        dataType: "jsonp"
                  });
-                 var sinkurl2='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:NATCARB_OG&maxFeatures=1000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer2';
+                 var sinkurl2='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:NATCARB_OG&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer2';
                  sinkurl2 += cqlfilter;
                  $.ajax({
                        url: sinkurl2,
