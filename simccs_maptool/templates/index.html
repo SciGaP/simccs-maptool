@@ -73,9 +73,6 @@
                              case "source_sink_pulp_paper":map.removeLayer(chemicalClusters)
                                    break;
          
-         
-         
-         
                              case "source_sink_all_the_above":
                              map.removeLayer(chemicalClusters);
                                  map.removeLayer(coalClusters);
@@ -119,16 +116,7 @@
                               case "france_sink":map.removeLayer(france_sink_cluster);
                              break;
          
-         
-         
-         
-         
-         
-         
-         
                          }
-         
-         
          
                      } else {
                          isChecked = true;
@@ -328,15 +316,39 @@
                  layercontrol.addOverlay(sinkLayer2,"Sinks:Oil/Gas");
                  //sinkLayer.bringToBack();
            }
-         
+           
+           //get the list of selected source layers
+           function get_selectedsourcelayers(){
+                  // find all radio button id start with "source_"
+                  var queryfields=[];
+                  var source_dict = {};
+                  source_dict['source_sink_chemical']='SimCCS:Source_Chemicals';
+                  source_dict['source_sink_coal']='SimCCS:Source_Coal-based_Liquid_Fuel_Supply';	
+                  source_dict['source_sink_flourinated']='SimCCS:Source_Import_and_Export_of_Equipment_Containing_Fluorintaed_GHGs';
+                  source_dict['source_sink_industrial_gas']='SimCCS:Source_Industrial_Gas_Suppliers';	
+                  source_dict['source_sink_co2_injecton']='SimCCS:Source_Injection_of_CO2';	
+                  source_dict['source_sink_metals']='SimCCS:Source_Metals';	
+                  source_dict['source_sink_minerals']='SimCCS:Source_Minerals';	
+                  source_dict['source_sink_natural_gas']='SimCCS:Source_Natural_Gas_and_Natural_Gas_Liquids_Suppliers';
+                  source_dict['source_sink_others']='SimCCS:Source_Other';	
+                  source_dict['source_sink_petroleum']='SimCCS:Source_Petroleum_Product_Suppliers';
+                  source_dict['source_sink_petro_natural']='SimCCS:Source_Petroleum_and_Natural_Gas_Systems';
+                  source_dict['source_sink_power_plants']='SimCCS:Source_Power_Plants';
+                  source_dict['source_sink_pulp_paper']='SimCCS:Source_Pulp_and_Paper';
+                  source_dict['source_sink_refineries']='SimCCS:Source_Refineries';
+                  source_dict['source_sink_co2_suppliers']='SimCCS:Source_Suppliers_of_CO2';
+                  source_dict['source_sink_waste']='SimCCS:Source_Waste';
+                  //"source_sink_all_the_above"
+                  $("*[id^='source']:visible").each(function() {
+                        if (this.checked) {queryfields.push(source_dict[this.id]);}
+                  });
+                  return queryfields.join();
+           }
+
            function show_drawingtool(){
-                 //remove layer control
-                 map.eachLayer(function (layer) {
-                       layercontrol.removeLayer(layer);
-                 });
-         
-                 map.removeControl(layercontrol);
-         
+                  var querylayers = '';
+                  querylayers = get_selectedsourcelayers();
+                 
                  // Initialise the FeatureGroup to store editable layers
                  var editableLayers = new L.FeatureGroup();
                  map.addLayer(editableLayers);
@@ -383,7 +395,8 @@
                  for (i = 0, len = geom[0].length; i < len; i++) {
                  coordstr[i]= (geom[0][i].toString()).replace(',',' ');} 
                  //alert(coordstr.join(','));
-                 var geourl='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:Source_Power_Plants&maxFeatures=500&outputFormat=text%2Fjavascript&format_options=callback:loadjson';
+                 var geourl='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&maxFeatures=500&outputFormat=text%2Fjavascript&format_options=callback:loadjson';
+                 geourl += '&typeName=' + querylayers;
                  var cqlfilter = '&cql_filter=Intersects(the_geom,Polygon((';
                  cqlfilter += coordstr.join(',');
                  cqlfilter += ')))';
