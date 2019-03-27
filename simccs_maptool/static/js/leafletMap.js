@@ -600,8 +600,8 @@ var geojsonLineOptions = {
                 color: 'black',
                 weight: 2,
                 opacity: .7,
-                dashArray: '20,15',
-                lineJoin: 'round'
+                //dashArray: '20,15',
+                //lineJoin: 'round'
     };
         var ut_candidate_network;
         $.getJSON('/static/Data/UT_Network.json',function (data) {
