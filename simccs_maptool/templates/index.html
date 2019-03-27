@@ -348,7 +348,7 @@
            function show_drawingtool(){
                   var querylayers = '';
                   querylayers = get_selectedsourcelayers();
-                 
+                 if (querylayers == ''){alert("Please select at least one source!"); return;} 
                  // Initialise the FeatureGroup to store editable layers
                  var editableLayers = new L.FeatureGroup();
                  map.addLayer(editableLayers);
