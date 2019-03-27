@@ -444,6 +444,21 @@
          
          
            };
+         function hideunselected() {
+            sourceLayer.eachLayer(function(layer) {
+                  var target_id = selection.indexOf(layer);
+                  if (target_id <0) {layer.remove();};
+            });
+            sinkLayer.eachLayer(function(layer) {
+                  var target_id = sinkselection.indexOf(layer);
+                  if (target_id <0) {layer.remove();};
+            });
+            sinkLayer2.eachLayer(function(layer) {
+                  var target_id = sinkselection2.indexOf(layer);
+                  if (target_id <0) {layer.remove();};
+            });
+         };
+
          function resetworkingarea(){
            document.getElementById("allmap").style.display="block";
            document.getElementById("workingarea").style.display="none";
@@ -620,7 +635,7 @@
                <h3 class="panel-title"><strong>Workspace</strong></h3>
                </div>
                <div class="panel-body">
-               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="">Show/hide unselcted data</button>
+               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="hideunselected()">Hide unselcted data</button>
                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="">Download data</button>
                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="">Generate input file</button>
                <br>    <br>  
