@@ -386,6 +386,11 @@
                  map.addLayer(editableLayers);
          
                  map.on('draw:created', function(e) {
+                       // clear map, remove all layers
+                       map.eachLayer(function (layer) {
+                              //keep the basemap layer
+                              if (layer != osm) {map.removeLayer(layer);};
+                        });
                  var type = e.layerType,
                  layer = e.layer;
                  editableLayers.addLayer(layer);
