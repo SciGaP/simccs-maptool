@@ -101,7 +101,8 @@ map = L.map('map',{cursor:true}).setView([32.00,-85.43], 6);
     map.createPane("polygonsPane");
     map.createPane("linesPane");
     map.createPane("pointsPane");
-
+    
+    //minor change for testing
     //display_result_sample();
 
     //Draw the cost area of 80km
