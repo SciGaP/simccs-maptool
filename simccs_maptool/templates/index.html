@@ -18,10 +18,8 @@
       <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.2.3/leaflet.draw.css">
       <!--<script src="{% static 'Data/Ordos_Basin_Source.json' %}"></script>-->
       <script>
+
          $(document).ready(function() {
-         
-         
-         
          
          document.getElementById("search").disabled = true;
            map.addLayer(ordos_source_cluster);
@@ -509,55 +507,55 @@
                         <div class="panel-body" >
                            <!--<label style="font-size: 12px;">Source</label>-->
                            <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_chemical">
+                              <input class="form-check-input" type="radio" id="source_sink_chemical" autocomplete="off">
                               <label style="font-size: 100%;" class="form-check-label" for="source_sink_chemical">Chemical</label>
-                              <input class="form-check-input" type="radio" id="source_sink_coal">
+                              <input class="form-check-input" type="radio" id="source_sink_coal" autocomplete="off">
                               <label style="font-size: 100%;" class="form-check-label" for="source_sink_coal">Coal</label>
                            </div>
                            <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_flourinated">
+                              <input class="form-check-input" type="radio" id="source_sink_flourinated" autocomplete="off">
                               <label style="font-size: 100%;" class="form-check-label" for="source_sink_flourinated">Flourinated GHCs</label>
-                              <input class="form-check-input" type="radio" id="source_sink_industrial_gas">
+                              <input class="form-check-input" type="radio" id="source_sink_industrial_gas" autocomplete="off">
                               <label style="font-size: 100%;" class="form-check-label" for="source_sink_industrial_gas">Industrial Gas</label>
                            </div>
                            <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_co2_injecton">
+                              <input class="form-check-input" type="radio" id="source_sink_co2_injecton" autocomplete="off">
                               <label style="font-size: 100%;" class="form-check-label" for="source_sink_co2_injecton">Co2 Injection</label>
-                              <input class="form-check-input" type="radio" id="source_sink_metals">
+                              <input class="form-check-input" type="radio" id="source_sink_metals" autocomplete="off">
                               <label style="font-size: 100%;" class="form-check-label" for="source_sink_metals">Metals</label>
                            </div>
                            <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_minerals">
+                              <input class="form-check-input" type="radio" id="source_sink_minerals" autocomplete="off">
                               <label style="font-size: 100%;" class="form-check-label" for="source_sink_minerals">Minerals</label>
-                              <input class="form-check-input" type="radio" id="source_sink_natural_gas">
+                              <input class="form-check-input" type="radio" id="source_sink_natural_gas" autocomplete="off">
                               <label style="font-size: 100%;" class="form-check-label" for="source_sink_natural_gas">Natural Gas</label>
                            </div>
                            <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_others">
+                              <input class="form-check-input" type="radio" id="source_sink_others" autocomplete="off">
                               <label style="font-size: 100%;" class="form-check-label" for="source_sink_others">Others</label>
-                              <input class="form-check-input" type="radio" id="source_sink_petroleum">
+                              <input class="form-check-input" type="radio" id="source_sink_petroleum" autocomplete="off">
                               <label style="font-size: 100%;" class="form-check-label" for="source_sink_petroleum">Petroleum Products</label>
                            </div>
                            <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_petro_natural">
+                              <input class="form-check-input" type="radio" id="source_sink_petro_natural" autocomplete="off">
                               <label style="font-size: 100%;" class="form-check-label" for="source_sink_petro_natural">Petroleum & Natural Gas</label>
-                              <input class="form-check-input" type="radio" id="source_sink_power_plants">
+                              <input class="form-check-input" type="radio" id="source_sink_power_plants" autocomplete="off">
                               <label style="font-size: 100%;" class="form-check-label" for="source_sink_power_plants">Power Plants</label>
                            </div>
                            <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_pulp_paper">
+                              <input class="form-check-input" type="radio" id="source_sink_pulp_paper" autocomplete="off">
                               <label style="font-size: 100%;" class="form-check-label" for="source_sink_pulp_paper">Pulp/Paper</label>
-                              <input class="form-check-input" type="radio" id="source_sink_refineries">
+                              <input class="form-check-input" type="radio" id="source_sink_refineries" autocomplete="off">
                               <label style="font-size: 100%;" class="form-check-label" for="source_sink_refineries">Refineries</label>
                            </div>
                            <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_co2_suppliers">
+                              <input class="form-check-input" type="radio" id="source_sink_co2_suppliers" autocomplete="off">
                               <label style="font-size: 100%;" class="form-check-label" for="source_sink_co2_suppliers">Co2 Suppliers</label>
-                              <input class="form-check-input" type="radio" id="source_sink_waste">
+                              <input class="form-check-input" type="radio" id="source_sink_waste" autocomplete="off">
                               <label style="font-size: 100%;" class="form-check-label" for="source_sink_waste">Waste</label>
                            </div>
                            <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_all_the_above">
+                              <input class="form-check-input" type="radio" id="source_sink_all_the_above" autocomplete="off">
                               <label style="font-size: 100%;" class="form-check-label" for="source_sink_all_the_above">All the above</label>
                            </div>
                         </div>
