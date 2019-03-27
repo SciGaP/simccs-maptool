@@ -459,6 +459,28 @@
             });
          };
 
+         function downloaddata(){
+            // Facility_N City State Latitude Longitude Industry_T CO2_Emissi
+            //ID costFix ($M) fixO&M ($M/y) varO&M ($/tCO2) capMax (MtCO2/y) N/A LON LAT NAME
+            if (selection.length == 0 ) {alert('No soruces are selected!');return}
+            var sourcedata = "ID    (MtCO2/y)   LON   LAT   NAME\n";
+            var tempstr = "";
+            for (i = 0; i < selection.length; i++) {
+                  tempstr = "";
+                  tempstr += i.toString()+"\t";
+                  tempstr += selection[i].feature.properties.CO2_Emissi +"\t";
+                  tempstr += selection[i].feature.properties.Longitude +"\t";
+                  tempstr += selection[i].feature.properties.Latitude +"\t";
+                  tempstr += selection[i].feature.properties.Facility_N +"\t";
+                  sourcedata += tempstr + "\n";
+            } 
+            alert(sourcedata);
+            //sourceLayer.eachLayer(function(layer) {
+            //      var target_id = selection.indexOf(layer);
+            //      if (target_id >=0) {alert(layer.feature.properties.Facility_N);};
+            //});      
+         }
+
          function resetworkingarea(){
            document.getElementById("allmap").style.display="block";
            document.getElementById("workingarea").style.display="none";
@@ -636,7 +658,7 @@
                </div>
                <div class="panel-body">
                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="hideunselected()">Hide unselcted data</button>
-               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="">Download data</button>
+               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="downloaddata()">Download data</button>
                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="">Generate input file</button>
                <br>    <br>  
                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="resetworkingarea()">Reset working area</button>
