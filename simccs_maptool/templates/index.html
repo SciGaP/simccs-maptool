@@ -215,6 +215,27 @@
              }
          })());
          
+         // continue document ready funtion
+            $('#checkbox_southeastUS').change(function(){
+			if(this.checked) {
+				$('#southeastUS_div').show();
+                        // clear map, remove all layers
+                        map.eachLayer(function (layer) {
+                              //keep the basemap layer
+                              if (layer != osm) {map.removeLayer(layer);};
+                              });
+                        // load sample layers
+                        display_result_sample();
+                  }
+                  else {
+                        $('#southeastUS_div').hide();
+                        map.eachLayer(function (layer) {
+                              //keep the basemap layer
+                              if (layer != osm) {layercontrol.removeLayer(layer);map.removeLayer(layer);};
+                              });
+                        
+                  }
+            });
          });
          
          var geojsonMarkerOptions = {
@@ -542,13 +563,18 @@
          function resetworkingarea(){
            document.getElementById("allmap").style.display="block";
            document.getElementById("workingarea").style.display="none";
-           layercontrol.removeLayer(sourceLayer);
-           layercontrol.removeLayer(sinkLayer);
-           layercontrol.removeLayer(sinkLayer2);
-           layercontrol.remove();
-           map.removeLayer(sourceLayer);
-           map.removeLayer(sinkLayer);
-           map.removeLayer(sinkLayer2);
+           //layercontrol.removeLayer(sourceLayer);
+           //layercontrol.removeLayer(sinkLayer);
+           //layercontrol.removeLayer(sinkLayer2);
+           //map.removeLayer(sourceLayer);
+           //map.removeLayer(sinkLayer);
+           //map.removeLayer(sinkLayer2);
+           map.eachLayer(function (layer) {
+                              //keep the basemap layer
+                              if (layer != osm) {layercontrol.removeLayer(layer);map.removeLayer(layer);};
+                              });
+          layercontrol.remove();
+          //layercontrol.layers()._update;
          };
       </script>
       <!--<link rel="stylesheet" href="{% static 'css/mapTool.css' %}" type="text/css" />-->
@@ -726,7 +752,19 @@
                </div>
                <div class="panel-footer"></div>
                </div>
-               </div>
+                  <div class="panel panel-info" >
+                        <div class="panel-heading">
+                        <h3 class="panel-title"><strong>Results</strong></h3>
+                        </div>
+                        <div class="panel-body">
+                                    <input type="checkbox" id="checkbox_southeastUS" name="re_southeastUS" value="re_souteastUS" autocomplete="off" />
+                                    <span class="default-font"><strong>SoutheastUS_scenario1</strong></span>
+                                    <div id="southeastUS_div" style="display:none"></div>
+                        <br>    <br>  
+                        </div>
+                        <div class="panel-footer"></div>
+                        </div>
+                  </div>
                </div>
                </div>
                <div class="col-md-9">
