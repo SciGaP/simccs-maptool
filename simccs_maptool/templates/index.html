@@ -470,11 +470,11 @@
             // Facility_N City State Latitude Longitude Industry_T CO2_Emissi
             //ID costFix ($M) fixO&M ($M/y) varO&M ($/tCO2) capMax (MtCO2/y) N/A LON LAT NAME
             if (selection.length == 0 ) {alert('No soruces are selected!');return}
-            var sourcedata = "ID    (MtCO2/y)   LON   LAT   NAME\n";
+            var sourcedata = "ID\t(MtCO2/y)\tLON\tLAT\tNAME\n";
             var tempstr = "";
             for (i = 0; i < selection.length; i++) {
                   tempstr = "";
-                  tempstr += i.toString()+"\t";
+                  tempstr += (i+1).toString()+"\t";
                   tempstr += selection[i].feature.properties.CO2_Emissi +"\t";
                   tempstr += selection[i].feature.properties.Longitude +"\t";
                   tempstr += selection[i].feature.properties.Latitude +"\t";
@@ -482,13 +482,60 @@
                   sourcedata += tempstr + "\n";
             } 
             //alert(sourcedata);
+
+            //NATCARB_SALINE
+            //Latitude 	Longitude 	Resource_A 	Depth__m_ 	Thickness_ 	CO2_Low__t 	CO2_Medium 	CO2_High__ 	Shape_Leng 	Shape_Are
+            var sinkdata = "";
+            sinkdata = "ID\tCO2_Low\tCO2_Med\tCO2_High\tDepth(m)\tThichness(m)\tLON\t\LAT\n";
+            var sinkcount = sinkselection.length;
+            //
+            //var testinglayer = sinkselection[0];
+            //alert((testinglayer.getBounds()).getCenter());
+            var center_latlon;
+            for (i = 0; i < sinkselection.length; i++) {
+                  tempstr = "";
+                  tempstr += (i+1).toString()+"\t";
+                  tempstr += sinkselection[i].feature.properties.CO2_Low__t +"\t";
+                  tempstr += sinkselection[i].feature.properties.CO2_Medium +"\t";
+                  tempstr += sinkselection[i].feature.properties.CO2_High__ +"\t";
+                  tempstr += sinkselection[i].feature.properties.Depth__m_ +"\t";
+                  tempstr += sinkselection[i].feature.properties.Thickness_ +"\t";
+                  center_latlon = (sinkselection[i].getBounds()).getCenter();
+                  //lon lat
+                  tempstr += center_latlon.lng +"\t";
+                  tempstr += center_latlon.lat +"\t";  
+                  sinkdata += tempstr + "\n";    
+            }
+            //NATCARB_OG
+            //TOTAL_FIEL 	VOL_LOW 	VOL_MED 	VOL_HIGH 	Shape_Leng 	Shape_Ar
+            for (i = 0; i < sinkselection2.length; i++) {
+                  tempstr = "";
+                  tempstr += (i+1+sinkcount).toString()+"\t";
+                  tempstr += sinkselection2[i].feature.properties.VOL_LOW +"\t";
+                  tempstr += sinkselection2[i].feature.properties.VOL_MED +"\t";
+                  tempstr += sinkselection2[i].feature.properties.VOL_HIGH +"\t";
+                  tempstr += "\t";
+                  tempstr += "\t";               
+                  // missing lat/lon information
+                  center_latlon = (sinkselection2[i].getBounds()).getCenter();
+                  //lon lat
+                  tempstr += center_latlon.lng +"\t";
+                  tempstr += center_latlon.lat +"\t";  
+       sinkdata += tempstr + "\n";
+            }
+
+            //NATCARB_OG
+            //TOTAL_FIEL 	VOL_LOW 	VOL_MED 	VOL_HIGH 	Shape_Leng 	Shape_Ar
             //sourceLayer.eachLayer(function(layer) {
+            //
             //      var target_id = selection.indexOf(layer);
             //      if (target_id >=0) {alert(layer.feature.properties.Facility_N);};
             //});   
             downloadcsv(sourcedata, "Sources.txt", "text/plain","sources_input"); 
+            downloadcsv(sinkdata, "Sinks.txt", "text/plain","sinks_input"); 
             
             document.getElementById("downloadsource_div").style.display="block";
+            document.getElementById("downloadsink_div").style.display="block";
    
          }
 
@@ -669,9 +716,11 @@
                </div>
                <div class="panel-body">
                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="hideunselected()">Hide unselcted data</button>
-               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="downloaddata()">Download data</button>
+               <!-- <button type="button" class="btn btn-primary btn-sm btn-block" onclick="downloaddata()">Download data</button>
+                  -->
                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="generateinputfile()">Generate input file</button>
                <div id="downloadsource_div" hidden><a href="" id="sources_input">Download Source.txt</a></div>
+               <div id="downloadsink_div" hidden><a href="" id="sinks_input">Download Sinks.txt</a></div>
                <br>    <br>  
                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="resetworkingarea()">Reset working area</button>
                </div>
