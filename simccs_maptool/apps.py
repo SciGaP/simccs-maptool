@@ -3,6 +3,7 @@ import os
 
 import jnius_config
 from django.apps import AppConfig
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,13 @@ class MapToolConfig(AppConfig):
 
 def init_pyjnius():
     if not jnius_config.vm_running:
+        if "JAVA_HOME" not in os.environ:
+            logger.info(
+                "'JAVA_HOME' environment variable missing, "
+                "trying to get from settings.py"
+            )
+            os.environ["JAVA_HOME"] = settings.JAVA_HOME
+        logger.info("JAVA_HOME set to '{}'".format(os.environ["JAVA_HOME"]))
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         jnius_config.set_classpath(
             os.path.join(BASE_DIR, "simccs", "lib", "SimCCS.jar"),
