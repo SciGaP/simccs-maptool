@@ -37,8 +37,9 @@ def init_pyjnius():
         logger.info("JAVA_HOME set to '{}'".format(os.environ["JAVA_HOME"]))
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         jnius_config.set_classpath(
-            os.path.join(BASE_DIR, "simccs", "lib", "SimCCS.jar"),
-            os.path.join(BASE_DIR, "simccs", "lib", "openmap.jar"),
+            os.path.join(
+                BASE_DIR, "simccs", "lib", "simccs-app-1.0-jar-with-dependencies.jar"
+            )
         )
         logger.info(
             "Initialized jnius with classpath={}".format(jnius_config.get_classpath())

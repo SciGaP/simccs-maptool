@@ -21,9 +21,9 @@ def simccs(request):
     )
     dataset = "SoutheastUS"
     scenario = "scenario1"
-    DataStorer = autoclass("dataStore.DataStorer")
+    DataStorer = autoclass("simccs.dataStore.DataStorer")
     data = DataStorer(basepath, dataset, scenario)
-    Solver = autoclass("solver.Solver")
+    Solver = autoclass("simccs.solver.Solver")
     solver = Solver(data)
     data.setSolver(solver)
 
