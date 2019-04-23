@@ -2,3 +2,4 @@
 simccs_maptool.egg-info/
 venv/
 *.pyc
+.DS_Store
