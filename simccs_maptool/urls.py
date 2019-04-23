@@ -15,10 +15,12 @@ Including another URLconf
 """
 from django.conf.urls import url
 
-from .views import HomeView, simccs
+from .views import HomeView, simccs, candidate_network, generate_mps
 
 app_name = "simccs_maptool"
 urlpatterns = [
     url(r"^$", HomeView.as_view(), name="home"),
     url(r"^simccs/$", simccs, name="simccs"),
+    url(r"^candidate-network/$", candidate_network, name="candidate-network"),
+    url(r"^mps/$", generate_mps, name="generate-mps"),
 ]
