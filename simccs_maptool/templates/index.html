@@ -560,6 +560,13 @@
    
          }
 
+         function generatempsfile() {
+            // demo code
+            $.getJSON( "/maptool/mps/", function( data ) {
+                  alert(data.ToString());
+            });
+         }
+
          function resetworkingarea(){
            document.getElementById("allmap").style.display="block";
            document.getElementById("workingarea").style.display="none";
@@ -747,7 +754,9 @@
                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="generateinputfile()">Generate input file</button>
                <div id="downloadsource_div" hidden><a href="" id="sources_input">Download Source.txt</a></div>
                <div id="downloadsink_div" hidden><a href="" id="sinks_input">Download Sinks.txt</a></div>
-               <br>    <br>  
+               <br>
+               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="generatempsfile()">Generate MPS file</button>
+               <br>  
                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="resetworkingarea()">Reset working area</button>
                </div>
                <div class="panel-footer"></div>
