@@ -563,7 +563,8 @@
          function generatempsfile() {
             // demo code
             $.getJSON( "/maptool/mps/", function( data ) {
-                  alert(data.ToString());
+                  //{"user_file": "MIP_Files/mip_2019-04-24T145902.mps"}
+                  alert(data["user_file"]);
             });
          }
 
