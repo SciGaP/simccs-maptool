@@ -562,9 +562,15 @@
 
          function generatempsfile() {
             // demo code
+            //id="bn_generatemps"
+            $("#bn_generatemps").text('Generating ... !!!');
+            $("#bn_generatemps").addClass('disabled');
+
             $.getJSON( "/maptool/mps/", function( data ) {
                   //{"user_file": "MIP_Files/mip_2019-04-24T145902.mps"}
-                  alert(data["user_file"]);
+                  $("#bn_generatemps").removeClass('disabled');
+                  alert(data["user_file"] + " is generated succefully");
+
             });
          }
 
@@ -756,7 +762,7 @@
                <div id="downloadsource_div" hidden><a href="" id="sources_input">Download Source.txt</a></div>
                <div id="downloadsink_div" hidden><a href="" id="sinks_input">Download Sinks.txt</a></div>
                <br>
-               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="generatempsfile()">Generate MPS file</button>
+               <button type="button" id="bn_generatemps" class="btn btn-primary btn-sm btn-block" onclick="generatempsfile()">Generate MPS file</button>
                <br>  
                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="resetworkingarea()">Reset working area</button>
                </div>
