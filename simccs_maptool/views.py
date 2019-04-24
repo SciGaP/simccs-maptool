@@ -136,7 +136,7 @@ def generate_mps(request):
             location=settings.GATEWAY_DATA_STORE_DIR
         )
         mps_file_name = experiment_data_storage.get_valid_name(
-            "mip_{}.mps".format(datetime.utcnow().isoformat(timespec="seconds"))
+            "mip_{}.mps".format(datetime.utcnow().replace(microsecond=0).isoformat())
         )
         user_mps_file_path = os.path.join("MIP_Files", mps_file_name)
         dest_mps_file_path = os.path.join(
