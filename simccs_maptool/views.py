@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 import logging
 import os
 import tempfile
-import uuid
+from datetime import datetime
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -128,14 +128,15 @@ def generate_mps(request):
                 "Error occurred when calling writeMPS: " + str(e.stacktrace)
             )
 
-        # copy <scenario_dir>/MIP/mips.mps to 
+        # copy <scenario_dir>/MIP/mips.mps to
         # GATEWAY_DATA_STORE_DIR/<username>/MIP_Files/mip_<timestamp>.mps
         source_mps_file_path = os.path.join(scenario_dir, "MIP", "mip.mps")
-        # TODO: add human readable timestamp for file uniqueness
-        mps_file_name = "mip_{}.mps".format(str(uuid.uuid4()))
         # TODO: provide Django apps with utility for writing to gateway data storage
         experiment_data_storage = FileSystemStorage(
             location=settings.GATEWAY_DATA_STORE_DIR
+        )
+        mps_file_name = experiment_data_storage.get_valid_name(
+            "mip_{}.mps".format(datetime.utcnow().isoformat(timespec="seconds"))
         )
         user_mps_file_path = os.path.join("MIP_Files", mps_file_name)
         dest_mps_file_path = os.path.join(
