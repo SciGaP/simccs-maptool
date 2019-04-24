@@ -3,12 +3,12 @@ from __future__ import unicode_literals
 
 import logging
 import os
-import shutil
 import tempfile
 import uuid
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse, JsonResponse
 from django.views.generic import TemplateView
 
@@ -79,10 +79,8 @@ def generate_mps(request):
             )
         # Write Sinks.txt
         os.mkdir(os.path.join(scenario_dir, "Sinks"))
-        with open(
-            os.path.join(scenario_dir, "Sinks", "Sinks.txt"), mode="w"
-        ) as sources:
-            sources.write(
+        with open(os.path.join(scenario_dir, "Sinks", "Sinks.txt"), mode="w") as sinks:
+            sinks.write(
                 """0	1	2	3	4	5	6	7	8	9	10	11	12	13	14	15	16
 1	1	379	40.951	0.000	0.375	4.575	0.175	2.61	0	-91.2980	28.9920	0	0	0	0	Gulf offshore
 2	2	379	40.951	0.000	0.375	4.575	0.175	2.61	0	-91.1764	31.5559	0	0	0	0	Cranfield
@@ -130,17 +128,23 @@ def generate_mps(request):
                 "Error occurred when calling writeMPS: " + str(e.stacktrace)
             )
 
+        # copy <scenario_dir>/MIP/mips.mps to 
+        # GATEWAY_DATA_STORE_DIR/<username>/MIP_Files/mip_<timestamp>.mps
         source_mps_file_path = os.path.join(scenario_dir, "MIP", "mip.mps")
+        # TODO: add human readable timestamp for file uniqueness
         mps_file_name = "mip_{}.mps".format(str(uuid.uuid4()))
         # TODO: provide Django apps with utility for writing to gateway data storage
-        mps_files_dir = os.path.join(
-            settings.GATEWAY_DATA_STORE_DIR, request.user.username, "MIP_Files"
+        experiment_data_storage = FileSystemStorage(
+            location=settings.GATEWAY_DATA_STORE_DIR
         )
-        if not os.path.exists(mps_files_dir):
-            os.mkdir(mps_files_dir)
-        dest_mps_file_path = os.path.join(mps_files_dir, mps_file_name)
-        shutil.copyfile(source_mps_file_path, dest_mps_file_path)
-        return JsonResponse({"user_file": os.path.join("MIP_Files", mps_file_name)})
+        user_mps_file_path = os.path.join("MIP_Files", mps_file_name)
+        dest_mps_file_path = os.path.join(
+            experiment_data_storage.get_valid_name(request.user.username),
+            user_mps_file_path,
+        )
+        with open(source_mps_file_path) as source_mps_file:
+            experiment_data_storage.save(dest_mps_file_path, source_mps_file)
+        return JsonResponse({"user_file": user_mps_file_path})
 
 
 def candidate_network(request):
