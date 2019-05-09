@@ -417,7 +417,8 @@
                  layer = e.layer;
                  editableLayers.addLayer(layer);
                  var geom = layer.toGeoJSON()['geometry']['coordinates'];
-                 var lbounds=layer.getBounds();
+                 layer.addTo(map);
+                 var lbounds=layer.getBounds().pad(0.1);
                  //alert(lbounds.getCenter());
                  //alert(JSON.stringify(geom));
                  var coordstr=[];
