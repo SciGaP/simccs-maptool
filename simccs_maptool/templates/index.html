@@ -15,8 +15,11 @@
       <script src="{% static 'js/leaflet.markercluster-src.js' %}"></script>
       <link rel="stylesheet" type="text/css" href="{% static 'css/leaflet.css' %}" />
       <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.2.3/leaflet.draw.js"></script>
-      <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.2.3/leaflet.draw.css">
+      <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.2.3/leaflet.draw.css" />
       <!--<script src="{% static 'Data/Ordos_Basin_Source.json' %}"></script>-->
+      <script src="{% static 'js/geotiff.js' %}"></script>
+      <script src="{% static 'js/plotty.js' %}"></script>
+      <script src="{% static 'js/leaflet-geotiff.js' %}"></script>
       <script>
 
          $(document).ready(function() {
@@ -414,6 +417,8 @@
                  layer = e.layer;
                  editableLayers.addLayer(layer);
                  var geom = layer.toGeoJSON()['geometry']['coordinates'];
+                 var lbounds=layer.getBounds();
+                 //alert(lbounds.getCenter());
                  //alert(JSON.stringify(geom));
                  var coordstr=[];
                  for (i = 0, len = geom[0].length; i < len; i++) {
@@ -432,6 +437,7 @@
                        cqlfilter += radius.toString() + ',kilometers)';
                  }
                  geourl += cqlfilter;
+                 //alert(cqlfilter);
                  //alert(geourl);
                  //get source layer
                  $.ajax({
@@ -461,7 +467,16 @@
                  //hide allmap div
                  document.getElementById("allmap").style.display="none";
                  document.getElementById("workingarea").style.display="block";
-                 });
+
+                 //testing code, add geotiff layer
+                 var cost_image_url="https://beta.simccs.org/geoserver/ows?service=WCS&version=2.0.0&request=GetCoverage&coverageId=SimCCS__cost&format=png";
+                 // &subset=Lat(29.920588,33.381122)&subset=Long(-89.251876,-83.277539)";
+                 cost_image_url += "&subset=Lat(" +lbounds.getSouth() +","+lbounds.getNorth() +")";
+                 cost_image_url += "&subset=Long("+lbounds.getWest() + ","+lbounds.getEast() + ")";
+                 var cost_image_bounds = lbounds;
+                 var cost_surface =L.imageOverlay(cost_image_url,cost_image_bounds).addTo(map);
+                 layercontrol.addOverlay(cost_surface,"Cost");
+            });
          
          
            };
