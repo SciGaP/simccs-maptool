@@ -143,8 +143,8 @@ def generate_mps(request):
                 "mip.mps",
                 data,
                 0.1,
-                30,
-                15,
+                10,  # numYears
+                5,  # capacityTarget
                 datasets_basepath,
                 SOUTHEASTUS_DATASET,
                 scenario,
