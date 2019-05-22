@@ -576,6 +576,13 @@
    
          }
 
+         // ajax interface to generate candidate-network
+         function generatecandidatenetwork() {
+               // call url: /maptool/candidate-network/
+               alert("ajax interface to generate candidate-network");
+         }
+
+         // ajax interface to generate MPS file
          function generatempsfile() {
             // demo code
             //id="bn_generatemps"
@@ -810,6 +817,7 @@
                <div id="downloadsource_div" hidden><a href="" id="sources_input">Download Source.txt</a></div>
                <div id="downloadsink_div" hidden><a href="" id="sinks_input">Download Sinks.txt</a></div>
                <br>
+               <button type="button" id="bn_generatecandidatenetwork" class="btn btn-primary btn-sm btn-block" onclick="generatecandidatenetwork()">Generate Candidate Network</button>
                <button type="button" id="bn_generatemps" class="btn btn-primary btn-sm btn-block" onclick="generatempsfile()">Generate MPS file</button>
                <br>  
                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="resetworkingarea()">Reset working area</button>
