@@ -129,37 +129,41 @@ def generate_mps(request):
 """
         )
 
-        try:
-            from jnius import autoclass
+    try:
+        from jnius import autoclass
 
-            DataStorer = autoclass("simccs.dataStore.DataStorer")
-            data = DataStorer(datasets_basepath, SOUTHEASTUS_DATASET, scenario)
-            Solver = autoclass("simccs.solver.Solver")
-            solver = Solver(data)
-            data.setSolver(solver)
-            MPSWriter = autoclass("simccs.solver.MPSWriter")
-            os.mkdir(os.path.join(scenario_dir, "MIP"))
-            MPSWriter.writeMPS(
-                "mip.mps",
-                data,
-                0.1,  # Capital Recovery Rate (crf)
-                10,  # numYears
-                5,  # capacityTarget
-                datasets_basepath,
-                SOUTHEASTUS_DATASET,
-                scenario,
-            )
-        except Exception as e:
-            logger.exception(
-                "Error occurred when calling writeMPS: " + str(e.stacktrace)
-            )
+        DataStorer = autoclass("simccs.dataStore.DataStorer")
+        data = DataStorer(datasets_basepath, SOUTHEASTUS_DATASET, scenario)
+        Solver = autoclass("simccs.solver.Solver")
+        solver = Solver(data)
+        data.setSolver(solver)
+        MPSWriter = autoclass("simccs.solver.MPSWriter")
+        os.mkdir(os.path.join(scenario_dir, "MIP"))
+        MPSWriter.writeMPS(
+            "mip.mps",
+            data,
+            0.1,  # Capital Recovery Rate (crf)
+            10,  # numYears
+            5,  # capacityTarget
+            datasets_basepath,
+            SOUTHEASTUS_DATASET,
+            scenario,
+        )
+    except Exception as e:
+        logger.exception(
+            "Error occurred when calling writeMPS: " + str(e.stacktrace)
+        )
+        raise
 
-        mps_file_path = os.path.join(scenario_dir, "MIP", "mip.mps")
-        rel_mps_file_path = os.path.relpath(mps_file_path, start=userdir)
-        results_dir = os.path.join(scenario_dir, "Results")
-        os.mkdir(results_dir)
-        rel_results_dir = os.path.relpath(results_dir, start=userdir)
-        return JsonResponse({"user_file": rel_mps_file_path, "results_dir": rel_results_dir})
+    mps_file_path = os.path.join(scenario_dir, "MIP", "mip.mps")
+    rel_mps_file_path = os.path.relpath(mps_file_path, start=userdir)
+    results_dir = os.path.join(scenario_dir, "Results")
+    os.mkdir(results_dir)
+    # TODO: symlink the mps file into this Results directory
+    rel_results_dir = os.path.relpath(results_dir, start=userdir)
+    return JsonResponse(
+        {"user_file": rel_mps_file_path, "results_dir": rel_results_dir}
+    )
 
 
 def candidate_network(request):
