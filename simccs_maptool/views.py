@@ -142,7 +142,7 @@ def generate_mps(request):
             MPSWriter.writeMPS(
                 "mip.mps",
                 data,
-                0.1,
+                0.1,  # Capital Recovery Rate (crf)
                 10,  # numYears
                 5,  # capacityTarget
                 datasets_basepath,
