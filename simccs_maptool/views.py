@@ -159,7 +159,9 @@ def generate_mps(request):
     rel_mps_file_path = os.path.relpath(mps_file_path, start=userdir)
     results_dir = os.path.join(scenario_dir, "Results")
     os.mkdir(results_dir)
-    # TODO: symlink the mps file into this Results directory
+    # symlink the mps file into this Results directory (makeShapeFiles expects
+    # .mps and .sol files to be in the same directory)
+    os.symlink(mps_file_path, os.path.join(results_dir, "mip.mps"))
     rel_results_dir = os.path.relpath(results_dir, start=userdir)
     return JsonResponse(
         {"user_file": rel_mps_file_path, "results_dir": rel_results_dir}
