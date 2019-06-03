@@ -49,13 +49,7 @@ def simccs(request):
 @login_required
 def generate_mps(request):
     # TODO: provide Django apps with utility for writing to gateway data storage
-    experiment_data_storage = FileSystemStorage(
-        location=settings.GATEWAY_DATA_STORE_DIR
-    )
-    userdir = os.path.join(
-        settings.GATEWAY_DATA_STORE_DIR,
-        experiment_data_storage.get_valid_name(request.user.username),
-    )
+    userdir = os.path.join(settings.GATEWAY_DATA_STORE_DIR, request.user.username)
     datasets_basepath = os.path.join(userdir, "Datasets")
     dataset_dir = os.path.join(datasets_basepath, SOUTHEASTUS_DATASET)
     os.makedirs(dataset_dir, exist_ok=True)
