@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import json
 import logging
 import os
 import tempfile
 from datetime import datetime
 
+import shapefile
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
@@ -62,7 +64,7 @@ def generate_mps(request):
     if not os.path.exists(basedata_dir):
         os.symlink(
             os.path.join(DATASETS_BASEPATH, SOUTHEASTUS_DATASET, "BaseData"),
-            basedata_dir
+            basedata_dir,
         )
     # Create a scenario directory
     scenarios_dir = os.path.join(dataset_dir, "Scenarios")
@@ -150,9 +152,7 @@ def generate_mps(request):
             scenario,
         )
     except Exception as e:
-        logger.exception(
-            "Error occurred when calling writeMPS: " + str(e.stacktrace)
-        )
+        logger.exception("Error occurred when calling writeMPS: " + str(e.stacktrace))
         raise
 
     mps_file_path = os.path.join(scenario_dir, "MIP", "mip.mps")
@@ -165,6 +165,106 @@ def generate_mps(request):
     rel_results_dir = os.path.relpath(results_dir, start=userdir)
     return JsonResponse(
         {"user_file": rel_mps_file_path, "results_dir": rel_results_dir}
+    )
+
+
+@login_required
+def experiment_result(request, experiment_id):
+    """
+    Return a JSON object with nested GeoJSON objects.
+    {
+        "Network": GeoJSON,
+        "Sinks":   GeoJSON,
+        "Sources": GeoJSON
+    }
+    """
+    experiment = request.airavata_client.getExperiment(
+        request.authz_token, experiment_id
+    )
+    # Get the experimentDataDir which is the Results/ directory
+    experiment_data_dir = experiment.userConfigurationData.experimentDataDir
+    results_dir = experiment_data_dir
+    # figure out the scenario directory
+    shapefiles_dir = os.path.join(results_dir, "shapeFiles")
+    geojson_dir = os.path.join(results_dir, "geojson")
+    if not os.path.exists(shapefiles_dir):
+        _create_shapefiles_for_result(request, results_dir)
+    if not os.path.exists(geojson_dir):
+        _create_geojson_for_result(request, results_dir)
+    with open(
+        os.path.join(results_dir, "geojson", "Network.geojson")
+    ) as network_geojson, open(
+        os.path.join(results_dir, "geojson", "Sources.geojson")
+    ) as sources_geojson, open(
+        os.path.join(results_dir, "geojson", "Sinks.geojson")
+    ) as sinks_geojson:
+        return JsonResponse(
+            {
+                "Network": json.load(network_geojson),
+                "Sources": json.load(sources_geojson),
+                "Sinks": json.load(sinks_geojson),
+            }
+        )
+
+
+def _create_shapefiles_for_result(request, results_dir):
+    userdir = os.path.join(settings.GATEWAY_DATA_STORE_DIR, request.user.username)
+    datasets_basepath = os.path.join(userdir, "Datasets")
+    scenario_dir = os.path.dirname(results_dir)
+    scenario = os.path.basename(scenario_dir)
+    try:
+        from jnius import autoclass
+
+        # initialize the Solver/DataStorer
+        DataStorer = autoclass("simccs.dataStore.DataStorer")
+        data = DataStorer(datasets_basepath, SOUTHEASTUS_DATASET, scenario)
+        Solver = autoclass("simccs.solver.Solver")
+        solver = Solver(data)
+        data.setSolver(solver)
+        logger.debug("Scenario data loaded for {}".format(scenario_dir))
+        # load the .mps/.sol solution
+        DataInOut = autoclass("simccs.dataStore.DataInOut")
+        solution = DataInOut.loadSolution(results_dir)
+        logger.debug("Solution loaded from {}".format(results_dir))
+        # generate shapefiles
+        DataInOut.makeShapeFiles(results_dir, solution)
+        logger.debug(
+            "Shape files created in {}".format(os.path.join(results_dir, "shapeFiles"))
+        )
+    except Exception as e:
+        logger.exception(
+            "Error occurred when calling makeShapeFiles: " + str(e.stacktrace)
+        )
+        raise
+
+
+def _create_geojson_for_result(request, results_dir):
+    network_sf = shapefile.Reader(os.path.join(results_dir, "shapeFiles", "Network"))
+    sinks_sf = shapefile.Reader(os.path.join(results_dir, "shapeFiles", "Sinks"))
+    sources_sf = shapefile.Reader(os.path.join(results_dir, "shapeFiles", "Sources"))
+    geojson_dir = os.path.join(results_dir, "geojson")
+    os.mkdir(geojson_dir)
+    with open(os.path.join(geojson_dir, "Network.geojson"), "w") as network_geojson_f:
+        _write_shapefile_to_geojson(network_sf, network_geojson_f)
+    with open(os.path.join(geojson_dir, "Sinks.geojson"), "w") as sinks_geojson_f:
+        _write_shapefile_to_geojson(sinks_sf, sinks_geojson_f)
+    with open(os.path.join(geojson_dir, "Sources.geojson"), "w") as sources_geojson_f:
+        _write_shapefile_to_geojson(sources_sf, sources_geojson_f)
+
+
+def _write_shapefile_to_geojson(shapefile, geojson_f):
+    # From http://geospatialpython.com/2013/07/shapefile-to-geojson.html
+    fields = shapefile.fields[1:]
+    field_names = [field[0] for field in fields]
+    buffer = []
+    for sr in shapefile.shapeRecords():
+        atr = dict(zip(field_names, sr.record))
+        geom = sr.shape.__geo_interface__
+        buffer.append(dict(type="Feature", geometry=geom, properties=atr))
+
+    # write the GeoJSON file
+    geojson_f.write(
+        json.dumps({"type": "FeatureCollection", "features": buffer}, indent=2) + "\n"
     )
 
 

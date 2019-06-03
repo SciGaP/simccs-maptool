@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import url
 
-from .views import HomeView, simccs, candidate_network, generate_mps
+from .views import HomeView, simccs, candidate_network, generate_mps, experiment_result
 
 app_name = "simccs_maptool"
 urlpatterns = [
@@ -23,4 +23,5 @@ urlpatterns = [
     url(r"^simccs/$", simccs, name="simccs"),
     url(r"^candidate-network/$", candidate_network, name="candidate-network"),
     url(r"^mps/$", generate_mps, name="generate-mps"),
+    url(r"^experiment-result/(?P<experiment_id>[^/]+)$", experiment_result)
 ]

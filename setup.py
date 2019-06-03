@@ -8,7 +8,8 @@ setuptools.setup(
     install_requires=[
         'django>=1.11.16',
         'cython',
-        'pyjnius'
+        'pyjnius',
+        'pyshp',
     ],
     entry_points="""
 [airavata.djangoapp]
