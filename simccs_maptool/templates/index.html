@@ -21,6 +21,10 @@
       <script src="{% static 'js/plotty.js' %}"></script>
       <script src="{% static 'js/leaflet-geotiff.js' %}"></script>
       <script>
+            // TODO: replace with global user session object
+            var userIsAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+      </script>
+      <script>
 
          $(document).ready(function() {
          
