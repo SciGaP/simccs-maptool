@@ -14,5 +14,7 @@ setuptools.setup(
     entry_points="""
 [airavata.djangoapp]
 simccs_maptool = simccs_maptool.apps:MapToolConfig
+[airavata.output_view_providers]
+cplex-solution-link = simccs_maptool.output_views:SolutionLinkProvider
 """,
 )
