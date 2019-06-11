@@ -588,6 +588,10 @@
          function generatempsfile() {
             // demo code
             //id="bn_generatemps"
+            // check user login
+            if (! userIsAuthenticated) {
+                  window.location.href = "/auth/login?next=/maptool";
+            }
             $("#bn_generatemps").text('Generating ... !!!');
             $("#bn_generatemps").addClass('disabled');
 
