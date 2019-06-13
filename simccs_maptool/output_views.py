@@ -4,6 +4,7 @@ from django.urls import reverse
 
 class SolutionLinkProvider:
     display_type = "link"
+    immediate = True
 
     def generate_data(self, experiment_output, experiment, output_file=None):
         return {
