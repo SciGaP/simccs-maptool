@@ -20,6 +20,7 @@
       <script src="{% static 'js/geotiff.js' %}"></script>
       <script src="{% static 'js/plotty.js' %}"></script>
       <script src="{% static 'js/leaflet-geotiff.js' %}"></script>
+      <script src="{% static 'django_airavata_api/dist/airavata-api.js' %}"></script>
       <script>
          // TODO: replace with global user session object
          var userIsAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
