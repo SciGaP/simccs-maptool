@@ -471,9 +471,15 @@
                  //hide allmap div
                  document.getElementById("allmap").style.display="none";
                  document.getElementById("workingarea").style.display="block";
+                 // interface for non-login user
                  if (! userIsAuthenticated) {
                   document.getElementById("bn_generatemps").style.display="none";
                   document.getElementById("nologinuser_msg").style.display="block";
+                  document.getElementById("southeastUS_div").style.display="block";
+                  }
+                  // pull the experiments result
+                  if ( userIsAuthenticated) {
+                   pass;      
                   }
 
                  //testing code, add geotiff layer
@@ -594,10 +600,9 @@
             // demo code
             //id="bn_generatemps"
             // check user login
-            if (! userIsAuthenticated) {
-                  window.location.href = "/auth/login?next=/maptool";
-                  return;
-            }
+            //if (! userIsAuthenticated) {
+            //      window.location.href = "/auth/login?next=/maptool";
+            //      return; }
             $("#bn_generatemps").text('Generating ... !!!');
             $("#bn_generatemps").addClass('disabled');
 
@@ -842,10 +847,11 @@
                         <h3 class="panel-title"><strong>Results</strong></h3>
                         </div>
                         <div class="panel-body">
+                                    <div id="southeastUS_div" style="display:none">
                                     <input type="checkbox" id="checkbox_southeastUS" name="re_southeastUS" value="re_souteastUS" autocomplete="off" />
-                                    <span class="default-font"><strong>SoutheastUS_scenario1</strong></span>
-                                    <div id="southeastUS_div" style="display:none"></div>
-                        <br>    <br>  
+                                    <span class="default-font"><strong>SoutheastUS (Sample Scenario)</strong></span>
+                                    </div>
+                        <br>
                         </div>
                         <div class="panel-footer"></div>
                         </div>
