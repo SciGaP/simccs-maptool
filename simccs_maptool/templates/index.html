@@ -242,6 +242,11 @@
                         
                   }
             });
+        // continue document ready funtion
+        $( '[id*="_checkbox_experiment_"]' ).change(function(){
+              alert(this.value);
+            });
+ 
          });
          
          var geojsonMarkerOptions = {
