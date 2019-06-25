@@ -224,7 +224,7 @@
          // continue document ready funtion
             $('#checkbox_southeastUS').change(function(){
 			if(this.checked) {
-				$('#southeastUS_div').show();
+				//$('#southeastUS_div').show();
                         // clear map, remove all layers
                         map.eachLayer(function (layer) {
                               //keep the basemap layer
@@ -234,7 +234,7 @@
                         display_result_sample();
                   }
                   else {
-                        $('#southeastUS_div').hide();
+                        //$('#southeastUS_div').hide();
                         map.eachLayer(function (layer) {
                               //keep the basemap layer
                               if (layer != osm) {layercontrol.removeLayer(layer);map.removeLayer(layer);};
