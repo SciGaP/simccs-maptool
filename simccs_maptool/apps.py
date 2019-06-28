@@ -20,6 +20,13 @@ class MapToolConfig(AppConfig):
     app_description = """
         SimCCS Map Tool.
     """
+    nav = [
+        {
+            'label': 'Map Tool',
+            'icon': 'fa fa-map',
+            'url': 'simccs_maptool:home',
+        },
+    ]
 
     def ready(self):
         logger.info("MapToolConfig.ready() called")
