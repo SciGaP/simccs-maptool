@@ -37,7 +37,8 @@
          var userIsAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
          //var userIsAuthenticated = true;
          $(document).ready(function() {
-         
+      
+           load_current_experiment();
            map.addLayer(ordos_source_cluster);
            map.addLayer(france_source_cluster);
          
@@ -253,7 +254,7 @@
                   }
             });
         // continue document ready funtion
-        $( '#checkbox_experiment_01' ).change(function(){
+        $('#experiments_div').on('change', 'input', function() {
             if(this.checked) {
 				//$('#southeastUS_div').show();
                         // clear map, remove all layers
@@ -510,7 +511,7 @@
                   }
                   // pull the experiments result
                   if ( userIsAuthenticated) {
-                  document.getElementById("experiments_div").style.display="block";      
+                  //document.getElementById("experiments_div").style.display="block";      
                   }
 
                  //testing code, add geotiff layer
@@ -723,6 +724,24 @@
         //layercontrol.addOverlay(result_sinkLayer,"Sinks");
             });
       };
+
+      // Load results from experiment as given in "?experiment_id=..." query parameter
+      function load_current_experiment() {
+          const urlParams = new URLSearchParams(window.location.search);
+          const experimentId = urlParams.get('experiment_id');
+          document.getElementById("allmap").style.display="none";
+          document.getElementById("workingarea").style.display="block";
+          display_experiment_result(experimentId);
+          AiravataAPI.services.ExperimentService.retrieve({lookup: experimentId}).then(experiment => {
+              $('#experiments_div').empty();
+              document.getElementById("experiments_div").style.display="block";
+              $('#experiments_div').append(
+                    '<div class="form-check">'
+                  + '<input checked class="form-check-input" type="checkbox" id="' + experimentId + '" value="' + experimentId + '">'
+                  + '<label class="form-check-label" for="' + experimentId + '">' + experiment.experimentName + '</label>'
+                  + '</div>');
+          });
+      }
       </script>
 {% endblock scripts %}
 
