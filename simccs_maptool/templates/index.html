@@ -733,14 +733,31 @@
           document.getElementById("workingarea").style.display="block";
           display_experiment_result(experimentId);
           AiravataAPI.services.ExperimentService.retrieve({lookup: experimentId}).then(experiment => {
-              $('#experiments_div').empty();
-              document.getElementById("experiments_div").style.display="block";
-              $('#experiments_div').append(
-                    '<div class="form-check">'
-                  + '<input checked class="form-check-input" type="checkbox" id="' + experimentId + '" value="' + experimentId + '">'
-                  + '<label class="form-check-label" for="' + experimentId + '">' + experiment.experimentName + '</label>'
-                  + '</div>');
+              render_experiment_list([experiment], [experimentId]);
           });
+      }
+
+      function render_experiment_list(experiments, selected_experiments) {
+            var $experiments_div = $('#experiments_div');
+            $experiments_div.empty();
+            document.getElementById("experiments_div").style.display="block";
+            experiments.forEach(experiment => {
+
+              var $form_check = $('<div class="form-check"></div>');
+              $experiments_div.append($form_check);
+              var $input = $('<input class="form-check-input" type="checkbox">');
+              if (selected_experiments.indexOf(experiment.experimentId) >= 0) {
+                    $input.prop('checked', true);
+              }
+              $input.attr('id', experiment.experimentId);
+              $input.attr('value', experiment.experimentId);
+              $form_check.append($input);
+
+              var $label = $('<label class="form-check-label"></label>');
+              $label.attr('for', experiment.experimentId);
+              $label.text(experiment.experimentName);
+              $form_check.append($label);
+            })
       }
       </script>
 {% endblock scripts %}
