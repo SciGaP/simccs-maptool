@@ -725,16 +725,19 @@
             });
       };
 
-      // Load results from experiment as given in "?experiment_id=..." query parameter
+      // Load results from experiment as given in "?experiment_id=..." query
+      // parameter if it exists and the user is authenticated
       function load_current_experiment() {
           const urlParams = new URLSearchParams(window.location.search);
           const experimentId = urlParams.get('experiment_id');
-          document.getElementById("allmap").style.display="none";
-          document.getElementById("workingarea").style.display="block";
-          display_experiment_result(experimentId);
-          AiravataAPI.services.ExperimentService.retrieve({lookup: experimentId}).then(experiment => {
-              render_experiment_list([experiment], [experimentId]);
-          });
+          if (experimentId && userIsAuthenticated) {
+            document.getElementById("allmap").style.display="none";
+            document.getElementById("workingarea").style.display="block";
+            display_experiment_result(experimentId);
+            AiravataAPI.services.ExperimentService.retrieve({lookup: experimentId}).then(experiment => {
+                  render_experiment_list([experiment], [experimentId]);
+            });
+          }
       }
 
       function render_experiment_list(experiments, selected_experiments) {
