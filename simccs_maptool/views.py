@@ -10,7 +10,6 @@ from datetime import datetime
 import shapefile
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse, JsonResponse
 from django.views.generic import TemplateView
 
@@ -25,6 +24,10 @@ logger = logging.getLogger(__name__)
 
 class HomeView(TemplateView):
     template_name = "index.html"
+
+
+class HelpView(TemplateView):
+    template_name = "simccs_maptool/help.html"
 
 
 def simccs(request):

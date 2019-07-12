@@ -26,6 +26,11 @@ class MapToolConfig(AppConfig):
             'icon': 'fa fa-map',
             'url': 'simccs_maptool:home',
         },
+        {
+            'label': 'Documentation Links',
+            'icon': 'fa fa-question',
+            'url': 'simccs_maptool:help',
+        },
     ]
 
     def ready(self):
