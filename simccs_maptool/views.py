@@ -51,6 +51,12 @@ def simccs(request):
 
 @login_required
 def generate_mps(request):
+
+    # MPS model parameters
+    capital_recovery_rate = float(request.GET.get("crf", "0.1"))
+    num_years = float(request.GET.get("numYears", 10))
+    capacity_target = float(request.GET.get("capacityTarget", 5))
+
     # TODO: provide Django apps with utility for writing to gateway data storage
     userdir = os.path.join(settings.GATEWAY_DATA_STORE_DIR, request.user.username)
     datasets_basepath = os.path.join(userdir, "Datasets")
@@ -141,9 +147,9 @@ def generate_mps(request):
         MPSWriter.writeMPS(
             "mip.mps",
             data,
-            0.1,  # Capital Recovery Rate (crf)
-            10,  # numYears
-            5,  # capacityTarget
+            capital_recovery_rate,
+            num_years,
+            capacity_target,
             datasets_basepath,
             SOUTHEASTUS_DATASET,
             scenario,
