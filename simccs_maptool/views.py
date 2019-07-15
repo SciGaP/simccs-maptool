@@ -181,12 +181,7 @@ def experiment_result(request, experiment_id):
         "Sources": GeoJSON
     }
     """
-    experiment = request.airavata_client.getExperiment(
-        request.authz_token, experiment_id
-    )
-    # Get the experimentDataDir which is the Results/ directory
-    experiment_data_dir = experiment.userConfigurationData.experimentDataDir
-    results_dir = experiment_data_dir
+    results_dir = _get_results_dir(request, experiment_id)
     # figure out the scenario directory
     shapefiles_dir = os.path.join(results_dir, "shapeFiles")
     geojson_dir = os.path.join(results_dir, "geojson")
@@ -208,6 +203,38 @@ def experiment_result(request, experiment_id):
                 "Sinks": json.load(sinks_geojson),
             }
         )
+
+
+@login_required
+def solution_summary(request, experiment_id):
+    results_dir = _get_results_dir(request, experiment_id)
+    solution = _load_solution(request, results_dir)
+    return JsonResponse(
+        {
+            "numOpenSources": solution.numOpenSources,
+            "numOpenSinks": solution.numOpenSinks,
+            "targetCaptureAmount": solution.targetCaptureAmount,
+            "numEdgesOpened": solution.numEdgesOpened,
+            "projectLength": solution.projectLength,
+            "totalCaptureCost": solution.totalCaptureCost,
+            "unitCaptureCost": solution.unitCaptureCost,
+            "totalTransportCost": solution.totalTransportCost,
+            "unitTransportCost": solution.unitTransportCost,
+            "totalStorageCost": solution.totalStorageCost,
+            "unitStorageCost": solution.unitStorageCost,
+            "totalCost": solution.totalCost,
+            "unitTotalCost": solution.unitTotalCost,
+            "crf": solution.getCRF(),
+        }
+    )
+
+
+def _get_results_dir(request, experiment_id):
+    experiment = request.airavata_client.getExperiment(
+        request.authz_token, experiment_id
+    )
+    # Get the experimentDataDir which is the Results/ directory
+    return experiment.userConfigurationData.experimentDataDir
 
 
 def _create_shapefiles_for_result(request, results_dir):
@@ -237,6 +264,33 @@ def _create_shapefiles_for_result(request, results_dir):
     except Exception as e:
         logger.exception(
             "Error occurred when calling makeShapeFiles: " + str(e.stacktrace)
+        )
+        raise
+
+
+def _load_solution(request, results_dir):
+    userdir = os.path.join(settings.GATEWAY_DATA_STORE_DIR, request.user.username)
+    datasets_basepath = os.path.join(userdir, "Datasets")
+    scenario_dir = os.path.dirname(results_dir)
+    scenario = os.path.basename(scenario_dir)
+    try:
+        from jnius import autoclass
+
+        # initialize the Solver/DataStorer
+        DataStorer = autoclass("simccs.dataStore.DataStorer")
+        data = DataStorer(datasets_basepath, SOUTHEASTUS_DATASET, scenario)
+        Solver = autoclass("simccs.solver.Solver")
+        solver = Solver(data)
+        data.setSolver(solver)
+        logger.debug("Scenario data loaded for {}".format(scenario_dir))
+        # load the .mps/.sol solution
+        DataInOut = autoclass("simccs.dataStore.DataInOut")
+        solution = DataInOut.loadSolution(results_dir)
+        logger.debug("Solution loaded from {}".format(results_dir))
+        return solution
+    except Exception as e:
+        logger.exception(
+            "Error occurred when loading solution: " + str(e.stacktrace)
         )
         raise
 
