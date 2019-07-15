@@ -211,8 +211,8 @@ def solution_summary(request, experiment_id):
     solution = _load_solution(request, results_dir)
     return JsonResponse(
         {
-            "numOpenSources": solution.numOpenSources,
-            "numOpenSinks": solution.numOpenSinks,
+            "numOpenedSources": solution.numOpenedSources,
+            "numOpenedSinks": solution.numOpenedSinks,
             "targetCaptureAmount": solution.targetCaptureAmount,
             "numEdgesOpened": solution.numEdgesOpened,
             "projectLength": solution.projectLength,
