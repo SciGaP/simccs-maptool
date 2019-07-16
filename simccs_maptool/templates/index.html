@@ -32,7 +32,7 @@
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.2.3/leaflet.draw.js"></script>
 <script src="{% static 'js/leafletMap.js' %}" ></script>
 <script src="{% static 'django_airavata_api/dist/airavata-api.js' %}"></script>
-      <script>
+<script>
          // TODO: replace with global user session object
          var userIsAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
          //var userIsAuthenticated = true;
@@ -775,9 +775,20 @@
       <div class="col-md-3">
             <!--<div class="col-md-3  sidebar">-->
                   <div class="panel-group" id="allmap">
-                      <div class="card border-info">
+                        <div class="card-body" bg-info text-light">
+                              <div class="dropdown">
+                                          <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                SimCCS Community Case Studies
+                                          </button>
+                                          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                            <a class="dropdown-item" href="#">Southeast US</a>
+                                            <a class="dropdown-item" href="#">Illinois Basin</a>
+                                          </div>
+                              </div>
+                        </div>
+                  <div class="card border-info">
                         <div class="card-header bg-info text-light">
-                              <strong>Source</strong>
+                              <strong>CO<sub>2</sub> Source Data</strong>
                         </div>
                         <div class="card-body" >
                            <!--<label style="font-size: 12px;">Source</label>-->
@@ -856,7 +867,7 @@
                   </div>
                       <div class="card border-info">
                         <div class="card-header bg-info text-light">
-                              <strong>Sink</strong>
+                              <strong>Storage and Utilization Sink Data</strong>
                         </div>
                         <div class="card-body" >
                               <div class="form-check">
@@ -888,7 +899,7 @@
                         </div>
                       <div class="card border-info">
                         <div class="card-header bg-info text-light">
-                              <strong>Pipeline Network</strong>
+                              <strong>Pipeline Transport Data</strong>
                         </div>
                         <div class="card-body" >
                                  <div class="form-check">
