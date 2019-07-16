@@ -402,6 +402,7 @@
                   return queryfields.join();
            }
 
+           var drawControl=0;
            function show_drawingtool(){
                   var querylayers = '';
                   querylayers = get_selectedsourcelayers();
@@ -434,11 +435,7 @@
                  remove: false
                  }};
                  // Initialise the draw control and pass it the FeatureGroup of editable layers
-                 var drawControl = new L.Control.Draw(drawPluginOptions);
-                 map.addControl(drawControl);
-                 //alert("Use drawing tool to setup a working area!");
-         
-         
+                 if (drawControl==0) {drawControl = new L.Control.Draw(drawPluginOptions);map.addControl(drawControl);};
                  var editableLayers = new L.FeatureGroup();
                  map.addLayer(editableLayers);
          
@@ -499,6 +496,7 @@
                  layer.remove();
                  //layer.setStyle({'color':'grey','fillOpacity': 0.0});
                  map.removeControl(drawControl);
+                 drawControl=0;
                  layercontrol.addTo(map);
                  //hide allmap div
                  document.getElementById("allmap").style.display="none";
