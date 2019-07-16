@@ -15,14 +15,15 @@ Including another URLconf
 """
 from django.conf.urls import url
 
-from .views import HelpView, HomeView, simccs, candidate_network, generate_mps, experiment_result
+from . import views
 
 app_name = "simccs_maptool"
 urlpatterns = [
-    url(r"^$", HomeView.as_view(), name="home"),
-    url(r"^help/$", HelpView.as_view(), name="help"),
-    url(r"^simccs/$", simccs, name="simccs"),
-    url(r"^candidate-network/$", candidate_network, name="candidate-network"),
-    url(r"^mps/$", generate_mps, name="generate-mps"),
-    url(r"^experiment-result/(?P<experiment_id>[^/]+)$", experiment_result)
+    url(r"^$", views.HomeView.as_view(), name="home"),
+    url(r"^help/$", views.HelpView.as_view(), name="help"),
+    url(r"^simccs/$", views.simccs, name="simccs"),
+    url(r"^candidate-network/$", views.candidate_network, name="candidate-network"),
+    url(r"^mps/$", views.generate_mps, name="generate-mps"),
+    url(r"^experiment-result/(?P<experiment_id>[^/]+)$", views.experiment_result),
+    url(r"^solution-summary/(?P<experiment_id>[^/]+)$", views.solution_summary),
 ]
