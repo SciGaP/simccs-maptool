@@ -25,11 +25,13 @@ class MapToolConfig(AppConfig):
             'label': 'Map Tool',
             'icon': 'fa fa-map',
             'url': 'simccs_maptool:home',
+            'active_prefixes': [''],
         },
         {
             'label': 'Documentation Links',
             'icon': 'fa fa-question',
             'url': 'simccs_maptool:help',
+            'active_prefixes': ['help'],
         },
     ]
 
