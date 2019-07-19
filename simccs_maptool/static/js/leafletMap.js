@@ -673,7 +673,7 @@ var geojsonLineOptions = {
         });
 
         var sink_saline_layer=L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
-                layers: 'SimCCS:NATCARB_SALINE',
+                layers: 'SimCCS:SCO2T_Database_v1_1_Cheapest_Grid',
                 format: 'image/png',
                 transparent: true
         });

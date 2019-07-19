@@ -300,7 +300,7 @@
          
          function sinkOnEachFeature(feature, layer) {
          //bind click
-         layer.bindTooltip("<strong>CO2_Low(t):"+feature.properties.CO2_Low__t.toString()+"<strong>");
+         layer.bindTooltip("<strong>Reservoir Storage Capacity MtCO2:"+feature.properties.Reservoir_.toString()+"<strong>");
          layer.on('click', function (e) {
            var target_id = sinkselection.indexOf(e.target)
            if (target_id >=0 ) {e.target.setStyle({weight:1,color:'grey',fillOpacity:0.4});sinkselection.splice(target_id,1);}
@@ -479,7 +479,7 @@
                        dataType: "jsonp"
                  });
                  //get sink layer
-                 var sinkurl='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:NATCARB_SALINE&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
+                 var sinkurl='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:SCO2T_Database_v1_1_Cheapest_Grid&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
                  sinkurl += cqlfilter;
                  $.ajax({
                        url: sinkurl,
