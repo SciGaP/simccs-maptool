@@ -503,13 +503,14 @@
                  document.getElementById("workingarea").style.display="block";
                  // interface for non-login user
                  if (! userIsAuthenticated) {
-                  document.getElementById("bn_generatemps").style.display="none";
+                  document.getElementById("loginuser_tools").style.display="none";
                   document.getElementById("nologinuser_msg").style.display="block";
-                  document.getElementById("southeastUS_div").style.display="block";
+                  //document.getElementById("southeastUS_div").style.display="block";
                   }
                   // pull the experiments result
                   if ( userIsAuthenticated) {
-                  //document.getElementById("experiments_div").style.display="block";      
+                  document.getElementById("loginuser_tools").style.display="block";      
+                  document.getElementById("nologinuser_msg").style.display="none";
                   }
 
                  //testing code, add geotiff layer
@@ -924,24 +925,35 @@
                </div>
                <!-- working area div-->
                <div id="workingarea" style="display: none;">
-                      <div class="card border-info">
+                  <div class="card border-info">
                         <div class="card-header bg-info text-light">
-                              <strong>Workspace</strong>
+                              <strong>Data Selection</strong>
                         </div>
                         <div class="card-body" >
-               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="hideunselected()">Hide unselcted data</button>
-               <!-- <button type="button" class="btn btn-primary btn-sm btn-block" onclick="downloaddata()">Download data</button>
-                  -->
-               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="generateinputfile()">Generate input file</button>
-               <div id="downloadsource_div" style="display: none;"><a href="" id="sources_input">Download Source.txt</a></div>
-               <div id="downloadsink_div" style="display: none;"><a href="" id="sinks_input">Download Sinks.txt</a></div>
-               <br>
-               <button type="button" id="bn_generatecandidatenetwork" class="btn btn-primary btn-sm btn-block" onclick="generatecandidatenetwork()">Generate Candidate Network</button>
-               <button type="button" id="bn_generatemps" class="btn btn-primary btn-sm btn-block" onclick="generatempsfile()">Generate MPS file</button>
-                <div id="nologinuser_msg" style="display: none;">Please <a href='/auth/login?next=/maptool'>login</a> to access all functions.</div>
-               <br>  
-               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="resetworkingarea()">Reset working area</button>
+                                    Use mouse-click to select source and sink data.
+                                    <button type="button" class="btn btn-primary btn-sm btn-block" onclick="hideunselected()">Hide unselcted data</button>
+                                    <!-- <button type="button" class="btn btn-primary btn-sm btn-block" onclick="downloaddata()">Download data</button>
+                                       -->
+                                    <button type="button" class="btn btn-primary btn-sm btn-block" onclick="generateinputfile()">Generate Data Files</button>
+                                    <div id="downloadsource_div" style="display: none;"><a href="" id="sources_input">Download Source.txt</a></div>
+                                    <div id="downloadsink_div" style="display: none;"><a href="" id="sinks_input">Download Sinks.txt</a></div>
+                                    <br>
+                                    <button type="button" class="btn btn-primary btn-sm btn-block" onclick="resetworkingarea()">Reset Area of Interest</button>
+                                               
+                        </div>
+                  </div>
+                  <div class="card border-info">
+                        <div class="card-header bg-info text-light">
+                              <strong>SimCCS User Workspace Workspace</strong>
+                        </div>
+                        <div class="card-body" >
+                  <div id="loginuser_tools">
+                        <button type="button" id="bn_generatecandidatenetwork" class="btn btn-primary btn-sm btn-block" onclick="generatecandidatenetwork()">Generate Candidate Network</button>
+                        <button type="button" id="bn_generatemps" class="btn btn-primary btn-sm btn-block" onclick="generatempsfile()">Generate MPS file</button>
+                  </div>
+               <div id="nologinuser_msg" style="display: none;">Gateway user account required. <a href='/auth/login?next=/maptool'>Login</a>&nbsp;to create SimCCS model scenarios.</div>
                </div>
+               <!--
                       <div class="card border-info">
                         <div class="card-header bg-info text-light">
                               <strong>Results</strong>
@@ -959,6 +971,7 @@
                         <br>
                         </div>
                   </div>
+            -->
                </div>
                </div>
 
