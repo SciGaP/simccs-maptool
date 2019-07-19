@@ -23,6 +23,12 @@
       .card {
             margin-bottom: 0px;
       }
+      /* Allow vertical scrolling of sidebar if not enough room on screen */
+      .main-row > .col-md-3 {
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+      }
 </style>
 {% endblock css %}
 
