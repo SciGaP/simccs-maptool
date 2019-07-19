@@ -253,11 +253,10 @@ def _create_shapefiles_for_result(request, results_dir):
         data.setSolver(solver)
         logger.debug("Scenario data loaded for {}".format(scenario_dir))
         # load the .mps/.sol solution
-        DataInOut = autoclass("simccs.dataStore.DataInOut")
-        solution = DataInOut.loadSolution(results_dir)
+        solution = data.loadSolution(results_dir)
         logger.debug("Solution loaded from {}".format(results_dir))
         # generate shapefiles
-        DataInOut.makeShapeFiles(results_dir, solution)
+        data.makeShapeFiles(results_dir, solution)
         logger.debug(
             "Shape files created in {}".format(os.path.join(results_dir, "shapeFiles"))
         )
@@ -284,8 +283,7 @@ def _load_solution(request, results_dir):
         data.setSolver(solver)
         logger.debug("Scenario data loaded for {}".format(scenario_dir))
         # load the .mps/.sol solution
-        DataInOut = autoclass("simccs.dataStore.DataInOut")
-        solution = DataInOut.loadSolution(results_dir)
+        solution = data.loadSolution(results_dir)
         logger.debug("Solution loaded from {}".format(results_dir))
         return solution
     except Exception as e:
