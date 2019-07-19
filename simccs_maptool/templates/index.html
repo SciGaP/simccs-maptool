@@ -760,6 +760,15 @@
               $form_check.append($label);
             })
       }
+
+      function case_studies(val) {
+            //look for val.json file
+            document.getElementById("allmap").style.display="none";
+            document.getElementById("case_studies_div").style.display="block";
+            $( "#case_studies_title" ).text(val);
+            display_result_sample();
+      }
+
       </script>
 {% endblock scripts %}
 
@@ -779,8 +788,8 @@
                                                 SimCCS Community Case Studies
                                           </button>
                                           <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                            <a class="dropdown-item" href="#">Southeast US</a>
-                                            <a class="dropdown-item" href="#">Illinois Basin</a>
+                                            <button class="dropdown-item" value="Southeast_US" onclick="case_studies(this.value)">Southeast US</button>
+                                            <button class="dropdown-item" value="Illinois_Basin" onclick="case_studies(this.value)">Illinois Basin</button>
                                           </div>
                               </div>
                         </div>
@@ -913,6 +922,7 @@
      
                   </div>
                </div>
+               <!-- working area div-->
                <div id="workingarea" style="display: none;">
                       <div class="card border-info">
                         <div class="card-header bg-info text-light">
@@ -951,7 +961,18 @@
                   </div>
                </div>
                </div>
-               </div>
+
+            <!-- div case_studies  -->
+
+            <div id="case_studies_div" style="display: none;">
+            <div class="card border-info">
+                        <div class="card-header bg-info text-light" id="case_studies_title"></div>
+                        <div class="card-body" ></div>
+
+
+            </div></div>
+            <!-- end of case stuides -->
+      </div>
                <div class="col-md-9">
                   <div id="map"></div>
                </div>
