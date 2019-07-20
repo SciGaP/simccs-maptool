@@ -773,7 +773,16 @@
             document.getElementById("allmap").style.display="none";
             document.getElementById("case_studies_div").style.display="block";
             $( "#case_studies_title" ).text(val);
-            display_result_sample();
+            //hard coded only the demo purpose
+            switch (val) {
+                  case "Southeast_US":
+                        document.getElementById("case_studies_body_Southeast_US").style.display="block";
+                        display_result_sample();
+                        break;
+                  default:
+                        pass;
+            }
+           
       }
 
       </script>
@@ -796,7 +805,9 @@
                                           </button>
                                           <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                             <button class="dropdown-item" value="Southeast_US" onclick="case_studies(this.value)">Southeast US</button>
+                                            <!--
                                             <button class="dropdown-item" value="Illinois_Basin" onclick="case_studies(this.value)">Illinois Basin</button>
+                                            -->
                                           </div>
                               </div>
                         </div>
@@ -986,7 +997,19 @@
             <div id="case_studies_div" style="display: none;">
             <div class="card border-info">
                         <div class="card-header bg-info text-light" id="case_studies_title"></div>
-                        <div class="card-body" ></div>
+                        <div class="card-body" id="case_studies_body_Southeast_US" style="display: none" >
+                              <p>Summary: <strong>Southern Company</strong><br>
+                                    <ul>
+                                    <li>Ten year business plan and CO2 emissions strategy.</li>
+                                    <li>20 coal-fired plants, 156 MtCO2/yr emissions.</li>
+                                    <li>65 individual boilers→ boiler level accuracy.</li>
+                                    <li>CAPTURE COSTS: $46-102/tCO2 (plant) & $41-166/tCO2 (boiler).</li>
+                                    <li>STORAGE: 3.4 GtCO2 in 7 sinks, 113 MtCO2/yr over 30 years.</li>
+                                    <li>STORAGE COSTS: $3.78-8.60/tCO2.</li>
+                                    </ul>
+                              </p>
+                              <center><img src="/static/images/southernUS_legend.png"  height="80%" width="80%" alt="southeastUS_legend" /> </center>
+                        </div>
 
 
             </div></div>
