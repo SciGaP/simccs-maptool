@@ -648,7 +648,15 @@
    // $('#dynamicModal').on('hidden.bs.modal', function (e) {
    //     $(this).remove();
    // });
-            AiravataAPI.utils.FetchUtils.showSpinner($.getJSON( "/maptool/mps/", function( data ) {
+            var crf = $("#Capital_Recovery_Rate").val();
+            var numYears = $("#Project_Period").val();
+            var capacityTarget = $("#Capture_Target").val();
+            var data = {
+                  crf: crf ? crf : 0.1,
+                  numYears: numYears ? numYears : 10,
+                  capacityTarget: capacityTarget ? capacityTarget : 5
+            };
+            AiravataAPI.utils.FetchUtils.showSpinner($.getJSON({url: "/maptool/mps/", data: data}, function( data ) {
                   //{"user_file": "MIP_Files/mip_2019-04-24T145902.mps"}
                   $("#bn_generatemps").text('Generate MPS file');
                   $("#bn_generatemps").removeClass('disabled');
@@ -974,9 +982,9 @@
                         -->
                         <strong>Model Parameters</strong><br>
                         <table>
-                                    <tr><td>Capital Recovery Rate</td><td><input id="Capital_Recovery_Rate" name="Capital_Recovery_Rate" type="text" size=8></td></tr>
-                                    <tr><td>Project Period (yrs)</td><td><input id="Project_Period" name="Project_Period" type="text" size=8></td></tr>
-                                    <tr><td>Capture Target (MT/y)</td><td><input id="Capture_Target" name="Capture_Target" type="text" size=8></td></tr>
+                                    <tr><td>Capital Recovery Rate</td><td><input id="Capital_Recovery_Rate" name="Capital_Recovery_Rate" type="text" size=8 value="0.1" required></td></tr>
+                                    <tr><td>Project Period (yrs)</td><td><input id="Project_Period" name="Project_Period" type="text" size=8 value="10" required></td></tr>
+                                    <tr><td>Capture Target (MT/y)</td><td><input id="Capture_Target" name="Capture_Target" type="text" size=8 value="5" required></td></tr>
                         </table><br>
                         <button type="button" id="bn_generatemps" class="btn btn-primary btn-sm btn-block" onclick="generatempsfile()">Generate MPS file</button>
                   </div>
