@@ -949,7 +949,7 @@
                               <strong>Data Selection</strong>
                         </div>
                         <div class="card-body" >
-                                    Use mouse-click to select source and sink data.
+                                    Use mouse-click to select source and sink data.<br>
                                     <button type="button" class="btn btn-primary btn-sm btn-block" onclick="hideunselected()">Hide unselcted data</button>
                                     <!-- <button type="button" class="btn btn-primary btn-sm btn-block" onclick="downloaddata()">Download data</button>
                                        -->
@@ -970,6 +970,12 @@
                         <!--
                         <button type="button" id="bn_generatecandidatenetwork" class="btn btn-primary btn-sm btn-block" onclick="generatecandidatenetwork()">Generate Candidate Network</button>
                         -->
+                        <strong>Model Parameters</strong><br>
+                        <table>
+                                    <tr><td>Capital Recovery Rate</td><td><input id="Capital_Recovery_Rate" name="Capital_Recovery_Rate" type="text" size=8></td></tr>
+                                    <tr><td>Project Period (yrs)</td><td><input id="Project_Period" name="Project_Period" type="text" size=8></td></tr>
+                                    <tr><td>Capture Target (MT/y)</td><td><input id="Capture_Target" name="Capture_Target" type="text" size=8></td></tr>
+                        </table><br>
                         <button type="button" id="bn_generatemps" class="btn btn-primary btn-sm btn-block" onclick="generatempsfile()">Generate MPS file</button>
                   </div>
                <div id="nologinuser_msg" style="display: none;">Gateway user account required. <a href='/auth/login?next=/maptool'>Login</a>&nbsp;to create SimCCS model scenarios.</div>
