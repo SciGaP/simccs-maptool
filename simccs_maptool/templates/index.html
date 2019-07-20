@@ -648,7 +648,7 @@
    // $('#dynamicModal').on('hidden.bs.modal', function (e) {
    //     $(this).remove();
    // });
-            $.getJSON( "/maptool/mps/", function( data ) {
+            AiravataAPI.utils.FetchUtils.showSpinner($.getJSON( "/maptool/mps/", function( data ) {
                   //{"user_file": "MIP_Files/mip_2019-04-24T145902.mps"}
                   $("#bn_generatemps").text('Generate MPS file');
                   $("#bn_generatemps").removeClass('disabled');
@@ -682,7 +682,7 @@
     $("#dynamicModal").modal();
     $("#dynamicModal").modal('show');
 
-            });
+            }));
          }
 
          function resetworkingarea(){
@@ -703,7 +703,7 @@
          };
 
       function display_experiment_result(experiment_id){
-            $.getJSON( "/maptool/experiment-result/"+experiment_id, function( data ) {
+            AiravataAPI.utils.FetchUtils.showSpinner($.getJSON( "/maptool/experiment-result/"+experiment_id, function( data ) {
             //$.getJSON( "/static/Data/experiment01.json", function( data ) {
                   var result_sinkLayer = new L.geoJSON(data["Sinks"], {
                   pointToLayer: function (feature, latlng) {
@@ -729,7 +729,7 @@
             map.addLayer(result_sourceLayer);
             map.addLayer(result_networkLayer);
         //layercontrol.addOverlay(result_sinkLayer,"Sinks");
-            });
+            }));
       };
 
       // Load results from experiment as given in "?experiment_id=..." query
