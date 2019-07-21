@@ -292,7 +292,18 @@
          pane: "pointsPane"
          };
          
+         var geojsonMarkerOptions_green = {
+         radius: 8,
+         fillColor: "green",
+         color: "#000",
+         weight: 1,
+         opacity: 1,
+         fillOpacity: 0.7,
+         pane: "pointsPane"
+         };
+      
          var selection=[];
+         var selection_green=[];
          var sinkselection=[];
          var sinkselection2=[];
          function sourceOnEachFeature(feature, layer) {
@@ -381,14 +392,58 @@
                  //sinkLayer.bringToBack();
            }
            //hard coded need to be rewrite later
+           var case_sourceLayer = new L.geoJSON('', {
+         pointToLayer: function (feature, latlng) {
+           var content_str = "<strong>Type: Source</strong><br>";
+           content_str += "<strong>"+"ID: " + feature.properties["ID"] +"</strong><br>";
+           content_str +="<strong>"+"costFix ($M): " + feature.properties["costFix ($M)"] +"</strong><br>";
+           content_str +="<strong>"+"fixO&M ($M\/y): " + feature.properties["fixO&M ($M\/y)"] +"</strong><br>";
+           content_str +="<strong>"+"varO&M ($\/tCO2): " + feature.properties["varO&M ($\/tCO2)"] +"</strong><br>";
+           content_str +="<strong>"+"capMax (MtCO2\/y): " + feature.properties["capMax (MtCO2\/y)"] +"</strong>";
+           //var mypopup = L.popup().setContent(content_str);
+           var mymarker = L.circleMarker(latlng, geojsonMarkerOptions);
+           //mymarker.bindPopup(mypopup);
+           mymarker.bindTooltip(content_str);
+           return mymarker;       
+         },
+         //pane: "pointsPane",
+         onEachFeature: sourceOnEachFeature
+         });
+      
            function case_loadsource(data) {
                  case_sourceLayer.addData(data);
                  case_sourceLayer.addTo(map);
                  layercontrol.addOverlay(case_sourceLayer,"Sources");
            }
-           function case_loadsink(data) {
-                 pass;
-           }
+
+           function sourceOnEachFeature_green(feature, layer) {
+         //bind click
+         layer.on('click', function (e) {
+           var target_id = selection_green.indexOf(e.target)
+           if (target_id >=0 ) {e.target.setStyle(geojsonMarkerOptions_green);selection_green.splice(target_id,1);}
+           else {e.target.setStyle({weight:2,color:"white",fillColor:"yellow",radius:12});
+                 selection_green.push(e.target);}
+         })};
+
+      var case_sinkLayer = new L.geoJSON('', {
+         pointToLayer: function (feature, latlng) {
+           var content_str = "<strong>Type: Sink</strong><br>";
+           content_str += "<strong>"+"Name: " + feature.properties["field_17"] +"</strong><br>";
+           //var mypopup = L.popup().setContent(content_str);
+           var mymarker = L.circleMarker(latlng, geojsonMarkerOptions_green);
+           //mymarker.bindPopup(mypopup);
+           mymarker.bindTooltip(content_str);
+           return mymarker;       
+         },
+         //pane: "pointsPane",
+         onEachFeature: sourceOnEachFeature_green
+         });
+
+      function case_loadsink(data) {
+                 case_sinkLayer.addData(data);
+                 case_sinkLayer.addTo(map);
+                 layercontrol.addOverlay(case_sinkLayer,"Sinks");
+      }
 
            
            //get the list of selected source layers
@@ -827,7 +882,7 @@
             document.getElementById("case_studies_editor_Southeast_US").style.display = "block";
             
             // load input_source.geojson input_sink.geojson for editing
-            $.getJSON('/static/Data/input_source.geojson',function (data) {case_loadsouce(data); });
+            $.getJSON('/static/Data/input_source.geojson',function (data) {case_loadsource(data); });
             $.getJSON('/static/Data/input_sink.geojson', function (data) {case_loadsink(data);   });
 
       }
