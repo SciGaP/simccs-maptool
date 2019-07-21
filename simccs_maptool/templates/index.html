@@ -41,7 +41,7 @@
 <script>
          // TODO: replace with global user session object
          var userIsAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
-         //var userIsAuthenticated = true;
+         var userIsAuthenticated = true;
          $(document).ready(function() {
       
            load_current_experiment();
@@ -380,6 +380,16 @@
                  layercontrol.addOverlay(sinkLayer2,"Sinks:Oil/Gas");
                  //sinkLayer.bringToBack();
            }
+           //hard coded need to be rewrite later
+           function case_loadsource(data) {
+                 case_sourceLayer.addData(data);
+                 case_sourceLayer.addTo(map);
+                 layercontrol.addOverlay(case_sourceLayer,"Sources");
+           }
+           function case_loadsink(data) {
+                 pass;
+           }
+
            
            //get the list of selected source layers
            function get_selectedsourcelayers(){
@@ -799,7 +809,19 @@
       
       //ednbale user edit the existing case
       function user_edit_case(val){ 
-            alert(val);
+            // clear map
+            map.eachLayer(function (layer) {
+                              //keep the basemap layer
+                              if (layer != osm) {map.removeLayer(layer);layercontrol.removeLayer(layer);};
+                              });
+            //hide the summary div, show edit div
+            document.getElementById("case_studies_body_Southeast_US").style.display = "none";
+            document.getElementById("case_studies_editor_Southeast_US").style.display = "block";
+            
+            // load input_source.geojson input_sink.geojson for editing
+            $.getJSON('/static/Data/input_source.geojson',function (data) {case_loadsouce(data); });
+            $.getJSON('/static/Data/input_sink.geojson', function (data) {case_loadsink(data);   });
+
       }
       </script>
 {% endblock scripts %}
@@ -1039,7 +1061,22 @@
                               </div>
                               <div id="case_nologinuser_msg" style="display: none;">Gateway user account required. <a href='/auth/login?next=/maptool'>Login</a>&nbsp;to edit SimCCS model scenarios.</div>
                         </div>
-
+                        <div class="card-body" id="case_studies_editor_Southeast_US" style="display: none" >
+                              Use mouse-click to select source and sink data.<br><br>
+                              <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_hideunselected()">Hide unselcted data</button>
+                              <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_generateinputfile()">Generate Data Files</button>
+                              <div id="case_downloadsource_div" style="display: none;"><a href="" id="case_sources_input">Download Source.txt</a></div>
+                              <div id="case_downloadsink_div" style="display: none;"><a href="" id="case_sinks_input">Download Sinks.txt</a></div>
+                              <br>
+                              <strong>Model Parameters</strong><br>
+                              <table>
+                                          <tr><td>Capital Recovery Rate</td><td><input id="case_Capital_Recovery_Rate" name="case_Capital_Recovery_Rate" type="text" size=8 value=0.1></td></tr>
+                                          <tr><td>Project Period (yrs)</td><td><input id="case_Project_Period" name="case_Project_Period" type="text" size=8 value=10></td></tr>
+                                          <tr><td>Capture Target (MT/y)</td><td><input id="case_Capture_Target" name="caase_Capture_Target" type="text" size=8 value=20></td></tr>
+                              </table><br>
+                              <button type="button" id="bn_generatemps" class="btn btn-primary btn-sm btn-block" onclick="case_generatempsfile()">Generate MPS file</button>
+      
+                        </div>
 
             </div></div>
             <!-- end of case stuides -->
