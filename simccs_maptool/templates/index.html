@@ -916,6 +916,10 @@
             map.addLayer(result_networkLayer);
         //layercontrol.addOverlay(result_sinkLayer,"Sinks");
             }));
+
+            AiravataAPI.utils.FetchUtils.showSpinner($.getJSON( "/maptool/solution-summary/"+experiment_id, function( data ) {
+                  display_solution_summary(data);
+            }));
       };
 
       // Load results from experiment as given in "?experiment_id=..." query
@@ -934,6 +938,7 @@
       }
 
       function render_experiment_list(experiments, selected_experiments) {
+            $("#model-results").show();
             var $experiments_div = $('#experiments_div');
             $experiments_div.empty();
             document.getElementById("experiments_div").style.display="block";
@@ -954,6 +959,23 @@
               $label.text(experiment.experimentName);
               $form_check.append($label);
             })
+      }
+
+      function display_solution_summary(data) {
+            $("#solution-summary").show();
+            $("#solution-summary-sources").text(data.numOpenedSources);
+            $("#solution-summary-sinks").text(data.numOpenedSinks);
+            $("#solution-summary-targetCaptureAmount").text(Math.round(data.targetCaptureAmount * 100) / 100);
+            $("#solution-summary-edges").text(data.numEdgesOpened);
+            $("#solution-summary-projectLength").text(data.projectLength);
+            $("#solution-summary-totalCapture").text(Math.round(data.totalCaptureCost * 100) / 100);
+            $("#solution-summary-unitCapture").text(Math.round(data.unitCaptureCost * 100) / 100);
+            $("#solution-summary-totalTransport").text(Math.round(data.totalTransportCost * 100) / 100);
+            $("#solution-summary-unitTransport").text(Math.round(data.unitTransportCost * 100) / 100);
+            $("#solution-summary-totalStorage").text(Math.round(data.totalStorageCost * 100) / 100);
+            $("#solution-summary-unitStorage").text(Math.round(data.unitStorageCost * 100) / 100);
+            $("#solution-summary-totalCost").text(Math.round(data.totalCost * 100) / 100);
+            $("#solution-summary-unitCost").text(Math.round(data.unitTotalCost * 100) / 100);
       }
 
       function case_studies(val) {
@@ -1174,7 +1196,7 @@
                   </div>
                   <div class="card border-info">
                         <div class="card-header bg-info text-light">
-                              <strong>SimCCS User Workspace Workspace</strong>
+                              <strong>SimCCS User Workspace</strong>
                         </div>
                         <div class="card-body" >
                   <div id="loginuser_tools">
@@ -1191,8 +1213,7 @@
                   </div>
                <div id="nologinuser_msg" style="display: none;">Gateway user account required. <a href='/auth/login?next=/maptool'>Login</a>&nbsp;to create SimCCS model scenarios.</div>
                </div>
-               <!--
-                      <div class="card border-info">
+                      <div class="card border-info" id="model-results" style="display: none;">
                         <div class="card-header bg-info text-light">
                               <strong>Results</strong>
                         </div>
@@ -1200,6 +1221,66 @@
                                     <div id="southeastUS_div" style="display:none">
                                     <input type="checkbox" id="checkbox_southeastUS" name="re_southeastUS" value="re_souteastUS" autocomplete="off" />
                                     <span class="default-font"><strong>SoutheastUS (Sample Scenario)</strong></span>
+                                    </div>
+                                    <div id="solution-summary" style="display:none">
+                                          <p class="mb-2">
+                                                <strong>Solution Summary</strong>
+                                          </p>
+                                          <table class="table table-sm">
+                                                <tbody>
+                                                <tr>
+                                                      <th scope="row">Sources</th>
+                                                      <td id="solution-summary-sources">1</td>
+                                                </tr>
+                                                <tr>
+                                                      <th scope="row">Sinks</th>
+                                                      <td id="solution-summary-sinks">4</td>
+                                                </tr>
+                                                <tr>
+                                                      <th scope="row">CO<sub>2</sub> Stored</th>
+                                                      <td id="solution-summary-targetCaptureAmount">60.0</td>
+                                                </tr>
+                                                <tr>
+                                                      <th scope="row">Edges</th>
+                                                      <td id="solution-summary-edges">10</td>
+                                                </tr>
+                                                <tr>
+                                                      <th scope="row">Project Length</th>
+                                                      <td id="solution-summary-projectLength">30</td>
+                                                </tr>
+                                                </tbody>
+                                          </table>
+                                          <table class="table table-sm">
+                                                <thead>
+                                                      <tr>
+                                                            <td></td>
+                                                            <td>Total Cost<br/>($m/yr)</td>
+                                                            <td>Unit Cost<br/>($/tCO<sub>2</sub>)</td>
+                                                      </tr>
+                                                </thead>
+                                                <tbody>
+                                                      <tr>
+                                                            <th scope="row">Capture</th>
+                                                            <td id="solution-summary-totalCapture">130.0</td>
+                                                            <td id="solution-summary-unitCapture">2.17</td>
+                                                      </tr>
+                                                      <tr>
+                                                            <th scope="row">Transport</th>
+                                                            <td id="solution-summary-totalTransport">4.62</td>
+                                                            <td id="solution-summary-unitTransport">0.08</td>
+                                                      </tr>
+                                                      <tr>
+                                                            <th scope="row">Storage</th>
+                                                            <td id="solution-summary-totalStorage">-16.06</td>
+                                                            <td id="solution-summary-unitStorage">-0.27</td>
+                                                      </tr>
+                                                      <tr>
+                                                            <th scope="row">Total</th>
+                                                            <td id="solution-summary-totalCost">118.56</td>
+                                                            <td id="solution-summary-unitCost">1.98</td>
+                                                      </tr>
+                                                </tbody>
+                                          </table>
                                     </div>
                                     <div id="experiments_div" style="display:none">
                                                 <input type="checkbox" id="checkbox_experiment_01" name="experiment_01" value="Cplex_on_Jun_3,_2019_4:34_PM_fe944263-db65-4a3c-a9c4-30f28967c3f1" autocomplete="off" />
@@ -1209,7 +1290,6 @@
                         <br>
                         </div>
                   </div>
-            -->
                </div>
                </div>
 
