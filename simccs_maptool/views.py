@@ -56,6 +56,8 @@ def generate_mps(request):
     capital_recovery_rate = float(request.GET.get("crf", "0.1"))
     num_years = float(request.GET.get("numYears", 10))
     capacity_target = float(request.GET.get("capacityTarget", 5))
+    sources = request.GET.get("sources", None)
+    sinks = request.GET.get("sinks", None)
 
     # TODO: provide Django apps with utility for writing to gateway data storage
     userdir = os.path.join(settings.GATEWAY_DATA_STORE_DIR, request.user.username)
@@ -83,9 +85,12 @@ def generate_mps(request):
     os.mkdir(os.path.join(scenario_dir, "Sources"))
     with open(
         os.path.join(scenario_dir, "Sources", "Sources.txt"), mode="w"
-    ) as sources:
-        sources.write(
-            """ID	costFix ($M)	fixO&M ($M/y)	varO&M ($/tCO2)	capMax (MtCO2/y)	N/A	LON	LAT	NAME
+    ) as sources_file:
+        if sources is not None:
+            sources_file.write(sources)
+        else:
+            sources_file.write(
+                """ID	costFix ($M)	fixO&M ($M/y)	varO&M ($/tCO2)	capMax (MtCO2/y)	N/A	LON	LAT	NAME
 1	2842.8	223.4	81.93	7.236	1	-88.0103	31.0069	1
 2	3052.4	234.5	58	7.236	1	-86.4567	33.2442	2
 3	407.9	52.5	106.78	0.297	1	-85.9708	34.0128	3
@@ -107,12 +112,15 @@ def generate_mps(request):
 19	1405.6	102.3	68.72	2.529	1	-89.0265	30.4408	19
 20	2091	128.6	89.68	5.013	1	-88.5574	30.5335	20
 """
-        )
+            )
     # Write Sinks.txt
     os.mkdir(os.path.join(scenario_dir, "Sinks"))
-    with open(os.path.join(scenario_dir, "Sinks", "Sinks.txt"), mode="w") as sinks:
-        sinks.write(
-            """0	1	2	3	4	5	6	7	8	9	10	11	12	13	14	15	16
+    with open(os.path.join(scenario_dir, "Sinks", "Sinks.txt"), mode="w") as sinks_file:
+        if sinks is not None:
+            sinks_file.write(sinks)
+        else:
+            sinks_file.write(
+                """0	1	2	3	4	5	6	7	8	9	10	11	12	13	14	15	16
 1	1	379	40.951	0.000	0.375	4.575	0.175	2.61	0	-91.2980	28.9920	0	0	0	0	Gulf offshore
 2	2	379	40.951	0.000	0.375	4.575	0.175	2.61	0	-91.1764	31.5559	0	0	0	0	Cranfield
 3	3	360	63.063	0.000	0.180	3.859	0.201	3.02	0	-88.5068	30.5078	0	0	0	0	Escatawpa
@@ -121,7 +129,7 @@ def generate_mps(request):
 6	6	549	63.063	0.000	0.600	3.017	0.154	2.83	0	-84.8449	30.6128	0	0	0	0	Disposal Area 2 (DA1b)
 7	7	845	63.063	0.000	0.800	2.930	0.135	2.77	0	-81.6781	31.7306	0	0	0	0	Disposal Area 3 (DA2)
 """
-        )
+            )
     # Write Linear.txt
     os.mkdir(os.path.join(scenario_dir, "Transport"))
     with open(

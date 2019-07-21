@@ -460,6 +460,19 @@
             if (selection.length == 0 ) {alert('No soruces are selected!');return}
             if (selection_green.length == 0 ) {alert('No sinks are selected!');return}
             // write our source.txt
+            var sourcedata = case_generatesourcedata();
+
+            // generate generate Sinks.txt
+            var sinkdata=case_generatesinkdata();
+            downloadcsv(sourcedata, "Sources.txt", "text/plain","case_sources_input"); 
+            downloadcsv(sinkdata, "Sinks.txt", "text/plain","case_sinks_input"); 
+            document.getElementById("case_downloadsource_div").style.display="block";
+            document.getElementById("case_downloadsink_div").style.display="block";
+     
+      }
+
+      function case_generatesourcedata() {
+
             var sourcedata = "ID\tcostFix ($M)\tfixO&M ($M/y)\tvarO&M ($/tCO2)\tcapMax (MtCO2/y)\tN/A\tLON\tLAT\tNAME\n";
             var tempstr = "";
             for (i = 0; i < selection.length; i++) {
@@ -475,8 +488,10 @@
                   tempstr += selection[i].feature.properties["NAME"]+"\t";
                   sourcedata += tempstr + "\n";
             }
+            return sourcedata;
+      }
 
-            // generate generate Sinks.txt
+      function case_generatesinkdata() {
             var sinkdata="0\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13\t14\t15\t16" + "\n";
             var entry;
             for (i = 0; i < selection_green.length; i++) {
@@ -489,15 +504,58 @@
                   }
                   sinkdata += tempstr + "\n";
             }
-            downloadcsv(sourcedata, "Sources.txt", "text/plain","case_sources_input"); 
-            downloadcsv(sinkdata, "Sinks.txt", "text/plain","case_sinks_input"); 
-            document.getElementById("case_downloadsource_div").style.display="block";
-            document.getElementById("case_downloadsink_div").style.display="block";
-     
+            return sinkdata;
       }
       
       function case_generatempsfile() {
-            alert("genetrate MPS file from Southeast_US case");
+            if (selection.length == 0 ) {alert('No sources are selected!');return}
+            if (selection_green.length == 0 ) {alert('No sinks are selected!');return}
+            var sourcedata = case_generatesourcedata();
+            var sinkdata=case_generatesinkdata();
+
+            var crf = $("#case_Capital_Recovery_Rate").val();
+            var numYears = $("#case_Project_Period").val();
+            var capacityTarget = $("#case_Capture_Target").val();
+            var data = {
+                  crf: crf ? crf : 0.1,
+                  numYears: numYears ? numYears : 10,
+                  capacityTarget: capacityTarget ? capacityTarget : 5,
+                  sources: sourcedata,
+                  sinks: sinkdata
+            };
+            AiravataAPI.utils.FetchUtils.showSpinner($.getJSON({url: "/maptool/mps/", data: data}, function( data ) {
+                  //{"user_file": "MIP_Files/mip_2019-04-24T145902.mps"}
+                  //alert(data["user_file"] + " is generated succefully");
+                  m_html =`<div class="modal fade in" id="dynamicModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Generate MPS file</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p><strong> user_file </strong> is generated successfully!.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary">
+            <a href="/workspace/applications/Cplex_a7eaf483-ab92-4441-baeb-2f302ccb2919/create_experiment?Cplex-input-file=user_input_file&experiment-data-dir=results_dir" target=_ style="color:inherit">Create Experiment</a></button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>`;
+      var teststr = data["user_file"];
+      m_html = m_html.replace("user_file",teststr);
+      m_html = m_html.replace("user_input_file",teststr)
+      var results_dir = data["results_dir"];
+      m_html = m_html.replace("results_dir", results_dir);
+    $('body').append(m_html);
+    $("#dynamicModal").modal();
+    $("#dynamicModal").modal('show');
+
+            }));
       }
 
            
@@ -791,11 +849,11 @@
         </button>
       </div>
       <div class="modal-body">
-        <p><strong> user_file </strong> is generated succefully!.</p>
+        <p><strong> user_file </strong> is generated successfully!.</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary">
-            <a href="/workspace/applications/Cplex_a7eaf483-ab92-4441-baeb-2f302ccb2919/create_experiment?Cplex-input-file=user_input_file&experiment-data-dir=results_dir" target=_ style="color:inherit">Create Project</a></button>
+            <a href="/workspace/applications/Cplex_a7eaf483-ab92-4441-baeb-2f302ccb2919/create_experiment?Cplex-input-file=user_input_file&experiment-data-dir=results_dir" target=_ style="color:inherit">Create Experiment</a></button>
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
       </div>
     </div>
@@ -1103,7 +1161,7 @@
                         </div>
                         <div class="card-body" >
                                     Use mouse-click to select source and sink data.<br>
-                                    <button type="button" class="btn btn-primary btn-sm btn-block" onclick="hideunselected()">Hide unselcted data</button>
+                                    <button type="button" class="btn btn-primary btn-sm btn-block" onclick="hideunselected()">Hide unselected data</button>
                                     <!-- <button type="button" class="btn btn-primary btn-sm btn-block" onclick="downloaddata()">Download data</button>
                                        -->
                                     <button type="button" class="btn btn-primary btn-sm btn-block" onclick="generateinputfile()">Generate Data Files</button>
@@ -1187,9 +1245,9 @@
                               <br>
                               <strong>Model Parameters</strong><br>
                               <table>
-                                          <tr><td>Capital Recovery Rate</td><td><input id="case_Capital_Recovery_Rate" name="case_Capital_Recovery_Rate" type="text" size=8 value=0.1></td></tr>
-                                          <tr><td>Project Period (yrs)</td><td><input id="case_Project_Period" name="case_Project_Period" type="text" size=8 value=10></td></tr>
-                                          <tr><td>Capture Target (MT/y)</td><td><input id="case_Capture_Target" name="caase_Capture_Target" type="text" size=8 value=20></td></tr>
+                                          <tr><td>Capital Recovery Rate</td><td><input id="case_Capital_Recovery_Rate" name="case_Capital_Recovery_Rate" type="text" size=8 value=0.1 required></td></tr>
+                                          <tr><td>Project Period (yrs)</td><td><input id="case_Project_Period" name="case_Project_Period" type="text" size=8 value=10 required></td></tr>
+                                          <tr><td>Capture Target (MT/y)</td><td><input id="case_Capture_Target" name="caase_Capture_Target" type="text" size=8 value=5 required></td></tr>
                               </table><br>
                               <button type="button" id="bn_generatemps" class="btn btn-primary btn-sm btn-block" onclick="case_generatempsfile()">Generate MPS file</button>
       
