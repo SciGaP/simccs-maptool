@@ -445,6 +445,42 @@
                  layercontrol.addOverlay(case_sinkLayer,"Sinks");
       }
 
+      function case_hideunselected() {
+            case_sourceLayer.eachLayer(function(layer) {
+                  var target_id = selection.indexOf(layer);
+                  if (target_id <0) {layer.remove();};
+            });
+            case_sinkLayer.eachLayer(function(layer) {
+                  var target_id = selection_green.indexOf(layer);
+                  if (target_id <0) {layer.remove();};
+            });
+      };
+      
+      function case_generateinputfile() {
+            if (selection.length == 0 ) {alert('No soruces are selected!');return}
+            if (selection_green.length == 0 ) {alert('No sinks are selected!');return}
+            // write our source.txt
+            var sourcedata = "ID\tcostFix ($M)\tfixO&M ($M/y)\tvarO&M ($/tCO2)\tcapMax (MtCO2/y)\tN/A\tLON\tLAT\tNAME\n";
+            var tempstr = "";
+            for (i = 0; i < selection.length; i++) {
+                  tempstr = "";
+                  tempstr += (i+1).toString()+"\t";
+                  tempstr += selection[i].feature.properties["costFix ($M)"]+"\t";
+                  tempstr += selection[i].feature.properties["fixO&M ($M/y)"]+"\t";
+                  tempstr += selection[i].feature.properties["varO&M ($/tCO2)"]+"\t";
+                  tempstr += selection[i].feature.properties["capMax (MtCO2/y)"]+"\t";
+                  tempstr += selection[i].feature.properties["N/A"]+"\t";
+                  tempstr += selection[i].feature.properties["LON"]+"\t";
+                  tempstr += selection[i].feature.properties["LAT"]+"\t";
+                  tempstr += selection[i].feature.properties["NAME"]+"\t";
+                  sourcedata += tempstr + "\n";
+            }
+            downloadcsv(sourcedata, "Sources.txt", "text/plain","case_sources_input"); 
+            document.getElementById("case_downloadsource_div").style.display="block";
+     
+      }
+      
+
            
            //get the list of selected source layers
            function get_selectedsourcelayers(){
@@ -884,7 +920,6 @@
             // load input_source.geojson input_sink.geojson for editing
             $.getJSON('/static/Data/input_source.geojson',function (data) {case_loadsource(data); });
             $.getJSON('/static/Data/input_sink.geojson', function (data) {case_loadsink(data);   });
-
       }
       </script>
 {% endblock scripts %}
