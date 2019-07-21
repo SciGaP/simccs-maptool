@@ -41,7 +41,7 @@
 <script>
          // TODO: replace with global user session object
          var userIsAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
-         var userIsAuthenticated = true;
+         //var userIsAuthenticated = true;
          $(document).ready(function() {
       
            load_current_experiment();
@@ -475,11 +475,30 @@
                   tempstr += selection[i].feature.properties["NAME"]+"\t";
                   sourcedata += tempstr + "\n";
             }
+
+            // generate generate Sinks.txt
+            var sinkdata="0\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13\t14\t15\t16" + "\n";
+            var entry;
+            for (i = 0; i < selection_green.length; i++) {
+                  tempstr = "";
+                  entry = selection_green[i];
+                  tempstr += (i+1).toString() +"\t";
+                  tempstr += (i+1).toString() +"\t";
+                  for (j = 3; j < 18; j++) {
+                        tempstr += entry.feature.properties["field_"+j.toString()]+"\t";
+                  }
+                  sinkdata += tempstr + "\n";
+            }
             downloadcsv(sourcedata, "Sources.txt", "text/plain","case_sources_input"); 
+            downloadcsv(sinkdata, "Sinks.txt", "text/plain","case_sinks_input"); 
             document.getElementById("case_downloadsource_div").style.display="block";
+            document.getElementById("case_downloadsink_div").style.display="block";
      
       }
       
+      function case_generatempsfile() {
+            alert("genetrate MPS file from Southeast_US case");
+      }
 
            
            //get the list of selected source layers
