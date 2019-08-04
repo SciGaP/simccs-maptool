@@ -692,6 +692,14 @@ var geojsonLineOptions = {
             attribution: "SimCCS"
         });
 
+        var source_all_test_layer = L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
+            layers: 'SimCCS_Sources_Snapper',
+            format: 'image/png',
+            transparent: true,
+            attribution: "SimCCS"
+        });
+        
+
 
 
 
