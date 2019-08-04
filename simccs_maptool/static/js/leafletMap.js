@@ -696,7 +696,16 @@ var geojsonLineOptions = {
             layers: 'SimCCS_Sources_Snapper',
             format: 'image/png',
             transparent: true,
-            attribution: "SimCCS"
+            attribution: "SimCCS",
+            zIndex: 99
+        });
+
+        var sink_sco2t_layer = L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
+            layers: 'SimCCS:SCO2T_Database_v1_1_Cheapest_Grid_Ext',
+            format: 'image/png',
+            transparent: true,
+            attribution: "SimCCS",
+            zIndex:1
         });
         
 

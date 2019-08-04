@@ -130,7 +130,7 @@
                              //
                              case "sink_coal_reservoirs":map.removeLayer(sink_coal_layer);
                              break;
-                             case "sink_saline_formation":map.removeLayer(sink_saline_layer);
+                             case "sink_saline_formation":map.removeLayer(sink_sco2t_layer);
                              break;
                              case "sink_oil_reservoir":map.removeLayer(sink_oil_layer);
                              break;
@@ -227,7 +227,7 @@
                              case "sink_coal_reservoirs":map.addLayer(sink_coal_layer);
                              break;
          
-                             case "sink_saline_formation":map.addLayer(sink_saline_layer);
+                             case "sink_saline_formation":map.addLayer(sink_sco2t_layer);
                              break;
                              case "sink_oil_reservoir":map.addLayer(sink_oil_layer);
                              break;
@@ -1156,14 +1156,14 @@
                         <div class="card-body" >
                               <div class="form-check">
                                  <input class="form-check-input" type="radio" id="sink_saline_formation">
-                                 <label style="font-size: 100%;" class="form-check-label" for="sink_saline_formation">Saline Formation</label>
+                                 <label style="font-size: 100%;" class="form-check-label" for="sink_saline_formation">Saline Formation (SCO2T_Database_v1_1)</label>
                               </div>
                               <div class="form-check">
-                                 <input class="form-check-input" type="radio" id="sink_oil_reservoir">
+                                 <input class="form-check-input" type="radio" id="sink_oil_reservoir" disabled>
                                  <label style="font-size: 100%;" class="form-check-label" for="sink_oil_reservoir">Oil/Gas Reservoir</label>
                               </div>
                               <div class="form-check">
-                                 <input class="form-check-input" type="radio" id="sink_coal_reservoirs">
+                                 <input class="form-check-input" type="radio" id="sink_coal_reservoirs" disabled>
                                  <label style="font-size: 100%;" class="form-check-label" for="sink_coal_reservoirs">Unconventional Coal reservoirs</label>
                               </div>
                               <!--
