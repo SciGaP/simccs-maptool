@@ -742,15 +742,23 @@
             // Facility_N City State Latitude Longitude Industry_T CO2_Emissi
             //ID costFix ($M) fixO&M ($M/y) varO&M ($/tCO2) capMax (MtCO2/y) N/A LON LAT NAME
             if (selection.length == 0 ) {alert('No soruces are selected!');return}
-            var sourcedata = "ID\t(MtCO2/y)\tLON\tLAT\tNAME\n";
+            if (sinkselection.length == 0 ) {alert('No sinks are selected!');return}
+            var sourcedata = "ID\tcostFix ($M)\tfixO&M ($M/y)\tvarO&M ($/tCO2)\tcapMax (MtCO2/y)\tN/A\tLON\tLAT\tNAME\n";
             var tempstr = "";
             for (i = 0; i < selection.length; i++) {
                   tempstr = "";
                   tempstr += (i+1).toString()+"\t";
-                  tempstr += selection[i].feature.properties.CO2_Emissi +"\t";
-                  tempstr += selection[i].feature.properties.Longitude +"\t";
-                  tempstr += selection[i].feature.properties.Latitude +"\t";
-                  tempstr += selection[i].feature.properties.Facility_N +"\t";
+                  tempstr += selection[i].feature.properties["costFix___"]+"\t";
+                  tempstr += selection[i].feature.properties["fixO_M___m"]+"\t";
+                  tempstr += selection[i].feature.properties["costVar___"]+"\t";
+                  tempstr += selection[i].feature.properties["Capturable"]+"\t";
+                  //tempstr += selection[i].feature.properties["N/A"]+"\t";
+                  // N/A is set to 1
+                  tempstr += "1"+"\t";
+                  tempstr += selection[i].feature.properties["X"]+"\t";
+                  tempstr += selection[i].feature.properties["Y"]+"\t";
+                  // NAME is set same as ID
+                  tempstr += (i+1).toString();
                   sourcedata += tempstr + "\n";
             } 
             //alert(sourcedata);
