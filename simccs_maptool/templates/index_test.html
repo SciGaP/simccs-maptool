@@ -764,53 +764,54 @@
             //alert(sourcedata);
 
             //NATCARB_SALINE
-            //Latitude 	Longitude 	Resource_A 	Depth__m_ 	Thickness_ 	CO2_Low__t 	CO2_Medium 	CO2_High__ 	Shape_Leng 	Shape_Are
-            var sinkdata = "";
-            sinkdata = "ID\tCO2_Low\tCO2_Med\tCO2_High\tDepth(m)\tThickness(m)\tLON\t\LAT\n";
+            var sinkdata="0\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13\t14\t15\t16" + "\n";
             var sinkcount = sinkselection.length;
-            //
-            //var testinglayer = sinkselection[0];
-            //alert((testinglayer.getBounds()).getCenter());
+
             var center_latlon;
             for (i = 0; i < sinkselection.length; i++) {
                   tempstr = "";
+                  // field 0-1: ID
                   tempstr += (i+1).toString()+"\t";
-                  tempstr += sinkselection[i].feature.properties.CO2_Low__t +"\t";
-                  tempstr += sinkselection[i].feature.properties.CO2_Medium +"\t";
-                  tempstr += sinkselection[i].feature.properties.CO2_High__ +"\t";
-                  tempstr += sinkselection[i].feature.properties.Depth__m_ +"\t";
-                  tempstr += sinkselection[i].feature.properties.Thickness_ +"\t";
-                  center_latlon = (sinkselection[i].getBounds()).getCenter();
-                  //lon lat
-                  tempstr += center_latlon.lng +"\t";
-                  tempstr += center_latlon.lat +"\t";  
+                  tempstr += (i+1).toString()+"\t";
+                  //2: Capacity "fieldCap__"
+                  tempstr += sinkselection[i].feature.properties['fieldCap__'] + "\t";
+                  //3: OpeningCost "costFix___"
+                  tempstr += sinkselection[i].feature.properties['costFix___'] + "\t";
+                  //4: OMCost "fixO_M___M"
+                  tempstr += sinkselection[i].feature.properties['fixO_M___M'] + "\t";
+                  //5: WellCapacity "wellCap__M"
+                  tempstr += sinkselection[i].feature.properties['wellCap__M'] + "\t";
+                  //6: WellOpeningCost "wellCostFi"
+                  tempstr += sinkselection[i].feature.properties['wellCostFi'] + "\t";
+                  //7: WellOMCost "wellFixO_M"
+                  tempstr += sinkselection[i].feature.properties['wellFixO_M'] + "\t";
+                  //8: InjectionCost "varO_M____"
+                  tempstr += sinkselection[i].feature.properties['varO_M____'] + "\t";
+                  //9: 0
+                  tempstr += '0' + "\t";
+                  //10: Lon "LON"
+                  tempstr += sinkselection[i].feature.properties['LON'] + "\t";
+                  //11: Lat "LAT"
+                  tempstr += sinkselection[i].feature.properties['LAT'] + "\t";
+                  //12: 0 
+                  tempstr += '0' + "\t";
+                  //13: 0
+                  tempstr += '0' + "\t";
+                  //14: 0
+                  tempstr += '0' + "\t";
+                  //15: 0
+                  tempstr += '0' + "\t";
+                  //16: NAME "NAME"
+                  tempstr += sinkselection[i].feature.properties['NAME'];
+
+                  //caculate lon lat
+                  //center_latlon = (sinkselection[i].getBounds()).getCenter();
+                  //tempstr += center_latlon.lng +"\t";
+                  //tempstr += center_latlon.lat +"\t";  
+                 
                   sinkdata += tempstr + "\n";    
             }
-            //NATCARB_OG
-            //TOTAL_FIEL 	VOL_LOW 	VOL_MED 	VOL_HIGH 	Shape_Leng 	Shape_Ar
-            for (i = 0; i < sinkselection2.length; i++) {
-                  tempstr = "";
-                  tempstr += (i+1+sinkcount).toString()+"\t";
-                  tempstr += sinkselection2[i].feature.properties.VOL_LOW +"\t";
-                  tempstr += sinkselection2[i].feature.properties.VOL_MED +"\t";
-                  tempstr += sinkselection2[i].feature.properties.VOL_HIGH +"\t";
-                  tempstr += "\t";
-                  tempstr += "\t";               
-                  // missing lat/lon information
-                  center_latlon = (sinkselection2[i].getBounds()).getCenter();
-                  //lon lat
-                  tempstr += center_latlon.lng +"\t";
-                  tempstr += center_latlon.lat +"\t";  
-       sinkdata += tempstr + "\n";
-            }
 
-            //NATCARB_OG
-            //TOTAL_FIEL 	VOL_LOW 	VOL_MED 	VOL_HIGH 	Shape_Leng 	Shape_Ar
-            //sourceLayer.eachLayer(function(layer) {
-            //
-            //      var target_id = selection.indexOf(layer);
-            //      if (target_id >=0) {alert(layer.feature.properties.Facility_N);};
-            //});   
             downloadcsv(sourcedata, "Sources.txt", "text/plain","sources_input"); 
             downloadcsv(sinkdata, "Sinks.txt", "text/plain","sinks_input"); 
             
