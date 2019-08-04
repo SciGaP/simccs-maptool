@@ -355,10 +355,10 @@
          });
          
          var sinkLayer = new L.geoJSON('',{style: function(feature){
-           var co2 = feature.properties.CO2_Low__t;
+           var co2 = feature.properties['varO_M____'];
            var fillcolor = ''; 
-           if (co2 >= 1 && co2 < 5e+06) {fillcolor = '#f50000';} 
-           else if (co2 >=5e+06 && co2 < 5e+07) {fillcolor ='#fdff00'}
+           if (co2 >=3.0) {fillcolor = '#f50000';} 
+           else if (co2 >=1.0 && co2 < 3) {fillcolor ='#fdff00'}
            else {fillcolor = '#00f905'}
            return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.3,pane: "polygonsPane"};
          },
