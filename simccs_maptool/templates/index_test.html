@@ -322,7 +322,7 @@
          
          function sinkOnEachFeature(feature, layer) {
          //bind click
-         layer.bindTooltip("<strong>CO2_Low(t):"+feature.properties.CO2_Low__t.toString()+"<strong>");
+         //layer.bindTooltip("<strong>CO2_Low(t):"+feature.properties.CO2_Low__t.toString()+"<strong>");
          //layer.bindTooltip("<strong>Reservoir Storage Capacity MtCO2:"+feature.properties.Reservoir_.toString()+"<strong>");
          layer.on('click', function (e) {
            var target_id = sinkselection.indexOf(e.target)
@@ -585,6 +585,7 @@
                   source_dict['source_sink_refineries']='SimCCS:Source_Refineries';
                   source_dict['source_sink_co2_suppliers']='SimCCS:Source_Suppliers_of_CO2';
                   source_dict['source_sink_waste']='SimCCS:Source_Waste';
+                  source_dict['source_all_test']='SimCCS_Sources_Snapper';
                   //"source_sink_all_the_above"
                   $("*[id^='source']:visible").each(function() {
                         if (this.checked) {queryfields.push(source_dict[this.id]);}
@@ -669,8 +670,7 @@
                        dataType: "jsonp"
                  });
                  //get sink layer
-                 var sinkurl='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:NATCARB_SALINE&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
-                 //var sinkurl='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:SCO2T_Database_v1_1_Cheapest_Grid&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
+                 var sinkurl='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:SCO2T_Database_v1_1_Cheapest_Grid_Ext&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
                  sinkurl += cqlfilter;
                  $.ajax({
                        url: sinkurl,
@@ -679,11 +679,11 @@
                  });
                  var sinkurl2='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:NATCARB_OG&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer2';
                  sinkurl2 += cqlfilter;
-                 $.ajax({
-                       url: sinkurl2,
-                       jsonp: "callback",
-                       dataType: "jsonp"
-                 });
+                 //$.ajax({
+                 //      url: sinkurl2,
+                 //      jsonp: "callback",
+                 //      dataType: "jsonp"
+                 //});
                  layer.remove();
                  //layer.setStyle({'color':'grey','fillOpacity': 0.0});
                  map.removeControl(drawControl);
