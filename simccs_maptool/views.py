@@ -25,6 +25,8 @@ logger = logging.getLogger(__name__)
 class HomeView(TemplateView):
     template_name = "index.html"
 
+class HomeView_test(TemplateView):
+    template_name = "index_test.html"
 
 class HelpView(TemplateView):
     template_name = "simccs_maptool/help.html"
