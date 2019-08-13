@@ -11,6 +11,14 @@ pip install pyjnius
 
 ### Building the SimCCS jar
 
+#### Building the simccs.org desktop client code
+
+```
+mvn -P pack-jar-without-gateway install
+```
+
+#### Building simccs GitHub repo code
+
 **Note: these build steps are for the SimCCS jar from the GitHub repo, but the
 jar currently being using in this Django app is the one used by the simccs.org
 desktop client.**
