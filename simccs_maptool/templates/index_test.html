@@ -834,8 +834,39 @@
 
          // ajax interface to generate candidate-network
          function generatecandidatenetwork() {
-               // call url: /maptool/candidate-network/
-               alert("ajax interface to generate candidate-network");
+            var sourcedata = generatesourcedata();
+            var sinkdata=generatesinkdata();
+            var data = {
+                  sources: sourcedata,
+                  sinks: sinkdata,
+            };
+            AiravataAPI.utils.FetchUtils.showSpinner($.getJSON({url: "/maptool/candidate-network/", data: data}, function( data ) {
+            //$.getJSON( "/static/Data/experiment01.json", function( data ) {
+                  var result_sinkLayer = new L.geoJSON(data["Sinks"], {
+                  pointToLayer: function (feature, latlng) {
+                  //var mypopup = L.popup().setContent(content_str);
+                  var mymarker = L.circleMarker(latlng,{radius: 8,fillColor: "green",
+                          color: "#000",weight: 1,opacity: 1,fillOpacity: 0.7});
+                  //mymarker.bindPopup(mypopup);
+                  return mymarker;       
+                  }
+            });
+            var result_sourceLayer = new L.geoJSON(data["Sources"], {
+                  pointToLayer: function (feature, latlng) {
+                  //var mypopup = L.popup().setContent(content_str);
+                  var mymarker = L.circleMarker(latlng,{radius: 8,fillColor: "red",
+                          color: "#000",weight: 1,opacity: 1,fillOpacity: 0.7});
+                  //mymarker.bindPopup(mypopup);
+                  return mymarker;       
+                  }
+            });
+            var result_networkLayer = new L.geoJSON(data["Network"],{style:{color:"blue",opacity:0.5,weight:4}});
+
+            map.addLayer(result_sinkLayer);
+            map.addLayer(result_sourceLayer);
+            map.addLayer(result_networkLayer);
+        //layercontrol.addOverlay(result_sinkLayer,"Sinks");
+            }));
          }
 
          // ajax interface to generate MPS file
@@ -1235,9 +1266,7 @@
                         </div>
                         <div class="card-body" >
                   <div id="loginuser_tools">
-                        <!--
                         <button type="button" id="bn_generatecandidatenetwork" class="btn btn-primary btn-sm btn-block" onclick="generatecandidatenetwork()">Generate Candidate Network</button>
-                        -->
                         <strong>Model Parameters</strong><br>
                         <table>
                                     <tr><td>Capital Recovery Rate</td><td><input id="Capital_Recovery_Rate" name="Capital_Recovery_Rate" type="text" size=8 value="0.1" required></td></tr>
