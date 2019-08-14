@@ -832,6 +832,8 @@
             return sinkdata;
          }
 
+         var candidateNetworkLayer = L.geoJSON(null, {style:{color:"blue",opacity:0.5,weight:4}});
+         var candidateNetworkLayerAddedToControl = false;
          // ajax interface to generate candidate-network
          function generatecandidatenetwork() {
             var sourcedata = generatesourcedata();
@@ -841,31 +843,17 @@
                   sinks: sinkdata,
             };
             AiravataAPI.utils.FetchUtils.showSpinner($.getJSON({url: "/maptool/candidate-network/", data: data}, function( data ) {
-            //$.getJSON( "/static/Data/experiment01.json", function( data ) {
-                  var result_sinkLayer = new L.geoJSON(data["Sinks"], {
-                  pointToLayer: function (feature, latlng) {
-                  //var mypopup = L.popup().setContent(content_str);
-                  var mymarker = L.circleMarker(latlng,{radius: 8,fillColor: "green",
-                          color: "#000",weight: 1,opacity: 1,fillOpacity: 0.7});
-                  //mymarker.bindPopup(mypopup);
-                  return mymarker;       
+                  // Note: 'data' includes Sinks and Sources but since those are
+                  // already displayed I'm opting to only display the Network
+                  candidateNetworkLayer.clearLayers();
+                  candidateNetworkLayer.addData(data["Network"]);
+                  if (!map.hasLayer(candidateNetworkLayer)) {
+                        candidateNetworkLayer.addTo(map);
                   }
-            });
-            var result_sourceLayer = new L.geoJSON(data["Sources"], {
-                  pointToLayer: function (feature, latlng) {
-                  //var mypopup = L.popup().setContent(content_str);
-                  var mymarker = L.circleMarker(latlng,{radius: 8,fillColor: "red",
-                          color: "#000",weight: 1,opacity: 1,fillOpacity: 0.7});
-                  //mymarker.bindPopup(mypopup);
-                  return mymarker;       
+                  if (!candidateNetworkLayerAddedToControl) {
+                        layercontrol.addOverlay(candidateNetworkLayer, "Candidate Network");
+                        candidateNetworkLayerAddedToControl = true;
                   }
-            });
-            var result_networkLayer = new L.geoJSON(data["Network"],{style:{color:"blue",opacity:0.5,weight:4}});
-
-            map.addLayer(result_sinkLayer);
-            map.addLayer(result_sourceLayer);
-            map.addLayer(result_networkLayer);
-        //layercontrol.addOverlay(result_sinkLayer,"Sinks");
             }));
          }
 
