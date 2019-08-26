@@ -7,7 +7,7 @@ class SolutionLinkProvider:
     immediate = True
     name = "Solution Link"
 
-    def generate_data(self, experiment_output, experiment, output_file=None):
+    def generate_data(self, request, experiment_output, experiment, output_file=None):
         return {
             "label": "Analyze in MapTool",
             "url": reverse("simccs_maptool:home")
