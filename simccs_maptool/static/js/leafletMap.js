@@ -692,8 +692,9 @@ var geojsonLineOptions = {
             attribution: "SimCCS"
         });
 
-        var source_all_test_layer = L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
-            layers: 'SimCCS_Sources_Snapper',
+        var source_all_test_layer_1 = L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
+            //layers: 'SimCCS_Sources_Snapper',
+            layers: 'Sources_082819_SimCCS_Format',
             format: 'image/png',
             transparent: true,
             attribution: "SimCCS",
@@ -707,6 +708,13 @@ var geojsonLineOptions = {
             attribution: "SimCCS",
             zIndex:1
         });
+
+        var sink_oil_eor_layer=L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
+            layers: 'SimCCS:SimCCS_OG_EOR_082819',
+            format: 'image/png',
+            transparent: true,
+            zIndex: 2
+    });
         
 
 
