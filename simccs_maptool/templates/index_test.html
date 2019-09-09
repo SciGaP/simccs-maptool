@@ -1068,7 +1068,42 @@
             $.getJSON('/static/Data/input_source.geojson',function (data) {case_loadsource(data); });
             $.getJSON('/static/Data/input_sink.geojson', function (data) {case_loadsink(data);   });
       }
-      </script>
+
+      // display search result
+      var searchlayer;
+      function loadsearchresult(data) {
+            if (map.hasLayer(searchlayer)) {map.removeLayer(searchlayer);}
+            if (data["totalFeatures"] > 0) {
+            searchlayer = L.geoJSON(data);
+            map.addLayer(searchlayer); }
+            else {
+                  alert("Zero source is found!");
+            }
+      }
+
+      //A simple seach function
+      function showSearchResults(layerid, searchstring) {
+            var searchlayer;
+            switch(layerid) {
+                  case "source_all_test":
+                        searchlayer = 'Sources_082819_SimCCS_Format';
+                        break;
+                  default:
+                        searchlayer='';
+            }
+            //get json display as marker
+            var geourl='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&maxFeatures=500&outputFormat=text%2Fjavascript&format_options=callback:loadsearchresult';
+            geourl += '&typeName=' + searchlayer;
+            geourl += "&cql_filter=strToLowerCase(Name) like '" + encodeURIComponent("%" + searchstring + "%'");
+            //alert(geourl);
+            $.ajax({
+                       url: geourl,
+                       jsonp: "callback",
+                       dataType: "jsonp"
+                 });
+      } 
+
+</script>
 {% endblock scripts %}
 
 {% block content %}
@@ -1174,7 +1209,8 @@
                               <input class="form-check-input" type="radio" id="source_all_test" autocomplete="off">
                               <label style="font-size: 100%;" class="form-check-label" for="source_all_test">Sources for Testing (Sources_082819_SimCCS_Format)</label>
                         </div>
-                        <div><img src="/static/images/sources_snapper_legend.jpg" alt="source_legend" width="80%" height="80%" style="border:1px solid black"> </div>
+                        <div id="seach_source_div"><input type="text" placeholder="search by name" name="searchString" id="search-string-value" size="20" value="" onchange="showSearchResults('source_all_test',this.value)" /></div>
+                        <div><img src="/static/images/sources_snapper_legend.jpg" alt="source_legend" width="80%" height="80%" style="border:1px solidblack"> </div>
                         </div>
                   </div>
                   <div class="card border-info">
