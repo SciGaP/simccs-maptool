@@ -1074,8 +1074,21 @@
       function loadsearchresult(data) {
             if (map.hasLayer(searchlayer)) {map.removeLayer(searchlayer);}
             if (data["totalFeatures"] > 0) {
-            searchlayer = L.geoJSON(data);
-            map.addLayer(searchlayer); }
+                  searchlayer = L.geoJSON(data, { pointToLayer: function (feature, latlng) {
+                        var content_str = "";
+                        content_str += "<strong>"+"Name: " + feature.properties["Name"] +"</strong><br>";
+                        content_str +="<strong>"+"Type: " + feature.properties["Type"] +"</strong><br>";
+                        content_str +="<strong>"+"costVar($/tCO2): " + feature.properties["costVar___"] +"</strong><br>";
+                        content_str +="<strong>"+"Capturable(MtCO2/y): " + feature.properties["Capturable"] +"</strong>";
+                        //var mypopup = L.popup().setContent(content_str);
+                        var mymarker = L.marker(latlng);
+                        //mymarker.bindPopup(mypopup);
+                        mymarker.bindTooltip(content_str);
+                        return mymarker;       
+                        }
+                  });
+
+                  map.addLayer(searchlayer); }
             else {
                   alert("Zero source is found!");
             }
