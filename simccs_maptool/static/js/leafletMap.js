@@ -97,6 +97,12 @@ map = L.map('map',{cursor:true}).setView([32.00,-85.43], 6);
     osmAttrib='Map data © <a href="//openstreetmap.org">OpenStreetMap</a> contributors';
     osm = new L.TileLayer(osmUrl, {minZoom: 1, maxZoom: 15, attribution: osmAttrib});
     map.addLayer(osm);
+    // L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+	// attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+	// maxZoom: 18,
+	// id: 'mapbox.streets',
+	// accessToken: 'pk.eyJ1Ijoid2FuZzIwOCIsImEiOiJjazBkd3g4cDQwMDNpM2NtZmsxMGY2bnY2In0.n8zYH_42X598kQxtl03-iA'
+    // }).addTo(map);
 
     map.createPane("polygonsPane");
     map.createPane("linesPane");
