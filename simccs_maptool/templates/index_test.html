@@ -1088,7 +1088,8 @@
                         }
                   });
 
-                  map.addLayer(searchlayer); }
+                  map.addLayer(searchlayer);
+                  map.fitBounds(searchlayer.getBounds()); }
             else {
                   alert("Zero source is found!");
             }
