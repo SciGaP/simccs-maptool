@@ -37,6 +37,7 @@
 <script src="{% static 'js/leaflet.markercluster-src.js' %}"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.2.3/leaflet.draw.js"></script>
 <script src="{% static 'js/leafletMap.js' %}" ></script>
+<script src="{% static 'js/casestudies.js' %}" ></script>
 <script src="{% static 'django_airavata_api/dist/airavata-api.js' %}"></script>
 <script>
          // TODO: replace with global user session object
@@ -1030,15 +1031,29 @@
             //look for val.json file
             document.getElementById("allmap").style.display="none";
             document.getElementById("case_studies_div").style.display="block";
-            $( "#case_studies_title" ).text(val);
             //hard coded only the demo purpose
+            var summary_json = '';
+            var case_folder = '';
             switch (val) {
                   case "Southeast_US":
                         document.getElementById("case_studies_body_Southeast_US").style.display="block";
-                        display_result_sample();
+                        $( "#case_studies_title" ).text("Southeast US");
+                         case_folder = "SoutheastUS";
+                         summary_json = "summary.json";
+                        display_case_study(case_folder, summary_json);
                         //pan to a location for better view
-                        map.setView([32.2611,-86.08615]);
-                        if (! userIsAuthenticated) {
+                        //map.setView([32.2611,-86.08615]);
+                        break;
+                  case "Midwest_2011_3":
+                        $( "#case_studies_title" ).text("Midwest 2011");
+                        case_folder = "3_2011_Midwest";
+                        summary_json = "summary.json";
+                        display_case_study(case_folder, summary_json);
+                        break;
+                  default:
+                        return;
+            }
+            if (! userIsAuthenticated) {
                               document.getElementById("case_loginuser").style.display="none";
                               document.getElementById("case_nologinuser_msg").style.display="block";
                         }
@@ -1046,10 +1061,6 @@
                               document.getElementById("case_loginuser").style.display="block";
                               document.getElementById("case_nologinuser_msg").style.display="none";
                         }
-                        break;
-                  default:
-                        pass;
-            }
            
       }
       
@@ -1135,11 +1146,9 @@
                                           <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                 SimCCS Community Case Studies
                                           </button>
-                                          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                          <div class="dropdown-menu" id="case_studies_menu" aria-labelledby="dropdownMenuButton">
                                             <button class="dropdown-item" value="Southeast_US" onclick="case_studies(this.value)">Southeast US</button>
-                                            <!--
-                                            <button class="dropdown-item" value="Illinois_Basin" onclick="case_studies(this.value)">Illinois Basin</button>
-                                            -->
+                                            <button class="dropdown-item" value="Midwest_2011_3" onclick="case_studies(this.value)">Midwest 2011</button>
                                           </div>
                               </div>
                         </div>
