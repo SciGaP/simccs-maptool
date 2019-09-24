@@ -1,0 +1,21 @@
+{
+	"title": "Midwest 2011",
+	"summary": "A case study from Midwest",
+	"publication": "",
+	"inputs": {
+		"sources": "Sources.geojson",
+		"sinks": "Sinks.geojson",
+		"candidatenetwork": "CandidateNetwork.geojson"
+	},
+	"results": [{
+			"case": "110MTye",
+			"description": "110 MT per year",
+			"network": "result_network_100MTyr.geojson"
+		},
+		{
+			"case": "50MTye",
+			"description": "50 MT per year",
+			"network": "result_network_50MTyr.geojson"
+		}
+    ]
+}

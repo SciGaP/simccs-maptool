@@ -1,0 +1,26 @@
+{
+	"title": "Southeast US",
+	"summary": "A case study from Southease US",
+	"publication": "",
+	"inputs": {
+		"sources": "result_source.geojson",
+		"sinks": "result_sink.geojson",
+		"candidatenetwork": "SoutheastUS_Network.geojson"
+	},
+	"results": [{
+			"case": "110MTye",
+			"description": "110 MT per year",
+			"network": "result_network_110MTyr.geojson"
+		},
+		{
+			"case": "50MTye",
+			"description": "50 MT per year",
+			"network": "result_network_50MTyr.geojson"
+		},
+		{
+			"case": "5MTye",
+			"description": "5 MT per year",
+			"network": "result_network_5MTyr.geojson"
+		}
+    ]
+}

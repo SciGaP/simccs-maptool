@@ -1,0 +1,13 @@
+[{
+    "id":"Southeast_US",
+    "scenario": "Southeast US",
+    "folder": "SoutheastUS",
+    "summary": "summary.json"
+},
+{
+    "id":"Midwest_2011_3",
+    "scenario": "Midwest 2011",
+    "folder": "3_2011_Midwest",
+    "summary": "sumarry.json"
+}
+]
