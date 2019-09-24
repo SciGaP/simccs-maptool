@@ -1,8 +1,10 @@
-function get_dynamiclayer_from_json(jsonfile, stylecolor) {
+function get_dynamiclayer_from_json(jsonfile, casename, stylecolor) {
+    var templayer;
     $.getJSON(jsonfile,function (data) {
-        L.geoJSON(data,{style:{color:stylecolor}}).addTo(map);
+        templayer = new L.geoJSON(data,{style:{color:stylecolor}})
+        templayer.addTo(map);
         //map.addLayer(result_networkLayer);
-        //layercontrol.addOverlay(result_networkLayer,result_case);
+        layercontrol.addOverlay(templayer,casename);
     });
 }
 
@@ -56,8 +58,8 @@ function display_case_study(casefolder, summaryjson){
         for (i = 0; i < data['results'].length; i++) {
             var result_network = data['results'][i]['network'];
             var result_case = data['results'][i]['case'];
-            get_dynamiclayer_from_json(datafolder + result_network,display_colors[i]);
+            get_dynamiclayer_from_json(datafolder + result_network,result_case, display_colors[i]);
         }
-        //layercontrol.addTo(map);        
+        layercontrol.addTo(map);        
     })
 }
