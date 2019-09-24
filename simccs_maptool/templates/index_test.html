@@ -1042,13 +1042,14 @@
                          summary_json = "summary.json";
                         display_case_study(case_folder, summary_json);
                         //pan to a location for better view
-                        //map.setView([32.2611,-86.08615]);
+                        map.setView([32.2611,-86.08615]);
                         break;
                   case "Midwest_2011_3":
                         $( "#case_studies_title" ).text("Midwest 2011");
                         case_folder = "3_2011_Midwest";
                         summary_json = "summary.json";
                         display_case_study(case_folder, summary_json);
+                        map.setView([40.0,-84.29]);
                         break;
                   default:
                         return;
@@ -1412,6 +1413,7 @@
             <div class="card border-info">
                         <div class="card-header bg-info text-light" id="case_studies_title"></div>
                         <div class="card-body" id="case_studies_body_Southeast_US" style="display: none" >
+                              <div id="case_stuides_summary" >
                               <p>Summary: <strong>Southern Company</strong><br>
                                     <ul>
                                     <li>Ten year business plan and CO2 emissions strategy.</li>
@@ -1422,6 +1424,7 @@
                                     <li>STORAGE COSTS: $3.78-8.60/tCO2.</li>
                                     </ul>
                               </p>
+                              </div>
                               <center><img src="/static/images/southernUS_legend.png"  height="80%" width="80%" alt="southeastUS_legend" /> </center>
                               <br>
                               <div id="case_loginuser" style="display: none;">
