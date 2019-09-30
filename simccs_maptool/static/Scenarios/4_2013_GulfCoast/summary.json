@@ -1,0 +1,21 @@
+{
+	"title": "GulfCoast 2013",
+	"summary": "A case study from GulfCoast",
+	"publication": "",
+	"inputs": {
+		"sources": "Sources.geojson",
+		"sinks": "Sinks.geojson",
+		"candidatenetwork": "CandidateNetwork.geojson"
+	},
+	"results": [{
+			"case": "30MTye",
+			"description": "30 MT per year",
+			"network": "result_network_30MTyr.geojson"
+		},
+		{
+			"case": "10MTye",
+			"description": "10 MT per year",
+			"network": "result_network_10MTyr.geojson"
+		}
+    ]
+}

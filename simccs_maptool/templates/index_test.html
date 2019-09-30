@@ -1051,6 +1051,13 @@
                         display_case_study(case_folder, summary_json);
                         map.setView([40.0,-84.29]);
                         break;
+                  case "GulfCoast_2013_4":
+                        $( "#case_studies_title" ).text("GulfCoast 2013");
+                        case_folder = "4_2013_GulfCoast";
+                        summary_json = "summary.json";
+                        display_case_study(case_folder, summary_json);
+                        map.setView([32.89,-95.69]);
+                        break;
                   default:
                         return;
             }
@@ -1150,6 +1157,7 @@
                                           <div class="dropdown-menu" id="case_studies_menu" aria-labelledby="dropdownMenuButton">
                                             <button class="dropdown-item" value="Southeast_US" onclick="case_studies(this.value)">Southeast US</button>
                                             <button class="dropdown-item" value="Midwest_2011_3" onclick="case_studies(this.value)">Midwest 2011</button>
+                                            <button class="dropdown-item" value="GulfCoast_2013_4" onclick="case_studies(this.value)">GulfCoast 2013</button>   
                                           </div>
                               </div>
                         </div>
