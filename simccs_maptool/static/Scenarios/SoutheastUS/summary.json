@@ -1,6 +1,7 @@
 {
 	"title": "Southeast US",
-	"summary": "A case study from Southease US",
+	"shortsummary": "A case study from Southease US",
+	"summary":"<p>Summary: <strong>Southern Company</strong><br><ul><li>Ten year business plan and CO2 emissions strategy.</li><li>20 coal-fired plants, 156 MtCO2/yr emissions.</li><li>65 individual boilers→ boiler level accuracy.</li><li>CAPTURE COSTS: $46-102/tCO2 (plant) & $41-166/tCO2 (boiler).</li><li>STORAGE: 3.4 GtCO2 in 7 sinks, 113 MtCO2/yr over 30 years.</li><li>STORAGE COSTS: $3.78-8.60/tCO2.</li></ul></p>",
 	"publication": "",
 	"inputs": {
 		"sources": "result_source.geojson",

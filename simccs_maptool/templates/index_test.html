@@ -1036,7 +1036,6 @@
             var case_folder = '';
             switch (val) {
                   case "Southeast_US":
-                        document.getElementById("case_studies_body_Southeast_US").style.display="block";
                         $( "#case_studies_title" ).text("Southeast US");
                          case_folder = "SoutheastUS";
                          summary_json = "summary.json";
@@ -1061,6 +1060,9 @@
                   default:
                         return;
             }
+
+            document.getElementById("case_studies_display_body").style.display="block";
+
             if (! userIsAuthenticated) {
                               document.getElementById("case_loginuser").style.display="none";
                               document.getElementById("case_nologinuser_msg").style.display="block";
@@ -1080,7 +1082,7 @@
                               if (layer != osm) {map.removeLayer(layer);layercontrol.removeLayer(layer);};
                               });
             //hide the summary div, show edit div
-            document.getElementById("case_studies_body_Southeast_US").style.display = "none";
+            document.getElementById("case_studies_display_body").style.display = "none";
             document.getElementById("case_studies_editor_Southeast_US").style.display = "block";
             
             // load input_source.geojson input_sink.geojson for editing
@@ -1420,8 +1422,8 @@
             <div id="case_studies_div" style="display: none;">
             <div class="card border-info">
                         <div class="card-header bg-info text-light" id="case_studies_title"></div>
-                        <div class="card-body" id="case_studies_body_Southeast_US" style="display: none" >
-                              <div id="case_stuides_summary" >
+                        <div class="card-body" id="case_studies_display_body" style="display: none" >
+                              <div id="case_stuides_display_summary" >
                               <p>Summary: <strong>Southern Company</strong><br>
                                     <ul>
                                     <li>Ten year business plan and CO2 emissions strategy.</li>

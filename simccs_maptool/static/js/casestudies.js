@@ -60,6 +60,11 @@ function display_case_study(casefolder, summaryjson){
             var result_case = data['results'][i]['case'];
             get_dynamiclayer_from_json(datafolder + result_network,result_case, display_colors[i]);
         }
-        layercontrol.addTo(map);        
+        layercontrol.addTo(map);      
+        
+        // display summary
+        var case_summary = document.getElementById("case_stuides_display_summary");
+        case_summary.innerHTML=data["summary"];
+
     })
 }
