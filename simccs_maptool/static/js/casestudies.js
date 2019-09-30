@@ -1,7 +1,7 @@
 function get_dynamiclayer_from_json(jsonfile, casename, stylecolor) {
     var templayer;
     $.getJSON(jsonfile,function (data) {
-        templayer = new L.geoJSON(data,{style:{color:stylecolor}})
+        templayer = new L.geoJSON(data,{style:{color:stylecolor},pane:"linesPane"});
         templayer.addTo(map);
         //map.addLayer(result_networkLayer);
         layercontrol.addOverlay(templayer,casename);
@@ -23,7 +23,7 @@ function display_case_study(casefolder, summaryjson){
                 pointToLayer: function (feature, latlng) {
                     //var mypopup = L.popup().setContent(content_str);
                     var mymarker = L.circleMarker(latlng,{radius: 8,fillColor: "red",
-                    color: "#000",weight: 1,opacity: 1,fillOpacity: 0.7});
+                    color: "#000",weight: 1,opacity: 1,fillOpacity: 1,pane:"pointsPane"});
                     //mymarker.bindPopup(mypopup);
                     return mymarker;       
                 }
@@ -38,7 +38,7 @@ function display_case_study(casefolder, summaryjson){
                     pointToLayer: function (feature, latlng) {
                         //var mypopup = L.popup().setContent(content_str);
                         var mymarker = L.circleMarker(latlng,{radius: 8,fillColor: "green",
-                            color: "#000",weight: 1,opacity: 1,fillOpacity: 0.7});
+                            color: "#000",weight: 1,opacity: 1,fillOpacity: 1,pane:"pointsPane"});
                         //mymarker.bindPopup(mypopup);
                         return mymarker;       
                     }
@@ -48,7 +48,7 @@ function display_case_study(casefolder, summaryjson){
             });
                 //loading candidnetwork
                 $.getJSON(datafolder + candidnetwork_json,function (data) {
-                    var result_candidnetworkLayer = new L.geoJSON(data,{style:{color:"black",opacity:0.5,weight:2}});
+                    var result_candidnetworkLayer = new L.geoJSON(data,{style:{color:"black",opacity:0.5,weight:2,pane:"linesPane"}});
                     map.addLayer(result_candidnetworkLayer);
                     layercontrol.addOverlay(result_candidnetworkLayer,"Candidate");
             
