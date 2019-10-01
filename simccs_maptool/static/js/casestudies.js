@@ -11,6 +11,7 @@ function get_dynamiclayer_from_json(jsonfile, casename, stylecolor) {
 function display_case_study(casefolder, summaryjson){
     //var layercontrol = new L.control.layers();
     var sources_json,sinks_json,candidnetwork_json;
+    var legend_data=[];
     var datafolder = '/static/Scenarios/'+casefolder+'/';
     $.getJSON(datafolder + summaryjson,function(data){
         sources_json = data['inputs']['sources'];
@@ -31,7 +32,6 @@ function display_case_study(casefolder, summaryjson){
             map.addLayer(result_sourceLayer);
             layercontrol.addOverlay(result_sourceLayer,"Sources");
         });
-        
         //loading sinks
             $.getJSON(datafolder + sinks_json,function (data) {
                 var result_sinkLayer = new L.geoJSON(data, {
@@ -53,18 +53,36 @@ function display_case_study(casefolder, summaryjson){
                     layercontrol.addOverlay(result_candidnetworkLayer,"Candidate");
             
                 });
-        //loading solution network
+                legend_data.push(['Sources','red']);
+                legend_data.push(['Sinks','green']);
+                legend_data.push(['Candidate Network','grey']);
+
+                //loading solution network
         var display_colors = ['Blue','Green','Red','Yellow'];
         for (i = 0; i < data['results'].length; i++) {
             var result_network = data['results'][i]['network'];
             var result_case = data['results'][i]['case'];
             get_dynamiclayer_from_json(datafolder + result_network,result_case, display_colors[i]);
+            legend_data.push([result_case,display_colors[i]]);
         }
         layercontrol.addTo(map);      
-        
+        //alert(legend_data);
         // display summary
         var case_summary = document.getElementById("case_stuides_display_summary");
         case_summary.innerHTML=data["summary"];
-
+        // generate legend
+        var legend_div = document.getElementById("case_studies_legend");
+        var legend_str = "<div><table>";
+        legend_str += '<tr><td><span style="height:15px; width:15px; background-color:red;border-radius: 50%;display:inline-block;" /></td><td><strong>Sources</strong></td></tr>';
+        legend_str += '<tr><td><span style="height:15px; width:15px; background-color:green;border-radius: 50%;display:inline-block;" /></td><td><strong>Sinks</strong></td></tr>';
+        //legend_str +='<tr><td><hr style="border: 1px solid grey;width:20px" /></td><td>Candidate Network</td></tr>';
+        // legend for lines        
+        for (i=2; i<legend_data.length;i++) {
+            var temp = '<tr><td><hr style="border: 2px solid ccolor;width:20px" /></td><td>nname</td></tr>';
+            var res = (temp.replace('ccolor',legend_data[i][1])).replace('nname',legend_data[i][0]);
+            legend_str += res;
+        }
+        legend_str +='</table></div>';
+        legend_div.innerHTML = legend_str;
     })
 }
