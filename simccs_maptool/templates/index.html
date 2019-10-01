@@ -45,8 +45,8 @@
          $(document).ready(function() {
       
            load_current_experiment();
-           map.addLayer(ordos_source_cluster);
-           map.addLayer(france_source_cluster);
+           //map.addLayer(ordos_source_cluster);
+           //map.addLayer(france_source_cluster);
          
          
          $('input:radio').bind('click mousedown', (function() {
@@ -95,7 +95,7 @@
                                    break;
          
                              case "source_sink_all_the_above":
-                             map.removeLayer(chemicalClusters);
+                                 map.removeLayer(chemicalClusters);
                                  map.removeLayer(coalClusters);
                                  map.removeLayer(flourinatedClusters);
                                  map.removeLayer(co2InjectionClusters);
@@ -113,7 +113,9 @@
          
          
                                    break;
-         
+                              case "source_all_test":
+                                    map.removeLayer(source_all_test_layer_1);
+                                    break;
                              case "candidate_network":
                                                      map.removeLayer(ut_candidate_network);
                                                      map.removeLayer(albert_candidate_network);
@@ -128,9 +130,9 @@
                              //
                              case "sink_coal_reservoirs":map.removeLayer(sink_coal_layer);
                              break;
-                             case "sink_saline_formation":map.removeLayer(sink_saline_layer);
+                             case "sink_saline_formation":map.removeLayer(sink_sco2t_layer);
                              break;
-                             case "sink_oil_reservoir":map.removeLayer(sink_oil_layer);
+                             case "sink_oil_reservoir":map.removeLayer(sink_oil_eor_layer);
                              break;
                              case "ordos_sink":map.removeLayer(sink_ordos_layer);
                              break;
@@ -201,7 +203,10 @@
          
          
                                    break;
-         
+                              
+                            case "source_all_test":
+                                  map.addLayer(source_all_test_layer_1);
+                                  break;
          
                              case "candidate_network":
                              //
@@ -222,9 +227,9 @@
                              case "sink_coal_reservoirs":map.addLayer(sink_coal_layer);
                              break;
          
-                             case "sink_saline_formation":map.addLayer(sink_saline_layer);
+                             case "sink_saline_formation":map.addLayer(sink_sco2t_layer);
                              break;
-                             case "sink_oil_reservoir":map.addLayer(sink_oil_layer);
+                             case "sink_oil_reservoir":map.addLayer(sink_oil_eor_layer);
                              break;
                              case "ordos_sink":map.addLayer(sink_ordos_layer);
                              break;
@@ -317,8 +322,8 @@
          
          function sinkOnEachFeature(feature, layer) {
          //bind click
-         layer.bindTooltip("<strong>CO2_Low(t):"+feature.properties.CO2_Low__t.toString()+"<strong>");
-         //layer.bindTooltip("<strong>Reservoir Storage Capacity MtCO2:"+feature.properties.Reservoir_.toString()+"<strong>");
+         //layer.bindTooltip("<strong>CO2_Low(t):"+feature.properties.CO2_Low__t.toString()+"<strong>");
+         layer.bindTooltip("<strong>Name: "+feature.properties.NAME+"<br>"+"varO&M ($/tCO2): "+feature.properties['varO_M____'].toString()+"<strong>");
          layer.on('click', function (e) {
            var target_id = sinkselection.indexOf(e.target)
            if (target_id >=0 ) {e.target.setStyle({weight:1,color:'grey',fillOpacity:0.4});sinkselection.splice(target_id,1);}
@@ -338,7 +343,7 @@
          
          var sourceLayer = new L.geoJSON('', {
          pointToLayer: function (feature, latlng) {
-           var content_str="<strong>"+feature.id+"<br>"+feature.properties.Facility_N +'<br>CO2 emission:'+feature.properties.CO2_Emissi+"</strong>";
+           var content_str="<strong>"+feature.properties.Type+"<br>"+feature.properties.Name +'<br>Total CO2: '+feature.properties['Total_CO2_']+"</strong>";
            //var mypopup = L.popup().setContent(content_str);
            var mymarker = L.circleMarker(latlng, geojsonMarkerOptions);
            //mymarker.bindPopup(mypopup);
@@ -350,10 +355,10 @@
          });
          
          var sinkLayer = new L.geoJSON('',{style: function(feature){
-           var co2 = feature.properties.CO2_Low__t;
+           var co2 = feature.properties['varO_M____'];
            var fillcolor = ''; 
-           if (co2 >= 1 && co2 < 5e+06) {fillcolor = '#f50000';} 
-           else if (co2 >=5e+06 && co2 < 5e+07) {fillcolor ='#fdff00'}
+           if (co2 >=3.0) {fillcolor = '#f50000';} 
+           else if (co2 >=1.0 && co2 < 3) {fillcolor ='#fdff00'}
            else {fillcolor = '#00f905'}
            return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.3,pane: "polygonsPane"};
          },
@@ -580,6 +585,8 @@
                   source_dict['source_sink_refineries']='SimCCS:Source_Refineries';
                   source_dict['source_sink_co2_suppliers']='SimCCS:Source_Suppliers_of_CO2';
                   source_dict['source_sink_waste']='SimCCS:Source_Waste';
+                  //source_dict['source_all_test']='SimCCS_Sources_Snapper';
+                  source_dict['source_all_test']='Sources_082819_SimCCS_Format';
                   //"source_sink_all_the_above"
                   $("*[id^='source']:visible").each(function() {
                         if (this.checked) {queryfields.push(source_dict[this.id]);}
@@ -664,8 +671,7 @@
                        dataType: "jsonp"
                  });
                  //get sink layer
-                 var sinkurl='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:NATCARB_SALINE&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
-                 //var sinkurl='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:SCO2T_Database_v1_1_Cheapest_Grid&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
+                 var sinkurl='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:SCO2T_Database_v1_1_Cheapest_Grid_Ext&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
                  sinkurl += cqlfilter;
                  $.ajax({
                        url: sinkurl,
@@ -674,11 +680,11 @@
                  });
                  var sinkurl2='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:NATCARB_OG&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer2';
                  sinkurl2 += cqlfilter;
-                 $.ajax({
-                       url: sinkurl2,
-                       jsonp: "callback",
-                       dataType: "jsonp"
-                 });
+                 //$.ajax({
+                 //      url: sinkurl2,
+                 //      jsonp: "callback",
+                 //      dataType: "jsonp"
+                 //});
                  layer.remove();
                  //layer.setStyle({'color':'grey','fillOpacity': 0.0});
                  map.removeControl(drawControl);
@@ -736,68 +742,13 @@
          function generateinputfile(){
             // Facility_N City State Latitude Longitude Industry_T CO2_Emissi
             //ID costFix ($M) fixO&M ($M/y) varO&M ($/tCO2) capMax (MtCO2/y) N/A LON LAT NAME
-            if (selection.length == 0 ) {alert('No soruces are selected!');return}
-            var sourcedata = "ID\t(MtCO2/y)\tLON\tLAT\tNAME\n";
-            var tempstr = "";
-            for (i = 0; i < selection.length; i++) {
-                  tempstr = "";
-                  tempstr += (i+1).toString()+"\t";
-                  tempstr += selection[i].feature.properties.CO2_Emissi +"\t";
-                  tempstr += selection[i].feature.properties.Longitude +"\t";
-                  tempstr += selection[i].feature.properties.Latitude +"\t";
-                  tempstr += selection[i].feature.properties.Facility_N +"\t";
-                  sourcedata += tempstr + "\n";
-            } 
+            if (selection.length == 0 ) {alert('No sources are selected!');return}
+            if (sinkselection.length == 0 ) {alert('No sinks are selected!');return}
+            var sourcedata = generatesourcedata();
             //alert(sourcedata);
 
-            //NATCARB_SALINE
-            //Latitude 	Longitude 	Resource_A 	Depth__m_ 	Thickness_ 	CO2_Low__t 	CO2_Medium 	CO2_High__ 	Shape_Leng 	Shape_Are
-            var sinkdata = "";
-            sinkdata = "ID\tCO2_Low\tCO2_Med\tCO2_High\tDepth(m)\tThickness(m)\tLON\t\LAT\n";
-            var sinkcount = sinkselection.length;
-            //
-            //var testinglayer = sinkselection[0];
-            //alert((testinglayer.getBounds()).getCenter());
-            var center_latlon;
-            for (i = 0; i < sinkselection.length; i++) {
-                  tempstr = "";
-                  tempstr += (i+1).toString()+"\t";
-                  tempstr += sinkselection[i].feature.properties.CO2_Low__t +"\t";
-                  tempstr += sinkselection[i].feature.properties.CO2_Medium +"\t";
-                  tempstr += sinkselection[i].feature.properties.CO2_High__ +"\t";
-                  tempstr += sinkselection[i].feature.properties.Depth__m_ +"\t";
-                  tempstr += sinkselection[i].feature.properties.Thickness_ +"\t";
-                  center_latlon = (sinkselection[i].getBounds()).getCenter();
-                  //lon lat
-                  tempstr += center_latlon.lng +"\t";
-                  tempstr += center_latlon.lat +"\t";  
-                  sinkdata += tempstr + "\n";    
-            }
-            //NATCARB_OG
-            //TOTAL_FIEL 	VOL_LOW 	VOL_MED 	VOL_HIGH 	Shape_Leng 	Shape_Ar
-            for (i = 0; i < sinkselection2.length; i++) {
-                  tempstr = "";
-                  tempstr += (i+1+sinkcount).toString()+"\t";
-                  tempstr += sinkselection2[i].feature.properties.VOL_LOW +"\t";
-                  tempstr += sinkselection2[i].feature.properties.VOL_MED +"\t";
-                  tempstr += sinkselection2[i].feature.properties.VOL_HIGH +"\t";
-                  tempstr += "\t";
-                  tempstr += "\t";               
-                  // missing lat/lon information
-                  center_latlon = (sinkselection2[i].getBounds()).getCenter();
-                  //lon lat
-                  tempstr += center_latlon.lng +"\t";
-                  tempstr += center_latlon.lat +"\t";  
-       sinkdata += tempstr + "\n";
-            }
+            var sinkdata=generatesinkdata();
 
-            //NATCARB_OG
-            //TOTAL_FIEL 	VOL_LOW 	VOL_MED 	VOL_HIGH 	Shape_Leng 	Shape_Ar
-            //sourceLayer.eachLayer(function(layer) {
-            //
-            //      var target_id = selection.indexOf(layer);
-            //      if (target_id >=0) {alert(layer.feature.properties.Facility_N);};
-            //});   
             downloadcsv(sourcedata, "Sources.txt", "text/plain","sources_input"); 
             downloadcsv(sinkdata, "Sinks.txt", "text/plain","sinks_input"); 
             
@@ -806,10 +757,105 @@
    
          }
 
+         function generatesourcedata() {
+
+            var sourcedata = "ID\tcostFix ($M)\tfixO&M ($M/y)\tvarO&M ($/tCO2)\tcapMax (MtCO2/y)\tN/A\tLON\tLAT\tNAME\n";
+            var tempstr = "";
+            for (i = 0; i < selection.length; i++) {
+                  tempstr = "";
+                  tempstr += (i+1).toString()+"\t";
+                  tempstr += selection[i].feature.properties["costFix___"]+"\t";
+                  tempstr += selection[i].feature.properties["fixO_M___m"]+"\t";
+                  tempstr += selection[i].feature.properties["costVar___"]+"\t";
+                  tempstr += selection[i].feature.properties["Capturable"]+"\t";
+                  //tempstr += selection[i].feature.properties["N/A"]+"\t";
+                  // N/A is set to 1
+                  tempstr += "1"+"\t";
+                  tempstr += selection[i].feature.properties["X"]+"\t";
+                  tempstr += selection[i].feature.properties["Y"]+"\t";
+                  // NAME is set same as ID
+                  tempstr += (i+1).toString();
+                  sourcedata += tempstr + "\n";
+            } 
+            return sourcedata;
+         }
+
+         function generatesinkdata() {
+
+            //NATCARB_SALINE
+            var sinkdata="0\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13\t14\t15\t16" + "\n";
+            var sinkcount = sinkselection.length;
+
+            var center_latlon;
+            for (i = 0; i < sinkselection.length; i++) {
+                  tempstr = "";
+                  // field 0-1: ID
+                  tempstr += (i+1).toString()+"\t";
+                  tempstr += (i+1).toString()+"\t";
+                  //2: Capacity "fieldCap__"
+                  tempstr += sinkselection[i].feature.properties['fieldCap__'] + "\t";
+                  //3: OpeningCost "costFix___"
+                  tempstr += sinkselection[i].feature.properties['costFix___'] + "\t";
+                  //4: OMCost "fixO_M___M"
+                  tempstr += sinkselection[i].feature.properties['fixO_M___M'] + "\t";
+                  //5: WellCapacity "wellCap__M"
+                  tempstr += sinkselection[i].feature.properties['wellCap__M'] + "\t";
+                  //6: WellOpeningCost "wellCostFi"
+                  tempstr += sinkselection[i].feature.properties['wellCostFi'] + "\t";
+                  //7: WellOMCost "wellFixO_M"
+                  tempstr += sinkselection[i].feature.properties['wellFixO_M'] + "\t";
+                  //8: InjectionCost "varO_M____"
+                  tempstr += sinkselection[i].feature.properties['varO_M____'] + "\t";
+                  //9: 0
+                  tempstr += '0' + "\t";
+                  //10: Lon "LON"
+                  tempstr += sinkselection[i].feature.properties['LON'] + "\t";
+                  //11: Lat "LAT"
+                  tempstr += sinkselection[i].feature.properties['LAT'] + "\t";
+                  //12: 0 
+                  tempstr += '0' + "\t";
+                  //13: 0
+                  tempstr += '0' + "\t";
+                  //14: 0
+                  tempstr += '0' + "\t";
+                  //15: 0
+                  tempstr += '0' + "\t";
+                  //16: NAME "NAME"
+                  tempstr += sinkselection[i].feature.properties['NAME'];
+
+                  //caculate lon lat
+                  //center_latlon = (sinkselection[i].getBounds()).getCenter();
+                  //tempstr += center_latlon.lng +"\t";
+                  //tempstr += center_latlon.lat +"\t";  
+                 
+                  sinkdata += tempstr + "\n";    
+            }
+            return sinkdata;
+         }
+
+         var candidateNetworkLayer = L.geoJSON(null, {style:{color:"blue",opacity:0.5,weight:4}});
+         var candidateNetworkLayerAddedToControl = false;
          // ajax interface to generate candidate-network
          function generatecandidatenetwork() {
-               // call url: /maptool/candidate-network/
-               alert("ajax interface to generate candidate-network");
+            var sourcedata = generatesourcedata();
+            var sinkdata=generatesinkdata();
+            var data = {
+                  sources: sourcedata,
+                  sinks: sinkdata,
+            };
+            AiravataAPI.utils.FetchUtils.showSpinner($.getJSON({url: "/maptool/candidate-network/", data: data}, function( data ) {
+                  // Note: 'data' includes Sinks and Sources but since those are
+                  // already displayed I'm opting to only display the Network
+                  candidateNetworkLayer.clearLayers();
+                  candidateNetworkLayer.addData(data["Network"]);
+                  if (!map.hasLayer(candidateNetworkLayer)) {
+                        candidateNetworkLayer.addTo(map);
+                  }
+                  if (!candidateNetworkLayerAddedToControl) {
+                        layercontrol.addOverlay(candidateNetworkLayer, "Candidate Network");
+                        candidateNetworkLayerAddedToControl = true;
+                  }
+            }));
          }
 
          // ajax interface to generate MPS file
@@ -820,24 +866,26 @@
             //if (! userIsAuthenticated) {
             //      window.location.href = "/auth/login?next=/maptool";
             //      return; }
-            $("#bn_generatemps").text('Generating ... !!!');
-            $("#bn_generatemps").addClass('disabled');
 
    // $('#dynamicModal').on('hidden.bs.modal', function (e) {
    //     $(this).remove();
    // });
+            if (selection.length == 0 ) {alert('No sources are selected!');return}
+            if (sinkselection.length == 0 ) {alert('No sinks are selected!');return}
+            var sourcedata = generatesourcedata();
+            var sinkdata=generatesinkdata();
             var crf = $("#Capital_Recovery_Rate").val();
             var numYears = $("#Project_Period").val();
             var capacityTarget = $("#Capture_Target").val();
             var data = {
                   crf: crf ? crf : 0.1,
                   numYears: numYears ? numYears : 10,
-                  capacityTarget: capacityTarget ? capacityTarget : 5
+                  capacityTarget: capacityTarget ? capacityTarget : 5,
+                  sources: sourcedata,
+                  sinks: sinkdata,
             };
             AiravataAPI.utils.FetchUtils.showSpinner($.getJSON({url: "/maptool/mps/", data: data}, function( data ) {
                   //{"user_file": "MIP_Files/mip_2019-04-24T145902.mps"}
-                  $("#bn_generatemps").text('Generate MPS file');
-                  $("#bn_generatemps").removeClass('disabled');
                   //alert(data["user_file"] + " is generated succefully");
                   m_html =`<div class="modal fade in" id="dynamicModal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
@@ -1020,7 +1068,56 @@
             $.getJSON('/static/Data/input_source.geojson',function (data) {case_loadsource(data); });
             $.getJSON('/static/Data/input_sink.geojson', function (data) {case_loadsink(data);   });
       }
-      </script>
+
+      // display search result
+      var searchlayer;
+      function loadsearchresult(data) {
+            if (map.hasLayer(searchlayer)) {map.removeLayer(searchlayer);}
+            if (data["totalFeatures"] > 0) {
+                  searchlayer = L.geoJSON(data, { pointToLayer: function (feature, latlng) {
+                        var content_str = "";
+                        content_str += "<strong>"+"Name: " + feature.properties["Name"] +"</strong><br>";
+                        content_str +="<strong>"+"Type: " + feature.properties["Type"] +"</strong><br>";
+                        content_str +="<strong>"+"costVar($/tCO2): " + feature.properties["costVar___"] +"</strong><br>";
+                        content_str +="<strong>"+"Capturable(MtCO2/y): " + feature.properties["Capturable"] +"</strong>";
+                        //var mypopup = L.popup().setContent(content_str);
+                        var mymarker = L.marker(latlng);
+                        //mymarker.bindPopup(mypopup);
+                        mymarker.bindTooltip(content_str);
+                        return mymarker;       
+                        }
+                  });
+
+                  map.addLayer(searchlayer);
+                  map.fitBounds(searchlayer.getBounds()); }
+            else {
+                  alert("Zero source is found!");
+            }
+      }
+
+      //A simple seach function
+      function showSearchResults(layerid, searchstring) {
+            var searchlayer;
+            switch(layerid) {
+                  case "source_all_test":
+                        searchlayer = 'Sources_082819_SimCCS_Format';
+                        break;
+                  default:
+                        searchlayer='';
+            }
+            //get json display as marker
+            var geourl='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&maxFeatures=500&outputFormat=text%2Fjavascript&format_options=callback:loadsearchresult';
+            geourl += '&typeName=' + searchlayer;
+            geourl += "&cql_filter=strToLowerCase(Name) like '" + encodeURIComponent("%" + searchstring + "%'");
+            //alert(geourl);
+            $.ajax({
+                       url: geourl,
+                       jsonp: "callback",
+                       dataType: "jsonp"
+                 });
+      } 
+
+</script>
 {% endblock scripts %}
 
 {% block content %}
@@ -1052,6 +1149,7 @@
                         </div>
                         <div class="card-body" >
                            <!--<label style="font-size: 12px;">Source</label>-->
+                           <!--
                            <div class="form-check form-check-inline">
                               <input class="form-check-input" type="radio" id="source_sink_chemical" autocomplete="off">
                               <label style="font-size: 100%;" class="form-check-label" for="source_sink_chemical">Chemical</label>
@@ -1120,6 +1218,13 @@
                               <input class="form-check-input" type="radio" id="source_sink_all_the_above" autocomplete="off">
                               <label style="font-size: 100%;" class="form-check-label" for="source_sink_all_the_above">All the above</label>
                            </div>
+                        -->
+                        <div class="form-check form-check-inline">
+                              <input class="form-check-input" type="radio" id="source_all_test" autocomplete="off">
+                              <label style="font-size: 100%;" class="form-check-label" for="source_all_test">Sources for Testing (Sources_082819_SimCCS_Format)</label>
+                        </div>
+                        <div id="seach_source_div"><input type="text" placeholder="search by name" name="searchString" id="search-string-value" size="20" value="" onchange="showSearchResults('source_all_test',this.value)" /></div>
+                        <div><img src="/static/images/sources_snapper_legend.jpg" alt="source_legend" width="80%" height="80%" style="border:1px solidblack"> </div>
                         </div>
                   </div>
                   <div class="card border-info">
@@ -1144,14 +1249,14 @@
                         <div class="card-body" >
                               <div class="form-check">
                                  <input class="form-check-input" type="radio" id="sink_saline_formation">
-                                 <label style="font-size: 100%;" class="form-check-label" for="sink_saline_formation">Saline Formation</label>
+                                 <label style="font-size: 100%;" class="form-check-label" for="sink_saline_formation">Saline Formation (SCO2T_Database_v1_1)</label>
                               </div>
                               <div class="form-check">
-                                 <input class="form-check-input" type="radio" id="sink_oil_reservoir">
-                                 <label style="font-size: 100%;" class="form-check-label" for="sink_oil_reservoir">Oil/Gas Reservoir</label>
+                                 <input class="form-check-input" type="radio" id="sink_oil_reservoir" >
+                                 <label style="font-size: 100%;" class="form-check-label" for="sink_oil_reservoir">Oil/Gas Reservoir (NATCARB_OG_082819)</label>
                               </div>
                               <div class="form-check">
-                                 <input class="form-check-input" type="radio" id="sink_coal_reservoirs">
+                                 <input class="form-check-input" type="radio" id="sink_coal_reservoirs" disabled>
                                  <label style="font-size: 100%;" class="form-check-label" for="sink_coal_reservoirs">Unconventional Coal reservoirs</label>
                               </div>
                               <!--
@@ -1200,9 +1305,8 @@
                         </div>
                         <div class="card-body" >
                   <div id="loginuser_tools">
-                        <!--
                         <button type="button" id="bn_generatecandidatenetwork" class="btn btn-primary btn-sm btn-block" onclick="generatecandidatenetwork()">Generate Candidate Network</button>
-                        -->
+                        <hr/>
                         <strong>Model Parameters</strong><br>
                         <table>
                                     <tr><td>Capital Recovery Rate</td><td><input id="Capital_Recovery_Rate" name="Capital_Recovery_Rate" type="text" size=8 value="0.1" required></td></tr>
@@ -1211,7 +1315,7 @@
                         </table><br>
                         <button type="button" id="bn_generatemps" class="btn btn-primary btn-sm btn-block" onclick="generatempsfile()">Generate MPS file</button>
                   </div>
-               <div id="nologinuser_msg" style="display: none;">Gateway user account required. <a href='/auth/login?next=/maptool'>Login</a>&nbsp;to create SimCCS model scenarios.</div>
+               <div id="nologinuser_msg" style="display: none;">Gateway user account required. <a href='/auth/login?next=/maptool/test/'>Login</a>&nbsp;to create SimCCS model scenarios.</div>
                </div>
                       <div class="card border-info" id="model-results" style="display: none;">
                         <div class="card-header bg-info text-light">
@@ -1314,7 +1418,7 @@
                               <div id="case_loginuser" style="display: none;">
                                     <button type="button" id="bn_editcase" class="btn btn-primary btn-sm btn-block" onclick="user_edit_case('Southeast_US')">Edit Southeast_US</button>
                               </div>
-                              <div id="case_nologinuser_msg" style="display: none;">Gateway user account required. <a href='/auth/login?next=/maptool'>Login</a>&nbsp;to edit SimCCS model scenarios.</div>
+                              <div id="case_nologinuser_msg" style="display: none;">Gateway user account required. <a href='/auth/login?next=/maptool/test/'>Login</a>&nbsp;to edit SimCCS model scenarios.</div>
                         </div>
                         <div class="card-body" id="case_studies_editor_Southeast_US" style="display: none" >
                               Use mouse-click to select source and sink data.<br><br>
