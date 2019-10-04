@@ -10,14 +10,15 @@ from datetime import datetime
 import shapefile
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.views.generic import TemplateView
 
 DATASETS_BASEPATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "simccs", "Datasets"
 )
 SOUTHEASTUS_DATASET = "SoutheastUS"
-SCENARIOS_DIRPATH = os.path.join(DATASETS_BASEPATH, SOUTHEASTUS_DATASET, "Scenarios")
+GULFCOAST_DATASET = "GulfCoast_2013_4"
+MIDWEST_DATASET = "Midwest_2011_3"
 
 logger = logging.getLogger(__name__)
 
@@ -74,17 +75,18 @@ def generate_mps(request):
     capacity_target = float(request.GET.get("capacityTarget", 5))
     sources = request.GET.get("sources", None)
     sinks = request.GET.get("sinks", None)
+    dataset = request.GET.get("dataset", SOUTHEASTUS_DATASET)
 
     # TODO: provide Django apps with utility for writing to gateway data storage
     userdir = os.path.join(settings.GATEWAY_DATA_STORE_DIR, request.user.username)
     datasets_basepath = os.path.join(userdir, "Datasets")
-    dataset_dir = os.path.join(datasets_basepath, SOUTHEASTUS_DATASET)
+    dataset_dir = os.path.join(datasets_basepath, dataset)
     os.makedirs(dataset_dir, exist_ok=True)
     # Symlink in the BaseData directory for the dataset
     basedata_dir = os.path.join(dataset_dir, "BaseData")
     if not os.path.exists(basedata_dir):
         os.symlink(
-            os.path.join(DATASETS_BASEPATH, SOUTHEASTUS_DATASET, "BaseData"),
+            os.path.join(DATASETS_BASEPATH, dataset, "BaseData"),
             basedata_dir,
         )
     # Create a scenario directory
@@ -162,7 +164,7 @@ def generate_mps(request):
         from jnius import autoclass
 
         DataStorer = autoclass("simccs.dataStore.DataStorer")
-        data = DataStorer(datasets_basepath, SOUTHEASTUS_DATASET, scenario)
+        data = DataStorer(datasets_basepath, dataset, scenario)
         Solver = autoclass("simccs.solver.Solver")
         solver = Solver(data)
         data.setSolver(solver)
@@ -175,7 +177,7 @@ def generate_mps(request):
             num_years,
             capacity_target,
             datasets_basepath,
-            SOUTHEASTUS_DATASET,
+            dataset,
             scenario,
         )
     except Exception as e:
@@ -266,12 +268,13 @@ def _create_shapefiles_for_result(request, results_dir):
     datasets_basepath = os.path.join(userdir, "Datasets")
     scenario_dir = os.path.dirname(results_dir)
     scenario = os.path.basename(scenario_dir)
+    dataset = _get_dataset_from_results_dir(results_dir)
     try:
         from jnius import autoclass
 
         # initialize the Solver/DataStorer
         DataStorer = autoclass("simccs.dataStore.DataStorer")
-        data = DataStorer(datasets_basepath, SOUTHEASTUS_DATASET, scenario)
+        data = DataStorer(datasets_basepath, dataset, scenario)
         Solver = autoclass("simccs.solver.Solver")
         solver = Solver(data)
         data.setSolver(solver)
@@ -296,12 +299,13 @@ def _load_solution(request, results_dir):
     datasets_basepath = os.path.join(userdir, "Datasets")
     scenario_dir = os.path.dirname(results_dir)
     scenario = os.path.basename(scenario_dir)
+    dataset = _get_dataset_from_results_dir(results_dir)
     try:
         from jnius import autoclass
 
         # initialize the Solver/DataStorer
         DataStorer = autoclass("simccs.dataStore.DataStorer")
-        data = DataStorer(datasets_basepath, SOUTHEASTUS_DATASET, scenario)
+        data = DataStorer(datasets_basepath, dataset, scenario)
         Solver = autoclass("simccs.solver.Solver")
         solver = Solver(data)
         data.setSolver(solver)
@@ -345,19 +349,26 @@ def _write_shapefile_to_geojson(shapefile, geojson_f):
     )
 
 
+def _get_dataset_from_results_dir(results_dir):
+    scenario_dir = os.path.dirname(results_dir)
+    dataset_dir = os.path.dirname(os.path.dirname(scenario_dir))
+    return os.path.basename(dataset_dir)
+
+
 def candidate_network(request):
 
     sources = request.GET.get("sources", None)
     sinks = request.GET.get("sinks", None)
+    dataset = request.GET.get("dataset", SOUTHEASTUS_DATASET)
 
     with tempfile.TemporaryDirectory() as datasets_basepath:
-        dataset_dir = os.path.join(datasets_basepath, SOUTHEASTUS_DATASET)
+        dataset_dir = os.path.join(datasets_basepath, dataset)
         os.makedirs(dataset_dir, exist_ok=True)
         # Symlink in the BaseData directory for the dataset
         basedata_dir = os.path.join(dataset_dir, "BaseData")
         if not os.path.exists(basedata_dir):
             os.symlink(
-                os.path.join(DATASETS_BASEPATH, SOUTHEASTUS_DATASET, "BaseData"),
+                os.path.join(DATASETS_BASEPATH, dataset, "BaseData"),
                 basedata_dir,
             )
         # Create a scenario directory
@@ -399,7 +410,7 @@ def candidate_network(request):
             from jnius import autoclass
 
             DataStorer = autoclass("simccs.dataStore.DataStorer")
-            data = DataStorer(datasets_basepath, SOUTHEASTUS_DATASET, scenario)
+            data = DataStorer(datasets_basepath, dataset, scenario)
             Solver = autoclass("simccs.solver.Solver")
             solver = Solver(data)
             data.setSolver(solver)

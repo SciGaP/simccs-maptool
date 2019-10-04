@@ -513,7 +513,7 @@
             return sinkdata;
       }
       
-      function case_generatempsfile() {
+      function case_generatempsfile(val) {
             if (selection.length == 0 ) {alert('No sources are selected!');return}
             if (selection_green.length == 0 ) {alert('No sinks are selected!');return}
             var sourcedata = case_generatesourcedata();
@@ -527,12 +527,13 @@
                   numYears: numYears ? numYears : 10,
                   capacityTarget: capacityTarget ? capacityTarget : 5,
                   sources: sourcedata,
-                  sinks: sinkdata
+                  sinks: sinkdata,
+                  dataset: val
             };
             AiravataAPI.utils.FetchUtils.showSpinner($.getJSON({url: "/maptool/mps/", data: data}, function( data ) {
                   //{"user_file": "MIP_Files/mip_2019-04-24T145902.mps"}
                   //alert(data["user_file"] + " is generated succefully");
-                  m_html =`<div class="modal fade in" id="dynamicModal" tabindex="-1" role="dialog">
+                  var m_html =`<div class="modal fade in" id="dynamicModal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -1466,7 +1467,7 @@
                                           <tr><td>Project Period (yrs)</td><td><input id="case_Project_Period" name="case_Project_Period" type="text" size=8 value=10 required></td></tr>
                                           <tr><td>Capture Target (MT/y)</td><td><input id="case_Capture_Target" name="caase_Capture_Target" type="text" size=8 value=5 required></td></tr>
                               </table><br>
-                              <button type="button" id="bn_generatemps" class="btn btn-primary btn-sm btn-block" onclick="case_generatempsfile()">Generate MPS file</button>
+                              <button type="button" id="bn_generatemps" class="btn btn-primary btn-sm btn-block" onclick="case_generatempsfile('SoutheastUS')">Generate MPS file</button>
       
                         </div>
 
