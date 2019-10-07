@@ -695,7 +695,8 @@ var geojsonLineOptions = {
             layers: 'SimCCS:cost',
             format: 'image/png',
             transparent: true,
-            attribution: "SimCCS"
+            attribution: "SimCCS",
+            zIndex:1
         });
 
         var source_all_test_layer_1 = L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
@@ -712,14 +713,14 @@ var geojsonLineOptions = {
             format: 'image/png',
             transparent: true,
             attribution: "SimCCS",
-            zIndex:1
+            zIndex:2
         });
 
         var sink_oil_eor_layer=L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
             layers: 'SimCCS:NATCARB_OG_Test',
             format: 'image/png',
             transparent: true,
-            zIndex: 2
+            zIndex: 3
     });
         
 
