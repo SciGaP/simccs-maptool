@@ -708,7 +708,7 @@ var geojsonLineOptions = {
         });
 
         var sink_sco2t_layer = L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
-            layers: 'SimCCS:SCO2T_Database_v1_1_Cheapest_Grid_Ext',
+            layers: 'SimCCS:SCO2T_SALINE_Test',
             format: 'image/png',
             transparent: true,
             attribution: "SimCCS",
@@ -716,7 +716,7 @@ var geojsonLineOptions = {
         });
 
         var sink_oil_eor_layer=L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
-            layers: 'SimCCS:SimCCS_OG_EOR_082819',
+            layers: 'SimCCS:NATCARB_OG_Test',
             format: 'image/png',
             transparent: true,
             zIndex: 2
