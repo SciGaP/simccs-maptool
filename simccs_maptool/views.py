@@ -86,7 +86,7 @@ def generate_mps(request):
     basedata_dir = os.path.join(dataset_dir, "BaseData")
     if not os.path.exists(basedata_dir):
         os.symlink(
-            os.path.join(DATASETS_BASEPATH, dataset, "BaseData"),
+            _get_basedata_dir(dataset),
             basedata_dir,
         )
     # Create a scenario directory
@@ -368,7 +368,7 @@ def candidate_network(request):
         basedata_dir = os.path.join(dataset_dir, "BaseData")
         if not os.path.exists(basedata_dir):
             os.symlink(
-                os.path.join(DATASETS_BASEPATH, dataset, "BaseData"),
+                _get_basedata_dir(dataset),
                 basedata_dir,
             )
         # Create a scenario directory
@@ -436,3 +436,20 @@ def candidate_network(request):
                 "Error occurred when loading solution: " + str(e.stacktrace)
             )
             raise
+
+
+def _get_basedata_dir(dataset):
+
+    if "DATASETS_DIR" in getattr(settings, "MAPTOOL_SETTINGS", {}):
+        datasets_basepath = settings.MAPTOOL_SETTINGS["DATASETS_DIR"]
+        basedata_dir = os.path.join(datasets_basepath, dataset, "BaseData")
+        if os.path.exists(basedata_dir):
+            return basedata_dir
+    else:
+        logger.warning("Setting MAPTOOL_SETTINGS['DATASETS_DIR'] is not defined")
+    # For backwards compatibility, allow loading BaseData from within this repo
+    # (SoutheastUS only)
+    basedata_dir = os.path.join(DATASETS_BASEPATH, dataset, "BaseData")
+    if os.path.exists(basedata_dir):
+        return basedata_dir
+    raise Exception("Unable to find basedata directory for dataset {}".format(dataset))

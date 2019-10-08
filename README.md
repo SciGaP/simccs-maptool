@@ -1,3 +1,43 @@
+# SimCCS Map Tool
+
+## Getting Started
+
+1. Follow the instructions for installing the
+   [Airavata Django Portal](https://github.com/apache/airavata-django-portal)
+2. With the Django Portal virtual environment activated, clone this repo and
+   install it into the portal's virtual environment
+
+   ```
+   git clone https://github.com/SciGaP/simccs-maptool.git
+   cd simccs-maptool
+   python setup.py develop
+   ```
+
+3. Start (or restart) the Django Portal server.
+4. Open <http://localhost:8000/maptool> in your browser.
+
+## Django portal configuration
+
+The following settings are relevant for the SimCCS Map Tool. These can be
+specified in Django Portal's `settings_local.py` file.
+
+- `JAVA_HOME` - the Java home directory. Defaults to the JAVA_HOME env variable
+  if not set.
+- `MAPTOOL_SETTINGS` - this is a dictionary of Map Tool specific settings:
+  - `CPLEX_APPLICATION_ID` - The Airavata application module id of the Cplex application to launch.
+  - `DATASETS_DIR` - Directory of datasets and their basedata (cost network).
+
+Example of custom settings in a `settings_local.py` file:
+
+```python
+JAVA_HOME = "/usr/java/default"
+MAPTOOL_SETTINGS = {
+    "CPLEX_APPLICATION_ID": "Cplex_a7eaf483-ab92-4441-baeb-2f302ccb2919",
+    "DATASETS_DIR": "/data/simccs-datasets"
+}
+```
+
+
 ## Pyjnius - simccs.jar notes
 
 ### Installing dependencies
