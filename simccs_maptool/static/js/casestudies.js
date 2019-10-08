@@ -70,6 +70,8 @@ function display_case_study(casefolder, summaryjson){
         // display summary
         var case_summary = document.getElementById("case_stuides_display_summary");
         case_summary.innerHTML=data["summary"];
+        var info_link = '<br><a href=url target=_><strong>More information</strong></a><br><br>';
+        case_summary.innerHTML += info_link.replace('url',data['publication']);
         // generate legend
         var legend_div = document.getElementById("case_studies_legend");
         var legend_str = "<div><table>";

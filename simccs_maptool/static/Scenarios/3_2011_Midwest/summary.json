@@ -1,7 +1,7 @@
 {
 	"title": "Midwest 2011",
 	"summary": "A case study from Midwest",
-	"publication": "",
+	"publication": "https://www.sciencedirect.com/science/article/pii/S1364815212001296?via%3Dihub",
 	"inputs": {
 		"sources": "Sources.geojson",
 		"sinks": "Sinks.geojson",
