@@ -81,12 +81,13 @@ def generate_mps(request):
     # TODO: provide Django apps with utility for writing to gateway data storage
     userdir = os.path.join(settings.GATEWAY_DATA_STORE_DIR, request.user.username)
     datasets_basepath = os.path.join(userdir, "Datasets")
-    dataset_dir = os.path.join(datasets_basepath, dataset)
+    dataset_dirname = _get_dataset_dirname(dataset)
+    dataset_dir = os.path.join(datasets_basepath, dataset_dirname)
     os.makedirs(dataset_dir, exist_ok=True)
     # Symlink in the BaseData directory for the dataset
     basedata_dir = os.path.join(dataset_dir, "BaseData")
     if not os.path.exists(basedata_dir):
-        os.symlink(_get_basedata_dir(dataset), basedata_dir)
+        os.symlink(_get_basedata_dir(dataset_dirname), basedata_dir)
     # Create a scenario directory
     scenarios_dir = os.path.join(dataset_dir, "Scenarios")
     os.makedirs(scenarios_dir, exist_ok=True)
@@ -162,7 +163,7 @@ def generate_mps(request):
         from jnius import autoclass
 
         DataStorer = autoclass("simccs.dataStore.DataStorer")
-        data = DataStorer(datasets_basepath, dataset, scenario)
+        data = DataStorer(datasets_basepath, dataset_dirname, scenario)
         Solver = autoclass("simccs.solver.Solver")
         solver = Solver(data)
         data.setSolver(solver)
@@ -175,7 +176,7 @@ def generate_mps(request):
             num_years,
             capacity_target,
             datasets_basepath,
-            dataset,
+            dataset_dirname,
             scenario,
         )
     except Exception as e:
@@ -360,12 +361,13 @@ def candidate_network(request):
     dataset = request.GET.get("dataset", SOUTHEASTUS_DATASET_ID)
 
     with tempfile.TemporaryDirectory() as datasets_basepath:
-        dataset_dir = os.path.join(datasets_basepath, dataset)
+        dataset_dirname = _get_dataset_dirname(dataset)
+        dataset_dir = os.path.join(datasets_basepath, dataset_dirname)
         os.makedirs(dataset_dir, exist_ok=True)
         # Symlink in the BaseData directory for the dataset
         basedata_dir = os.path.join(dataset_dir, "BaseData")
         if not os.path.exists(basedata_dir):
-            os.symlink(_get_basedata_dir(dataset), basedata_dir)
+            os.symlink(_get_basedata_dir(dataset_dirname), basedata_dir)
         # Create a scenario directory
         scenarios_dir = os.path.join(dataset_dir, "Scenarios")
         os.makedirs(scenarios_dir, exist_ok=True)
@@ -405,7 +407,7 @@ def candidate_network(request):
             from jnius import autoclass
 
             DataStorer = autoclass("simccs.dataStore.DataStorer")
-            data = DataStorer(datasets_basepath, dataset, scenario)
+            data = DataStorer(datasets_basepath, dataset_dirname, scenario)
             Solver = autoclass("simccs.solver.Solver")
             solver = Solver(data)
             data.setSolver(solver)
@@ -433,9 +435,8 @@ def candidate_network(request):
             raise
 
 
-def _get_basedata_dir(dataset):
+def _get_basedata_dir(dataset_dirname):
 
-    dataset_dirname = _get_dataset_dirname(dataset)
     if "DATASETS_DIR" in getattr(settings, "MAPTOOL_SETTINGS", {}):
         datasets_basepath = settings.MAPTOOL_SETTINGS["DATASETS_DIR"]
         basedata_dir = os.path.join(datasets_basepath, dataset_dirname, "BaseData")
@@ -448,14 +449,16 @@ def _get_basedata_dir(dataset):
     basedata_dir = os.path.join(DATASETS_BASEPATH, dataset_dirname, "BaseData")
     if os.path.exists(basedata_dir):
         return basedata_dir
-    raise Exception("Unable to find basedata directory for dataset {}".format(dataset))
+    raise Exception(
+        "Unable to find basedata directory for dataset {}".format(dataset_dirname)
+    )
 
 
 def _get_dataset_dirname(dataset):
     for summary_json_path in glob.glob(
         os.path.join(CASE_STUDIES_DIR, "*", "summary.json")
     ):
-        with open(summary_json_path) as f:
+        with open(summary_json_path, encoding="utf-8") as f:
             summary_json = json.load(f)
             if summary_json["dataset-id"] == dataset:
                 return summary_json["dataset-dirname"]
