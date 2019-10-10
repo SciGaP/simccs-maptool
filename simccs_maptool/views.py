@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import glob
 import json
 import logging
 import os
@@ -13,12 +14,10 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.generic import TemplateView
 
-DATASETS_BASEPATH = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "simccs", "Datasets"
-)
-SOUTHEASTUS_DATASET = "SoutheastUS"
-GULFCOAST_DATASET = "GulfCoast_2013_4"
-MIDWEST_DATASET = "Midwest_2011_3"
+BASEDIR = os.path.dirname(os.path.abspath(__file__))
+DATASETS_BASEPATH = os.path.join(BASEDIR, "simccs", "Datasets")
+CASE_STUDIES_DIR = os.path.join(BASEDIR, "static", "Scenarios")
+SOUTHEASTUS_DATASET_ID = "Southeast_US"
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +27,9 @@ class HomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['cplex_application_id'] = getattr(settings, "MAPTOOL_SETTINGS", {}).get(
-            "CPLEX_APPLICATION_ID", "Cplex_a7eaf483-ab92-4441-baeb-2f302ccb2919")
+        context["cplex_application_id"] = getattr(settings, "MAPTOOL_SETTINGS", {}).get(
+            "CPLEX_APPLICATION_ID", "Cplex_a7eaf483-ab92-4441-baeb-2f302ccb2919"
+        )
         return context
 
 
@@ -38,8 +38,9 @@ class HomeView_test(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['cplex_application_id'] = getattr(settings, "MAPTOOL_SETTINGS", {}).get(
-            "CPLEX_APPLICATION_ID", "Cplex_a7eaf483-ab92-4441-baeb-2f302ccb2919")
+        context["cplex_application_id"] = getattr(settings, "MAPTOOL_SETTINGS", {}).get(
+            "CPLEX_APPLICATION_ID", "Cplex_a7eaf483-ab92-4441-baeb-2f302ccb2919"
+        )
         return context
 
 
@@ -75,7 +76,7 @@ def generate_mps(request):
     capacity_target = float(request.GET.get("capacityTarget", 5))
     sources = request.GET.get("sources", None)
     sinks = request.GET.get("sinks", None)
-    dataset = request.GET.get("dataset", SOUTHEASTUS_DATASET)
+    dataset = request.GET.get("dataset", SOUTHEASTUS_DATASET_ID)
 
     # TODO: provide Django apps with utility for writing to gateway data storage
     userdir = os.path.join(settings.GATEWAY_DATA_STORE_DIR, request.user.username)
@@ -85,10 +86,7 @@ def generate_mps(request):
     # Symlink in the BaseData directory for the dataset
     basedata_dir = os.path.join(dataset_dir, "BaseData")
     if not os.path.exists(basedata_dir):
-        os.symlink(
-            _get_basedata_dir(dataset),
-            basedata_dir,
-        )
+        os.symlink(_get_basedata_dir(dataset), basedata_dir)
     # Create a scenario directory
     scenarios_dir = os.path.join(dataset_dir, "Scenarios")
     os.makedirs(scenarios_dir, exist_ok=True)
@@ -359,7 +357,7 @@ def candidate_network(request):
 
     sources = request.GET.get("sources", None)
     sinks = request.GET.get("sinks", None)
-    dataset = request.GET.get("dataset", SOUTHEASTUS_DATASET)
+    dataset = request.GET.get("dataset", SOUTHEASTUS_DATASET_ID)
 
     with tempfile.TemporaryDirectory() as datasets_basepath:
         dataset_dir = os.path.join(datasets_basepath, dataset)
@@ -367,10 +365,7 @@ def candidate_network(request):
         # Symlink in the BaseData directory for the dataset
         basedata_dir = os.path.join(dataset_dir, "BaseData")
         if not os.path.exists(basedata_dir):
-            os.symlink(
-                _get_basedata_dir(dataset),
-                basedata_dir,
-            )
+            os.symlink(_get_basedata_dir(dataset), basedata_dir)
         # Create a scenario directory
         scenarios_dir = os.path.join(dataset_dir, "Scenarios")
         os.makedirs(scenarios_dir, exist_ok=True)
@@ -440,16 +435,28 @@ def candidate_network(request):
 
 def _get_basedata_dir(dataset):
 
+    dataset_dirname = _get_dataset_dirname(dataset)
     if "DATASETS_DIR" in getattr(settings, "MAPTOOL_SETTINGS", {}):
         datasets_basepath = settings.MAPTOOL_SETTINGS["DATASETS_DIR"]
-        basedata_dir = os.path.join(datasets_basepath, dataset, "BaseData")
+        basedata_dir = os.path.join(datasets_basepath, dataset_dirname, "BaseData")
         if os.path.exists(basedata_dir):
             return basedata_dir
     else:
         logger.warning("Setting MAPTOOL_SETTINGS['DATASETS_DIR'] is not defined")
     # For backwards compatibility, allow loading BaseData from within this repo
     # (SoutheastUS only)
-    basedata_dir = os.path.join(DATASETS_BASEPATH, dataset, "BaseData")
+    basedata_dir = os.path.join(DATASETS_BASEPATH, dataset_dirname, "BaseData")
     if os.path.exists(basedata_dir):
         return basedata_dir
     raise Exception("Unable to find basedata directory for dataset {}".format(dataset))
+
+
+def _get_dataset_dirname(dataset):
+    for summary_json_path in glob.glob(
+        os.path.join(CASE_STUDIES_DIR, "*", "summary.json")
+    ):
+        with open(summary_json_path) as f:
+            summary_json = json.load(f)
+            if summary_json["dataset-id"] == dataset:
+                return summary_json["dataset-dirname"]
+    raise Exception("Unrecognized dataset: {}".format(dataset))

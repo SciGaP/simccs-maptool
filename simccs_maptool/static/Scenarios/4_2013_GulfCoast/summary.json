@@ -1,5 +1,7 @@
 {
 	"title": "GulfCoast 2013",
+	"dataset-id": "GulfCoast_2013_4",
+	"dataset-dirname": "GulfCoast_2013_4",
 	"summary": "A case study from GulfCoast",
 	"publication": "https://onlinelibrary.wiley.com/doi/full/10.1002/er.2993",
 	"inputs": {

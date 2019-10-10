@@ -1,3 +1,11 @@
+var _case_study_state = {
+    current_dataset_id: null
+}
+
+function get_current_dataset_id() {
+    return _case_study_state.current_dataset_id;
+}
+
 function get_dynamiclayer_from_json(jsonfile, casename, stylecolor) {
     var templayer;
     $.getJSON(jsonfile,function (data) {
@@ -17,6 +25,7 @@ function display_case_study(casefolder, summaryjson){
         sources_json = data['inputs']['sources'];
         sinks_json = data['inputs']['sinks'];
         candidnetwork_json = data['inputs']['candidatenetwork'];
+        _case_study_state.current_dataset_id = data['dataset-id'];
 
         //loading sources
         $.getJSON(datafolder + sources_json,function (data) {
