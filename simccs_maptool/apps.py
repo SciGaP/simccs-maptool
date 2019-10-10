@@ -51,7 +51,7 @@ def init_pyjnius():
         logger.info("JAVA_HOME set to '{}'".format(os.environ["JAVA_HOME"]))
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         jnius_config.add_options('-Djava.awt.headless=true')
-        jnius_config.add_options('-Xmx2G')
+        jnius_config.add_options('-Xmx1G')
         jnius_config.set_classpath(
             os.path.join(
                 BASE_DIR, "simccs", "lib", "simccs-app-1.0-jar-with-dependencies.jar"
