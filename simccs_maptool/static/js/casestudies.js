@@ -28,6 +28,7 @@ function display_case_study(casefolder, summaryjson){
         _case_study_state.current_dataset_id = data['dataset-id'];
 
         //loading sources
+        current_case['sources']= datafolder + sources_json;
         $.getJSON(datafolder + sources_json,function (data) {
             var result_sourceLayer = new L.geoJSON(data, {
                 pointToLayer: function (feature, latlng) {
@@ -42,6 +43,7 @@ function display_case_study(casefolder, summaryjson){
             layercontrol.addOverlay(result_sourceLayer,"Sources");
         });
         //loading sinks
+        current_case['sinks']= datafolder + sinks_json;
             $.getJSON(datafolder + sinks_json,function (data) {
                 var result_sinkLayer = new L.geoJSON(data, {
                     pointToLayer: function (feature, latlng) {

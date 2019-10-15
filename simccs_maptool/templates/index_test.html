@@ -42,7 +42,7 @@
 <script>
          // TODO: replace with global user session object
          var userIsAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
-         //var userIsAuthenticated = true;
+         var userIsAuthenticated = true;
          $(document).ready(function() {
       
            load_current_experiment();
@@ -1029,7 +1029,10 @@
             $("#solution-summary-unitCost").text(Math.round(data.unitTotalCost * 100) / 100);
       }
 
+      // global variable to record current case
+      var current_case = {}; 
       function case_studies(val) {
+            current_case ['case']= val;
             //look for val.json file
             document.getElementById("allmap").style.display="none";
             document.getElementById("case_studies_div").style.display="block";
@@ -1087,9 +1090,13 @@
             document.getElementById("case_studies_display_body").style.display = "none";
             document.getElementById("case_studies_editor_Southeast_US").style.display = "block";
             
+            //alert(current_case['case']);
+            //alert(current_case['sources']);
+            //alert(current_case['sinks']);
             // load input_source.geojson input_sink.geojson for editing
-            $.getJSON('/static/Data/input_source.geojson',function (data) {case_loadsource(data); });
-            $.getJSON('/static/Data/input_sink.geojson', function (data) {case_loadsink(data);   });
+            $.getJSON(current_case['sources'],function (data) {case_loadsource(data); });
+            $.getJSON(current_case['sinks'], function (data) {case_loadsink(data);   });
+      
       }
 
       // display search result
