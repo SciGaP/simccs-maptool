@@ -1096,6 +1096,14 @@
             // load input_source.geojson input_sink.geojson for editing
             $.getJSON(current_case['sources'],function (data) {case_loadsource(data); });
             $.getJSON(current_case['sinks'], function (data) {case_loadsink(data); });
+            //re-load candidnetwork
+            $.getJSON(current_case['candidatenetwork'],function (data) {
+                    var result_candidnetworkLayer = new L.geoJSON(data,{style:{color:"black",opacity:0.5,weight:1,pane:"linesPane"}});
+                    map.addLayer(result_candidnetworkLayer);
+                    layercontrol.addOverlay(result_candidnetworkLayer,"Candidate");   
+                    //alert(result_candidnetworkLayer._leaflet_id);            
+                });
+
       }
 
       // display search result

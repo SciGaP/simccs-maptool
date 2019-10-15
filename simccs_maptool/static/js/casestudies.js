@@ -27,6 +27,7 @@ function display_case_study(casefolder, summaryjson){
         candidnetwork_json = data['inputs']['candidatenetwork'];
         current_case['sources']= datafolder + data['editor']['sources'];
         current_case['sinks']= datafolder + data['editor']['sinks'];
+        current_case['candidatenetwork'] = datafolder + candidnetwork_json;
         _case_study_state.current_dataset_id = data['dataset-id'];
 
         //loading sources
@@ -61,8 +62,8 @@ function display_case_study(casefolder, summaryjson){
                 $.getJSON(datafolder + candidnetwork_json,function (data) {
                     var result_candidnetworkLayer = new L.geoJSON(data,{style:{color:"black",opacity:0.5,weight:2,pane:"linesPane"}});
                     map.addLayer(result_candidnetworkLayer);
-                    layercontrol.addOverlay(result_candidnetworkLayer,"Candidate");
-            
+                    layercontrol.addOverlay(result_candidnetworkLayer,"Candidate");   
+                    //alert(result_candidnetworkLayer._leaflet_id);            
                 });
                 legend_data.push(['Sources','red']);
                 legend_data.push(['Sinks','green']);
