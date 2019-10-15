@@ -4,7 +4,7 @@
 	"dataset-dirname": "GulfCoast_2013_4",
 	"summary": "A case study from GulfCoast",
 	"publication": "https://onlinelibrary.wiley.com/doi/full/10.1002/er.2993",
-	"editor":{
+	"editor": {
 		"sources":"input_source.geojson",
 		"sinks":"input_sink.geojson"
 	},
