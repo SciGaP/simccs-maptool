@@ -1095,8 +1095,7 @@
             //alert(current_case['sinks']);
             // load input_source.geojson input_sink.geojson for editing
             $.getJSON(current_case['sources'],function (data) {case_loadsource(data); });
-            $.getJSON(current_case['sinks'], function (data) {case_loadsink(data);   });
-      
+            $.getJSON(current_case['sinks'], function (data) {case_loadsink(data); });
       }
 
       // display search result

@@ -4,6 +4,10 @@
 	"dataset-dirname": "Midwest_2011_3",
 	"summary": "A case study from Midwest",
 	"publication": "https://www.sciencedirect.com/science/article/pii/S1364815212001296?via%3Dihub",
+	"editor":{
+		"sources":"input_source.geojson",
+		"sinks":"input_sink.geojson"
+	},
 	"inputs": {
 		"sources": "Sources.geojson",
 		"sinks": "Sinks.geojson",

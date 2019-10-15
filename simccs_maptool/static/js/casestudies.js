@@ -25,10 +25,11 @@ function display_case_study(casefolder, summaryjson){
         sources_json = data['inputs']['sources'];
         sinks_json = data['inputs']['sinks'];
         candidnetwork_json = data['inputs']['candidatenetwork'];
+        current_case['sources']= datafolder + data['editor']['sources'];
+        current_case['sinks']= datafolder + data['editor']['sinks'];
         _case_study_state.current_dataset_id = data['dataset-id'];
 
         //loading sources
-        current_case['sources']= datafolder + sources_json;
         $.getJSON(datafolder + sources_json,function (data) {
             var result_sourceLayer = new L.geoJSON(data, {
                 pointToLayer: function (feature, latlng) {
@@ -43,7 +44,6 @@ function display_case_study(casefolder, summaryjson){
             layercontrol.addOverlay(result_sourceLayer,"Sources");
         });
         //loading sinks
-        current_case['sinks']= datafolder + sinks_json;
             $.getJSON(datafolder + sinks_json,function (data) {
                 var result_sinkLayer = new L.geoJSON(data, {
                     pointToLayer: function (feature, latlng) {
