@@ -42,7 +42,7 @@
 <script>
          // TODO: replace with global user session object
          var userIsAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
-         var userIsAuthenticated = true;
+         //var userIsAuthenticated = true;
          $(document).ready(function() {
       
            load_current_experiment();
