@@ -42,7 +42,7 @@
 <script>
          // TODO: replace with global user session object
          var userIsAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
-         //var userIsAuthenticated = true;
+         var userIsAuthenticated = true;
          $(document).ready(function() {
       
            load_current_experiment();
@@ -452,14 +452,31 @@
       }
 
       function case_hideunselected() {
-            case_sourceLayer.eachLayer(function(layer) {
-                  var target_id = selection.indexOf(layer);
-                  if (target_id <0) {layer.remove();};
-            });
-            case_sinkLayer.eachLayer(function(layer) {
-                  var target_id = selection_green.indexOf(layer);
-                  if (target_id <0) {layer.remove();};
-            });
+            var btn_status = $("#case_hideunselected_btn").val();
+            //alert(btn_status);
+            if (btn_status == 'hide') {
+                  case_sourceLayer.eachLayer(function(layer) {
+                        var target_id = selection.indexOf(layer);
+                        if (target_id <0) {layer.remove();};
+                  });
+                  case_sinkLayer.eachLayer(function(layer) {
+                        var target_id = selection_green.indexOf(layer);
+                        if (target_id <0) {layer.remove();};
+                  }); 
+                  $("#case_hideunselected_btn").html("Show unselected data");
+                  $("#case_hideunselected_btn").val("unhide");}
+            else {
+                  case_sourceLayer.eachLayer(function(layer) {
+                        var target_id = selection.indexOf(layer);
+                        if (target_id <0) {layer.addTo(map);};
+                  });
+                  case_sinkLayer.eachLayer(function(layer) {
+                        var target_id = selection_green.indexOf(layer);
+                        if (target_id <0) {layer.addTo(map);};
+                  }); 
+                  $("#case_hideunselected_btn").html("Hide unselected data");
+                  $("#case_hideunselected_btn").val("hide");
+            }
       };
       
       function case_generateinputfile() {
@@ -1471,11 +1488,11 @@
                         </div>
                         <div class="card-body" id="case_studies_editor_Southeast_US" style="display: none" >
                               Use mouse-click to select source and sink data.<br><br>
-                              <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_hideunselected()">Hide unselected data</button>
+                              <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_hideunselected()" id="case_hideunselected_btn" value="hide">Hide unselected data</button>
                               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_generateinputfile()">Generate Data Files</button>
                               <div id="case_downloadsource_div" style="display: none;"><a href="" id="case_sources_input">Download Source.txt</a></div>
                               <div id="case_downloadsink_div" style="display: none;"><a href="" id="case_sinks_input">Download Sinks.txt</a></div>
-                              <br>
+                              <br>  
                               <strong>Model Parameters</strong><br>
                               <table>
                                           <tr><td>Capital Recovery Rate</td><td><input id="case_Capital_Recovery_Rate" name="case_Capital_Recovery_Rate" type="text" size=8 value=0.1 required></td></tr>
