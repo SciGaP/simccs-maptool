@@ -1079,6 +1079,13 @@
                         display_case_study(case_folder, summary_json);
                         map.setView([32.89,-95.69]);
                         break;
+                  case "TexasPanhandle_2011_5":
+                        $( "#case_studies_title" ).text("Texas Panhandle 2011");
+                        case_folder = "5_2011_TexasPanhandle";
+                        summary_json = "summary.json";
+                        display_case_study(case_folder, summary_json);
+                        map.setView([35.038,-101.85]);
+                        break;
                   default:
                         return;
             }
@@ -1193,6 +1200,7 @@
                                             <button class="dropdown-item" value="Southeast_US" onclick="case_studies(this.value)">Southeast US</button>
                                             <button class="dropdown-item" value="Midwest_2011_3" onclick="case_studies(this.value)">Midwest 2011</button>
                                             <button class="dropdown-item" value="GulfCoast_2013_4" onclick="case_studies(this.value)">GulfCoast 2013</button>   
+                                            <button class="dropdown-item" value="TexasPanhandle_2011_5" onclick="case_studies(this.value)">Texas Panhandle 2011</button>   
                                           </div>
                               </div>
                         </div>
