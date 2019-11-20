@@ -1093,6 +1093,13 @@
                         display_case_study(case_folder, summary_json);
                         map.setView([38.385,-87.822]);
                         break;
+                  case "OrdosBasin_2014_10":
+                        $( "#case_studies_title" ).text("Ordos Basin 2014");
+                        case_folder = "10_2014_OrdosBasin";
+                        summary_json = "summary.json";
+                        display_case_study(case_folder, summary_json);
+                        map.setView([37.87,109.20]);
+                        break;
                   default:
                         return;
             }
@@ -1209,6 +1216,7 @@
                                             <button class="dropdown-item" value="GulfCoast_2013_4" onclick="case_studies(this.value)">GulfCoast 2013</button>   
                                             <button class="dropdown-item" value="TexasPanhandle_2011_5" onclick="case_studies(this.value)">Texas Panhandle 2011</button>   
                                             <button class="dropdown-item" value="IllinoisBasin_2015_11" onclick="case_studies(this.value)">Illinois Basin 2015</button>   
+                                            <button class="dropdown-item" value="OrdosBasin_2014_10" onclick="case_studies(this.value)">Ordos Basin 2014</button>   
                                           </div>
                               </div>
                         </div>

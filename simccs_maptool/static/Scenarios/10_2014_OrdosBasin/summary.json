@@ -1,0 +1,22 @@
+{
+	"title": "Ordos Basin 2014",
+	"dataset-id": "OrdosBasin_2014_10",
+	"dataset-dirname": "10_2014_OrdosBasin",
+	"summary": "A case study from Ordos Basin, China",
+	"publication": "https://www.sciencedirect.com/science/article/pii/S1876610214021079?via%3Dihub",
+	"editor": {
+		"sources":"input_source.geojson",
+		"sinks":"input_sink.geojson"
+	},
+	"inputs": {
+		"sources": "Sources.geojson",
+		"sinks": "Sinks.geojson",
+		"candidatenetwork": "CandidateNetwork.geojson"
+	},
+	"results": [{
+			"case": "$65 perton",
+			"description": "$65 per ton",
+			"network": "result_network_65perton.geojson"
+		}
+    ]
+}
