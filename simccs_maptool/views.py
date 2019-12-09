@@ -17,7 +17,7 @@ from django.views.generic import TemplateView
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 DATASETS_BASEPATH = os.path.join(BASEDIR, "simccs", "Datasets")
 CASE_STUDIES_DIR = os.path.join(BASEDIR, "static", "Scenarios")
-SOUTHEASTUS_DATASET_ID = "Southeast_US"
+SOUTHEASTUS_DATASET_ID = "Southeast_US_2012"
 
 logger = logging.getLogger(__name__)
 
