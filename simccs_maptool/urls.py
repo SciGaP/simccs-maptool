@@ -21,7 +21,6 @@ app_name = "simccs_maptool"
 urlpatterns = [
     url(r"^$", views.HomeView.as_view(), name="home"),
     url(r"^help/$", views.HelpView.as_view(), name="help"),
-    url(r"^simccs/$", views.simccs, name="simccs"),
     url(r"^candidate-network/$", views.candidate_network, name="candidate-network"),
     url(r"^mps/$", views.generate_mps, name="generate-mps"),
     url(r"^experiment-result/(?P<experiment_id>[^/]+)$", views.experiment_result),

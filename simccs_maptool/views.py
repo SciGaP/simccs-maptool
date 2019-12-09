@@ -37,25 +37,6 @@ class HelpView(TemplateView):
     template_name = "simccs_maptool/help.html"
 
 
-def simccs(request):
-    # Important to only import jnius just before using it so that the classpath
-    # can be configured before the VM starts. See apps.init_pyjnius
-    from jnius import autoclass
-
-    basepath = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "simccs", "Datasets"
-    )
-    dataset = "SoutheastUS"
-    scenario = "scenario1"
-    DataStorer = autoclass("simccs.dataStore.DataStorer")
-    data = DataStorer(basepath, dataset, scenario)
-    Solver = autoclass("simccs.solver.Solver")
-    solver = Solver(data)
-    data.setSolver(solver)
-
-    return JsonResponse({"shortestPathEdges": data.getShortestPathEdges()})
-
-
 @login_required
 def generate_mps(request):
 
