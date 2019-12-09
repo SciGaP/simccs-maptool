@@ -24,7 +24,8 @@ specified in Django Portal's `settings_local.py` file.
 - `JAVA_HOME` - the Java home directory. Defaults to the JAVA_HOME env variable
   if not set.
 - `MAPTOOL_SETTINGS` - this is a dictionary of Map Tool specific settings:
-  - `CPLEX_APPLICATION_ID` - The Airavata application module id of the Cplex application to launch.
+  - `CPLEX_APPLICATION_ID` - The Airavata application module id of the Cplex
+    application to launch.
   - `DATASETS_DIR` - Directory of datasets and their basedata (cost network).
 
 Example of custom settings in a `settings_local.py` file:
@@ -36,7 +37,6 @@ MAPTOOL_SETTINGS = {
     "DATASETS_DIR": "/data/simccs-datasets"
 }
 ```
-
 
 ## Pyjnius - simccs.jar notes
 
@@ -51,28 +51,14 @@ pip install pyjnius
 
 ### Building the SimCCS jar
 
-#### Building the simccs.org desktop client code
-
-```
-mvn -P pack-jar-without-gateway install
-```
-
 #### Building simccs GitHub repo code
 
-**Note: these build steps are for the SimCCS jar from the GitHub repo, but the
-jar currently being using in this Django app is the one used by the simccs.org
-desktop client.**
+**Note: No longer need to build. Just grab the SimCCS.jar from
+https://github.com/simccs/SimCCS/tree/master/store** 
 
 Clone https://github.com/simccs/SimCCS
 
-```
-cd SimCCS/
-mkdir build
-find src -name "*.java" | xargs javac -cp ext/openmap.jar -d build/
-find build/ -name "*.class" | xargs jar cvf build/SimCCS.jar -C build/
-```
-
-Then copy `build/SimCCS.jar` to `simccs_maptool/simccs/lib/SimCCS.jar`.
+Then copy `store/SimCCS.jar` to `simccs_maptool/simccs/lib/SimCCS.jar`.
 
 ### MacOS notes
 

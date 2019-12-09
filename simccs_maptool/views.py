@@ -132,14 +132,14 @@ def generate_mps(request):
     try:
         from jnius import autoclass
 
-        DataStorer = autoclass("simccs.dataStore.DataStorer")
+        DataStorer = autoclass("dataStore.DataStorer")
         data = DataStorer(datasets_basepath, dataset_dirname, scenario)
-        Solver = autoclass("simccs.solver.Solver")
+        Solver = autoclass("solver.Solver")
         solver = Solver(data)
         data.setSolver(solver)
-        MPSWriter = autoclass("simccs.solver.MPSWriter")
+        MPSWriter = autoclass("solver.MPSWriter")
         os.mkdir(os.path.join(scenario_dir, "MIP"))
-        MPSWriter.writeMPS(
+        MPSWriter.writeCapPriceMPS(
             "mip.mps",
             data,
             capital_recovery_rate,
@@ -148,9 +148,10 @@ def generate_mps(request):
             datasets_basepath,
             dataset_dirname,
             scenario,
+            1  # modelVersion - 1 = cap
         )
     except Exception as e:
-        logger.exception("Error occurred when calling writeMPS: " + str(e.stacktrace))
+        logger.exception("Error occurred when calling writeMPS: " + str(e.stacktrace) if hasattr(e, "stacktrace") else str(e))
         raise
 
     mps_file_path = os.path.join(scenario_dir, "MIP", "mip.mps")
@@ -242,9 +243,9 @@ def _create_shapefiles_for_result(request, results_dir):
         from jnius import autoclass
 
         # initialize the Solver/DataStorer
-        DataStorer = autoclass("simccs.dataStore.DataStorer")
+        DataStorer = autoclass("dataStore.DataStorer")
         data = DataStorer(datasets_basepath, dataset, scenario)
-        Solver = autoclass("simccs.solver.Solver")
+        Solver = autoclass("solver.Solver")
         solver = Solver(data)
         data.setSolver(solver)
         logger.debug("Scenario data loaded for {}".format(scenario_dir))
@@ -273,9 +274,9 @@ def _load_solution(request, results_dir):
         from jnius import autoclass
 
         # initialize the Solver/DataStorer
-        DataStorer = autoclass("simccs.dataStore.DataStorer")
+        DataStorer = autoclass("dataStore.DataStorer")
         data = DataStorer(datasets_basepath, dataset, scenario)
-        Solver = autoclass("simccs.solver.Solver")
+        Solver = autoclass("solver.Solver")
         solver = Solver(data)
         data.setSolver(solver)
         logger.debug("Scenario data loaded for {}".format(scenario_dir))
@@ -376,9 +377,9 @@ def candidate_network(request):
             # Run the Solver to generate candidate graph
             from jnius import autoclass
 
-            DataStorer = autoclass("simccs.dataStore.DataStorer")
+            DataStorer = autoclass("dataStore.DataStorer")
             data = DataStorer(datasets_basepath, dataset_dirname, scenario)
-            Solver = autoclass("simccs.solver.Solver")
+            Solver = autoclass("solver.Solver")
             solver = Solver(data)
             data.setSolver(solver)
             data.makeCandidateNetworkShapeFiles()
