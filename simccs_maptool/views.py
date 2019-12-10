@@ -250,10 +250,14 @@ def _create_shapefiles_for_result(request, results_dir):
         data.setSolver(solver)
         logger.debug("Scenario data loaded for {}".format(scenario_dir))
         # load the .mps/.sol solution
-        solution = data.loadSolution(results_dir)
+        # TODO: change this back to using a DataStorer instance that proxies the call to DataInOut
+        # https://github.com/spamidig/simccs-app/commit/03442e7da0d6ad875f67a0c6ef4dcb0e6db4513e#diff-1c52e4608d2d912400618c55c3054dcaR585
+        DataInOut = autoclass("dataStore.DataInOut")
+        solution = DataInOut.loadSolution(results_dir,
+                                          -1)  # timeslot
         logger.debug("Solution loaded from {}".format(results_dir))
         # generate shapefiles
-        data.makeShapeFiles(results_dir, solution)
+        DataInOut.makeShapeFiles(results_dir, solution)
         logger.debug(
             "Shape files created in {}".format(os.path.join(results_dir, "shapeFiles"))
         )
@@ -281,7 +285,11 @@ def _load_solution(request, results_dir):
         data.setSolver(solver)
         logger.debug("Scenario data loaded for {}".format(scenario_dir))
         # load the .mps/.sol solution
-        solution = data.loadSolution(results_dir)
+        # TODO: change this back to using a DataStorer instance that proxies the call to DataInOut
+        # https://github.com/spamidig/simccs-app/commit/03442e7da0d6ad875f67a0c6ef4dcb0e6db4513e#diff-1c52e4608d2d912400618c55c3054dcaR585
+        DataInOut = autoclass("dataStore.DataInOut")
+        solution = DataInOut.loadSolution(results_dir,
+                                          -1)  # timeslot
         logger.debug("Solution loaded from {}".format(results_dir))
         return solution
     except Exception as e:
@@ -382,8 +390,11 @@ def candidate_network(request):
             Solver = autoclass("solver.Solver")
             solver = Solver(data)
             data.setSolver(solver)
-            data.makeCandidateNetworkShapeFiles()
+            # TODO: change this back to using a DataStorer instance that proxies the call to DataInOut
+            # https://github.com/spamidig/simccs-app/commit/03442e7da0d6ad875f67a0c6ef4dcb0e6db4513e#diff-1c52e4608d2d912400618c55c3054dcaR585
+            DataInOut = autoclass("dataStore.DataInOut")
             results_dir = os.path.join(scenario_dir, "Network", "CandidateNetwork")
+            DataInOut.makeCandidateShapeFiles(results_dir)
             _create_geojson_for_result(request, results_dir)
             with open(
                 os.path.join(results_dir, "geojson", "Network.geojson")
