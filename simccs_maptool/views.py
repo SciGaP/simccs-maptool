@@ -394,6 +394,8 @@ def candidate_network(request):
             # https://github.com/spamidig/simccs-app/commit/03442e7da0d6ad875f67a0c6ef4dcb0e6db4513e#diff-1c52e4608d2d912400618c55c3054dcaR585
             DataInOut = autoclass("dataStore.DataInOut")
             results_dir = os.path.join(scenario_dir, "Network", "CandidateNetwork")
+            # Must make the CandidateNetwork directory before calling makeCandidateNetworkShapeFiles
+            os.makedirs(results_dir, exist_ok=True)
             DataInOut.makeCandidateShapeFiles(results_dir)
             _create_geojson_for_result(request, results_dir)
             with open(
