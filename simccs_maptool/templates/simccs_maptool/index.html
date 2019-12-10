@@ -806,43 +806,80 @@
             //NATCARB_SALINE
             var sinkdata="0\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13\t14\t15\t16" + "\n";
             var sinkcount = sinkselection.length;
-
+            var testfeature = sinkselection[0].feature;
+            var saline_flag = false;
+            if ('Min_Sink_C' in testfeature.properties) { saline_flag = true;}
+ 
             var center_latlon;
             for (i = 0; i < sinkselection.length; i++) {
                   tempstr = "";
                   // field 0-1: ID
                   tempstr += (i+1).toString()+"\t";
                   tempstr += (i+1).toString()+"\t";
-                  //2: Capacity "fieldCap__"
-                  tempstr += sinkselection[i].feature.properties['fieldCap__'] + "\t";
-                  //3: OpeningCost "costFix___"
-                  tempstr += sinkselection[i].feature.properties['costFix___'] + "\t";
-                  //4: OMCost "fixO_M___M"
-                  tempstr += sinkselection[i].feature.properties['fixO_M___M'] + "\t";
-                  //5: WellCapacity "wellCap__M"
-                  tempstr += sinkselection[i].feature.properties['wellCap__M'] + "\t";
-                  //6: WellOpeningCost "wellCostFi"
-                  tempstr += sinkselection[i].feature.properties['wellCostFi'] + "\t";
-                  //7: WellOMCost "wellFixO_M"
-                  tempstr += sinkselection[i].feature.properties['wellFixO_M'] + "\t";
-                  //8: InjectionCost "varO_M____"
-                  tempstr += sinkselection[i].feature.properties['varO_M____'] + "\t";
-                  //9: 0
-                  tempstr += '0' + "\t";
-                  //10: Lon "LON"
-                  tempstr += sinkselection[i].feature.properties['LON'] + "\t";
-                  //11: Lat "LAT"
-                  tempstr += sinkselection[i].feature.properties['LAT'] + "\t";
-                  //12: 0 
-                  tempstr += '0' + "\t";
-                  //13: 0
-                  tempstr += '0' + "\t";
-                  //14: 0
-                  tempstr += '0' + "\t";
-                  //15: 0
-                  tempstr += '0' + "\t";
-                  //16: NAME "NAME"
-                  tempstr += sinkselection[i].feature.properties['NAME'];
+                  if (saline_flag){ 
+                        //2: Capacity "fieldCap__"
+                        tempstr += sinkselection[i].feature.properties['Min_Sink_C'] + "\t";
+                        //3: OpeningCost "costFix___"
+                        tempstr += sinkselection[i].feature.properties['Min_Site_F'] + "\t";
+                        //4: OMCost "fixO_M___M"
+                        tempstr += sinkselection[i].feature.properties['Min_Fix_O_'] + "\t";
+                        //5: WellCapacity "wellCap__M"
+                        tempstr += sinkselection[i].feature.properties['Min_Well_I'] + "\t";
+                        //6: WellOpeningCost "wellCostFi"
+                        tempstr += sinkselection[i].feature.properties['Min_Well_F'] + "\t";
+                        //7: WellOMCost "wellFixO_M"
+                        tempstr += sinkselection[i].feature.properties['Min_Well_1'] + "\t";
+                        //8: InjectionCost "varO_M____"
+                        tempstr += sinkselection[i].feature.properties['Min_Well_V'] + "\t";
+                        //9: 0
+                        tempstr += '0' + "\t";
+                        //10: Lon "LON"
+                        tempstr += sinkselection[i].feature.properties['Longitude'] + "\t";
+                        //11: Lat "LAT"
+                        tempstr += sinkselection[i].feature.properties['Latitude'] + "\t";
+                        //12: 0 
+                        tempstr += '0' + "\t";
+                        //13: 0
+                        tempstr += '0' + "\t";
+                        //14: 0
+                        tempstr += '0' + "\t";
+                        //15: 0
+                        tempstr += '0' + "\t";
+                        //16: NAME "NAME"
+                        tempstr += sinkselection[i].feature.properties['Resource_N'];
+                  }
+                  else {
+                        //2: Capacity "fieldCap__"
+                        tempstr += sinkselection[i].feature.properties['fieldCap__'] + "\t";
+                        //3: OpeningCost "costFix___"
+                        tempstr += sinkselection[i].feature.properties['costFix___'] + "\t";
+                        //4: OMCost "fixO_M___M"
+                        tempstr += sinkselection[i].feature.properties['fixO_M___M'] + "\t";
+                        //5: WellCapacity "wellCap__M"
+                        tempstr += sinkselection[i].feature.properties['wellCap__M'] + "\t";
+                        //6: WellOpeningCost "wellCostFi"
+                        tempstr += sinkselection[i].feature.properties['wellCostFi'] + "\t";
+                        //7: WellOMCost "wellFixO_M"
+                        tempstr += sinkselection[i].feature.properties['wellFixO_M'] + "\t";
+                        //8: InjectionCost "varO_M____"
+                        tempstr += sinkselection[i].feature.properties['varO_M____'] + "\t";
+                        //9: 0
+                        tempstr += '0' + "\t";
+                        //10: Lon "LON"
+                        tempstr += sinkselection[i].feature.properties['LON'] + "\t";
+                        //11: Lat "LAT"
+                        tempstr += sinkselection[i].feature.properties['LAT'] + "\t";
+                        //12: 0 
+                        tempstr += '0' + "\t";
+                        //13: 0
+                        tempstr += '0' + "\t";
+                        //14: 0
+                        tempstr += '0' + "\t";
+                        //15: 0
+                        tempstr += '0' + "\t";
+                        //16: NAME "NAME"
+                        tempstr += sinkselection[i].feature.properties['NAME'];
+                  }
 
                   //caculate lon lat
                   //center_latlon = (sinkselection[i].getBounds()).getCenter();
