@@ -84,7 +84,6 @@ function display_result_sample(){
 }
 
 // L.Map.addInitHook('addHandler', 'cursor', L.CursorHandler);
-var layercontrol = new L.control.layers();
 
 map = L.map('map',{cursor:true}).setView([32.00,-85.43], 6);
 // map=L.map('leaflet',{
@@ -108,7 +107,12 @@ map = L.map('map',{cursor:true}).setView([32.00,-85.43], 6);
         maxZoom: 20,
         subdomains:['mt0','mt1','mt2','mt3']
     }).addTo(map);
-
+    
+    var baseLayers = {
+        "OpenStreetMap": osm
+    };
+    var layercontrol = new L.control.layers(null,null,{collapsed:false});
+    
     map.createPane("polygonsPane");
     map.createPane("linesPane");
     map.createPane("pointsPane");
