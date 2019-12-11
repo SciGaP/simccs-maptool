@@ -1094,7 +1094,8 @@
                               //keep the basemap layer
                               if (layer != osm) {map.removeLayer(layer);layercontrol.removeLayer(layer);};
                               });
-
+            layercontrol.remove();
+            layercontrol = L.control.layers(null,null,{collapsed:false});
             current_case ['case']= val;
             //look for val.json file
             document.getElementById("allmap").style.display="none";
