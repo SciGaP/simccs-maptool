@@ -54,7 +54,7 @@ def init_pyjnius():
         jnius_config.add_options('-Xmx1536m')
         jnius_config.set_classpath(
             os.path.join(
-                BASE_DIR, "simccs", "lib", "simccs-app-1.0-jar-with-dependencies.jar"
+                BASE_DIR, "simccs", "lib", "SimCCS.jar"
             )
         )
         logger.info(

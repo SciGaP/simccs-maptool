@@ -132,14 +132,14 @@ def generate_mps(request):
     try:
         from jnius import autoclass
 
-        DataStorer = autoclass("simccs.dataStore.DataStorer")
+        DataStorer = autoclass("dataStore.DataStorer")
         data = DataStorer(datasets_basepath, dataset_dirname, scenario)
-        Solver = autoclass("simccs.solver.Solver")
+        Solver = autoclass("solver.Solver")
         solver = Solver(data)
         data.setSolver(solver)
-        MPSWriter = autoclass("simccs.solver.MPSWriter")
+        MPSWriter = autoclass("solver.MPSWriter")
         os.mkdir(os.path.join(scenario_dir, "MIP"))
-        MPSWriter.writeMPS(
+        MPSWriter.writeCapPriceMPS(
             "mip.mps",
             data,
             capital_recovery_rate,
@@ -148,9 +148,10 @@ def generate_mps(request):
             datasets_basepath,
             dataset_dirname,
             scenario,
+            1  # modelVersion - 1 = cap
         )
     except Exception as e:
-        logger.exception("Error occurred when calling writeMPS: " + str(e.stacktrace))
+        logger.exception("Error occurred when calling writeMPS: " + str(e.stacktrace) if hasattr(e, "stacktrace") else str(e))
         raise
 
     mps_file_path = os.path.join(scenario_dir, "MIP", "mip.mps")
@@ -208,14 +209,14 @@ def solution_summary(request, experiment_id):
         {
             "numOpenedSources": solution.numOpenedSources,
             "numOpenedSinks": solution.numOpenedSinks,
-            "targetCaptureAmount": solution.targetCaptureAmount,
+            "targetCaptureAmount": solution.captureAmount,
             "numEdgesOpened": solution.numEdgesOpened,
             "projectLength": solution.projectLength,
-            "totalCaptureCost": solution.totalCaptureCost,
+            "totalCaptureCost": solution.totalAnnualCaptureCost,
             "unitCaptureCost": solution.unitCaptureCost,
-            "totalTransportCost": solution.totalTransportCost,
+            "totalTransportCost": solution.totalAnnualTransportCost,
             "unitTransportCost": solution.unitTransportCost,
-            "totalStorageCost": solution.totalStorageCost,
+            "totalStorageCost": solution.totalAnnualStorageCost,
             "unitStorageCost": solution.unitStorageCost,
             "totalCost": solution.totalCost,
             "unitTotalCost": solution.unitTotalCost,
@@ -242,17 +243,21 @@ def _create_shapefiles_for_result(request, results_dir):
         from jnius import autoclass
 
         # initialize the Solver/DataStorer
-        DataStorer = autoclass("simccs.dataStore.DataStorer")
+        DataStorer = autoclass("dataStore.DataStorer")
         data = DataStorer(datasets_basepath, dataset, scenario)
-        Solver = autoclass("simccs.solver.Solver")
+        Solver = autoclass("solver.Solver")
         solver = Solver(data)
         data.setSolver(solver)
         logger.debug("Scenario data loaded for {}".format(scenario_dir))
         # load the .mps/.sol solution
-        solution = data.loadSolution(results_dir)
+        # TODO: change this back to using a DataStorer instance that proxies the call to DataInOut
+        # https://github.com/spamidig/simccs-app/commit/03442e7da0d6ad875f67a0c6ef4dcb0e6db4513e#diff-1c52e4608d2d912400618c55c3054dcaR585
+        DataInOut = autoclass("dataStore.DataInOut")
+        solution = DataInOut.loadSolution(results_dir,
+                                          -1)  # timeslot
         logger.debug("Solution loaded from {}".format(results_dir))
         # generate shapefiles
-        data.makeShapeFiles(results_dir, solution)
+        DataInOut.makeShapeFiles(results_dir, solution)
         logger.debug(
             "Shape files created in {}".format(os.path.join(results_dir, "shapeFiles"))
         )
@@ -273,14 +278,18 @@ def _load_solution(request, results_dir):
         from jnius import autoclass
 
         # initialize the Solver/DataStorer
-        DataStorer = autoclass("simccs.dataStore.DataStorer")
+        DataStorer = autoclass("dataStore.DataStorer")
         data = DataStorer(datasets_basepath, dataset, scenario)
-        Solver = autoclass("simccs.solver.Solver")
+        Solver = autoclass("solver.Solver")
         solver = Solver(data)
         data.setSolver(solver)
         logger.debug("Scenario data loaded for {}".format(scenario_dir))
         # load the .mps/.sol solution
-        solution = data.loadSolution(results_dir)
+        # TODO: change this back to using a DataStorer instance that proxies the call to DataInOut
+        # https://github.com/spamidig/simccs-app/commit/03442e7da0d6ad875f67a0c6ef4dcb0e6db4513e#diff-1c52e4608d2d912400618c55c3054dcaR585
+        DataInOut = autoclass("dataStore.DataInOut")
+        solution = DataInOut.loadSolution(results_dir,
+                                          -1)  # timeslot
         logger.debug("Solution loaded from {}".format(results_dir))
         return solution
     except Exception as e:
@@ -376,13 +385,18 @@ def candidate_network(request):
             # Run the Solver to generate candidate graph
             from jnius import autoclass
 
-            DataStorer = autoclass("simccs.dataStore.DataStorer")
+            DataStorer = autoclass("dataStore.DataStorer")
             data = DataStorer(datasets_basepath, dataset_dirname, scenario)
-            Solver = autoclass("simccs.solver.Solver")
+            Solver = autoclass("solver.Solver")
             solver = Solver(data)
             data.setSolver(solver)
-            data.makeCandidateNetworkShapeFiles()
+            # TODO: change this back to using a DataStorer instance that proxies the call to DataInOut
+            # https://github.com/spamidig/simccs-app/commit/03442e7da0d6ad875f67a0c6ef4dcb0e6db4513e#diff-1c52e4608d2d912400618c55c3054dcaR585
+            DataInOut = autoclass("dataStore.DataInOut")
             results_dir = os.path.join(scenario_dir, "Network", "CandidateNetwork")
+            # Must make the CandidateNetwork directory before calling makeCandidateNetworkShapeFiles
+            os.makedirs(results_dir, exist_ok=True)
+            DataInOut.makeCandidateShapeFiles(results_dir)
             _create_geojson_for_result(request, results_dir)
             with open(
                 os.path.join(results_dir, "geojson", "Network.geojson")
