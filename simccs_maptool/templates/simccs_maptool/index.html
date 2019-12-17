@@ -1178,6 +1178,9 @@
                               if (layer != osm) {map.removeLayer(layer);layercontrol.removeLayer(layer);};
                               });
             //hide the summary div, show edit div
+            //clear previous sink/source eidtor layers
+            case_sourceLayer.clearLayers();
+            case_sinkLayer.clearLayers();
             document.getElementById("case_studies_display_body").style.display = "none";
             document.getElementById("case_studies_editor_Southeast_US").style.display = "block";
             
@@ -1244,6 +1247,10 @@
                        dataType: "jsonp"
                  });
       } 
+
+      function sswindowpicker() {
+            
+      }
 
 </script>
 {% endblock scripts %}
@@ -1565,6 +1572,18 @@
                         </div>
                         <div class="card-body" id="case_studies_editor_Southeast_US" style="display: none" >
                               Use mouse-click to select source and sink data.<br><br>
+                              <!--
+                              <div class="btn-group btn-group-sm btn-block">
+                              <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_selectallsource()" id="case_selectallsource_btn" value="hide">Select all sources</button>
+                              <button type="button  btn-sm" id="ss_windowpicker" class="btn btn-light" aria-label="Left Align" onclick="sswindowpicker()">
+                                    <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
+                              </div>
+                              <div class="btn-group btn-group-sm btn-block">
+                              <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_selectallsink()" id="case_selectallsink_btn" value="hide">Select all sinks</button>
+                              <button type="button  btn-sm " id="ss_windowpicker" class="btn btn-light" aria-label="Left Align" onclick="sswindowpicker()">
+                                    <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
+                              </div>
+                              -->
                               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_hideunselected()" id="case_hideunselected_btn" value="hide">Hide unselected data</button>
                               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_generateinputfile()">Generate Data Files</button>
                               <div id="case_downloadsource_div" style="display: none;"><a href="" id="case_sources_input">Download Source.txt</a></div>
