@@ -1096,6 +1096,9 @@
                               });
             layercontrol.remove();
             layercontrol = L.control.layers(null,null,{collapsed:false});
+            //clear selection of sources and sinks
+            selection.length = 0;
+            selection_green.length = 0
             current_case ['case']= val;
             //look for val.json file
             document.getElementById("allmap").style.display="none";
