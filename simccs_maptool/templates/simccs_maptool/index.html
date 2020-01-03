@@ -40,6 +40,7 @@
 <script src="{% static 'js/leafletMap.js' %}" ></script>
 <script src="{% static 'js/casestudies.js' %}" ></script>
 <script src="{% static 'django_airavata_api/dist/airavata-api.js' %}"></script>
+<script src="{% static 'js/etagapi.js' %}"></script>
 
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.9/dist/css/bootstrap-select.min.css">
@@ -1216,6 +1217,23 @@ $(function() {
                  });
       } 
 
+function display_etag_data(datatype) {
+      //datatype:reader_locations, tag_reads 
+      if (datatype == "reader_locations") {
+            var reader_id, reader_desc, reader_location;
+            for (i =0; i<readers_data['count']; i++) {
+                  reader_id = readers_data['results'][i]['reader_id'];
+                  reader_desc = readers_data['results'][i]['description'];
+                  alert(reader_id + reader_desc);
+            }
+      }
+}
+
+$(function() {
+    $('input[name=optradio]').change(function(e) {
+      display_etag_data(this.id);
+      });
+});
 </script>
 {% endblock scripts %}
 
@@ -1253,10 +1271,10 @@ $(function() {
                               <section>  <strong>Data Type</strong>
                                     <ul style="list-style-type:none;padding:0;"><li>
                                     <div class="radio">
-                                    <label><input type="radio" name="optradio" checked=checked> Reader locations</label>
+                                    <label><input type="radio" name="optradio" id="reader_locations" checked=checked> Reader locations</label>
                                     </div></li><li>
                                     <div class="radio">
-                                    <label><input type="radio" name="optradio"> Tag reads</label>
+                                    <label><input type="radio" name="optradio" id="tag_reads"> Tag reads</label>
                                     </div></li>
                                     </ul>
                               </section>
