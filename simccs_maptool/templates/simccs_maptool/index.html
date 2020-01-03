@@ -1217,6 +1217,26 @@ $(function() {
                  });
       } 
 
+function extract_reader_location(reader_id) {
+      // find location_id
+      var location_id = -1;
+      for (i in reader_locations_data["results"]) {
+            if (reader_id == reader_locations_data["results"][i]['reader_id']){
+                  location_id = reader_locations_data["results"][i]['location_id'];
+                  break;
+            }
+      }
+      var reader_latitude, reader_longitude;
+      for (i in locations_data["results"]) {
+            if (location_id == locations_data["results"][i]['location_id']){
+                  reader_latitude = locations_data["results"][i]['latitude'];
+                  reader_longitude = locations_data["results"][i]['longitude']
+                  break;
+            }
+      }
+      alert(reader_longitude+","+reader_latitude);
+}      
+
 function display_etag_data(datatype) {
       //datatype:reader_locations, tag_reads 
       if (datatype == "reader_locations") {
@@ -1224,7 +1244,7 @@ function display_etag_data(datatype) {
             for (i =0; i<readers_data['count']; i++) {
                   reader_id = readers_data['results'][i]['reader_id'];
                   reader_desc = readers_data['results'][i]['description'];
-                  alert(reader_id + reader_desc);
+                  extract_reader_location(reader_id);      
             }
       }
 }
