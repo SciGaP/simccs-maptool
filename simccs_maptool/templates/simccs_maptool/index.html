@@ -1220,9 +1220,12 @@ $(function() {
 function extract_reader_location(reader_id) {
       // find location_id
       var location_id = -1;
+      var start_time,end_time
       for (i in reader_locations_data["results"]) {
             if (reader_id == reader_locations_data["results"][i]['reader_id']){
                   location_id = reader_locations_data["results"][i]['location_id'];
+                  start_time = reader_locations_data["results"][i]['start_timestamp'];
+                  end_time = reader_locations_data["results"][i]['end_timestamp'];
                   break;
             }
       }
@@ -1234,18 +1237,29 @@ function extract_reader_location(reader_id) {
                   break;
             }
       }
-      alert(reader_longitude+","+reader_latitude);
+      //alert(reader_longitude+","+reader_latitude);
+      return [reader_latitude, reader_longitude,start_time,end_time]
 }      
 
 function display_etag_data(datatype) {
       //datatype:reader_locations, tag_reads 
+      readers_marker = L.featureGroup();
       if (datatype == "reader_locations") {
-            var reader_id, reader_desc, reader_location;
+            var reader_id, reader_desc, reader_lat,reader_lon,reader_s_time,reader_e_time;
+            var pop_info;
             for (i =0; i<readers_data['count']; i++) {
                   reader_id = readers_data['results'][i]['reader_id'];
                   reader_desc = readers_data['results'][i]['description'];
-                  extract_reader_location(reader_id);      
+                  [reader_lat, reader_lon,reader_s_time,reader_e_time]= extract_reader_location(reader_id);
+                  popinfo = '<p style="font-size:16px"><strong>Reader ID: </strong>' + reader_id + "<br>";
+                  popinfo += "<strong>Description: </strong>" + reader_desc + "<br>";
+                  popinfo += "<strong>Start Timestamp: </strong>" + reader_s_time + "<br>";
+                  popinfo += "<strong>End Timestamp: </strong>" + reader_e_time + "<br>";
+                  popinfo +="</p>";
+                  L.marker([reader_lat,reader_lon]).bindPopup(popinfo).addTo(readers_marker);
             }
+      map.addLayer(readers_marker);
+      map.fitBounds(readers_marker.getBounds(),{maxZoom:9});
       }
 }
 
