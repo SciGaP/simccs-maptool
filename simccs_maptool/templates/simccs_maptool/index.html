@@ -5,6 +5,8 @@
 <link rel="stylesheet" type="text/css" href="{% static 'css/MarkerCluster.css' %}" />
 <link rel="stylesheet" type="text/css" href="{% static 'css/MarkerCluster_Default.css' %}" />
 <link rel="stylesheet" type="text/css" href="{% static 'css/leaflet.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'css/leaflet.extra-markers.min.css' %}" />
+
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.2.3/leaflet.draw.css" />
 
 <style type="text/css">
@@ -41,6 +43,7 @@
 <script src="{% static 'js/casestudies.js' %}" ></script>
 <script src="{% static 'django_airavata_api/dist/airavata-api.js' %}"></script>
 <script src="{% static 'js/etagapi.js' %}"></script>
+<script src="{% static 'js/leaflet.extra-markers.min.js' %}"></script>
 
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.9/dist/css/bootstrap-select.min.css">
@@ -1267,9 +1270,34 @@ function display_etag_data(datatype) {
       }
       if (datatype == "tag_reads") {
             var optionValue = $("input[name='opt_displaytype']:checked").val();
-            if (optionVaule == "tag_summaries"){
-                  
+            if (optionValue == "tag_summaries"){
+                  var tag_number = tag_animals_data['count'];
+                  var numMarker = L.ExtraMarkers.icon({
+                      icon: 'fa-number',
+                        markerColor: 'green',
+                        shape: 'square',
+                        number:tag_number,
+                        prefix: 'fa'
+                        });
+                  L.marker([35.221468,-97.295671], {icon: numMarker}).bindPopup("<h4>Put some summary info here!</h4>").addTo(readers_marker);
+                  map.addLayer(readers_marker);
+                  map.fitBounds(readers_marker.getBounds(),{maxZoom:9});
             }
+            if (optionValue == "raw_tag_reads"){
+                  var rawClusters=L.markerClusterGroup();
+                  for (i=0;i<=49;i++) {
+                        var numMarker = L.ExtraMarkers.icon({
+                      icon: 'fa-number',
+                        markerColor: 'green',
+                        shape: 'square',
+                        number:i+1,
+                        prefix: 'fa'
+                        });
+                        L.marker([35.221468,-97.295671], {icon: numMarker}).bindPopup("<h5>animal info:"+(i+1)+"</h5>").addTo(rawClusters);
+                  }
+                  map.addLayer(rawClusters);
+            }
+
       }
 
 }
