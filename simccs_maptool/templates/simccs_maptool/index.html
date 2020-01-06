@@ -1241,9 +1241,13 @@ function extract_reader_location(reader_id) {
       return [reader_latitude, reader_longitude,start_time,end_time]
 }      
 
+var readers_marker = L.featureGroup();
+
 function display_etag_data(datatype) {
       //datatype:reader_locations, tag_reads 
-      readers_marker = L.featureGroup();
+      //readers_marker = L.featureGroup();
+      clear_map();
+      readers_marker.clearLayers();
       if (datatype == "reader_locations") {
             var reader_id, reader_desc, reader_lat,reader_lon,reader_s_time,reader_e_time;
             var pop_info;
@@ -1261,6 +1265,13 @@ function display_etag_data(datatype) {
       map.addLayer(readers_marker);
       map.fitBounds(readers_marker.getBounds(),{maxZoom:9});
       }
+      if (datatype == "tag_reads") {
+            var optionValue = $("input[name='opt_displaytype']:checked").val();
+            if (optionVaule == "tag_summaries"){
+                  
+            }
+      }
+
 }
 
 $(function() {
@@ -1268,6 +1279,13 @@ $(function() {
       display_etag_data(this.id);
       });
 });
+
+function clear_map() {
+      map.eachLayer(function (layer) {
+            //keep the basemap layer
+            if (layer != osm) {map.removeLayer(layer);};
+            });
+}
 </script>
 {% endblock scripts %}
 
@@ -1315,13 +1333,13 @@ $(function() {
                               <section>  <strong>Display Type</strong>
                                     <ul style="list-style-type:none;padding:0;"><li>
                                     <div class="radio">
-                                    <label><input type="radio" name="optradio2" checked=checked> Summaries</label>
+                                    <label><input type="radio" name="opt_displaytype" value="tag_summaries" id="tag_summaries" checked=checked> Summaries</label>
                                     </div></li><li>
                                     <div class="radio">
-                                    <label><input type="radio" name="optradio2"> Raw tag reads</label>
+                                    <label><input type="radio" name="opt_displaytype" value="raw_tag_reads" id="raw_tag_reads"> Raw tag reads</label>
                                     </div></li><li>
                                     <div class="radio">
-                                    <label><input type="radio" name="optradio2"> Raw tag time series</label>
+                                    <label><input type="radio" name="opt_displaytype" value="raw_tag_time_series" id="raw_tag_time_series"> Raw tag time series</label>
                                     </div></li>
                                     </ul>
                               </section>
