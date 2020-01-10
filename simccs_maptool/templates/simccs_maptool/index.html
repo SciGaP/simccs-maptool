@@ -1224,7 +1224,7 @@ function extract_reader_location(reader_id) {
       // find location_id
       var location_id = -1;
       var start_time,end_time
-      for (i in reader_locations_data["results"]) {
+      for (var i in reader_locations_data["results"]) {
             if (reader_id == reader_locations_data["results"][i]['reader_id']){
                   location_id = reader_locations_data["results"][i]['location_id'];
                   start_time = reader_locations_data["results"][i]['start_timestamp'];
@@ -1233,7 +1233,7 @@ function extract_reader_location(reader_id) {
             }
       }
       var reader_latitude, reader_longitude;
-      for (i in locations_data["results"]) {
+      for (var i in locations_data["results"]) {
             if (location_id == locations_data["results"][i]['location_id']){
                   reader_latitude = locations_data["results"][i]['latitude'];
                   reader_longitude = locations_data["results"][i]['longitude']
@@ -1254,7 +1254,7 @@ function display_etag_data(datatype) {
       if (datatype == "reader_locations") {
             var reader_id, reader_desc, reader_lat,reader_lon,reader_s_time,reader_e_time;
             var pop_info;
-            for (i =0; i<readers_data['count']; i++) {
+            for (var i=0; i<readers_data['count']; i++) {
                   reader_id = readers_data['results'][i]['reader_id'];
                   reader_desc = readers_data['results'][i]['description'];
                   [reader_lat, reader_lon,reader_s_time,reader_e_time]= extract_reader_location(reader_id);
@@ -1263,6 +1263,7 @@ function display_etag_data(datatype) {
                   popinfo += "<strong>Start Timestamp: </strong>" + reader_s_time + "<br>";
                   popinfo += "<strong>End Timestamp: </strong>" + reader_e_time + "<br>";
                   popinfo +="</p>";
+                  reader_id = '';
                   L.marker([reader_lat,reader_lon]).bindPopup(popinfo).addTo(readers_marker);
             }
       map.addLayer(readers_marker);
