@@ -42,7 +42,7 @@
 <script>
          // TODO: replace with global user session object
          var userIsAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
-         //var userIsAuthenticated = true;
+         var userIsAuthenticated = true;
          $(document).ready(function() {
       
            load_current_experiment();
@@ -1272,7 +1272,29 @@
       }
 
       function sswindowpicker() {
-            
+            polygon_options = {
+            showArea: false,
+            shapeOptions: {
+                stroke: true,
+                color: '#6e83f0',
+                weight: 4,
+                opacity: 0.8,
+                fill: true,
+                fillColor: null, //same as color by default
+                fillOpacity: 0.2,
+                clickable: true
+            }
+        };
+        var drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+
+        map.on('draw:created', function (e) {
+            var type = e.layerType,
+            layer = e.layer;
+            drawnItems.addLayer(layer);
+        });
+            var polygonDrawer = new L.Draw.Polygon(map, polygon_options);     
+            polygonDrawer.enable();
       }
 
 </script>
@@ -1598,18 +1620,14 @@
                               
                               <div class="btn-group btn-group-sm btn-block">
                               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_selectallsource()" id="case_selectallsource_btn" value="hide">Select all sources</button>
-                              <!--
-                              <button type="button  btn-sm" id="ss_windowpicker" class="btn btn-light" aria-label="Left Align" onclick="sswindowpicker()">
+                              <button type="button  btn-sm" id="ss_windowpicker" title="Select sources by drawing" class="btn btn-light" aria-label="Left Align" onclick="sswindowpicker()">
                                     <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
-                              -->
                         </div>
                               <div class="btn-group btn-group-sm btn-block">
                               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_selectallsink()" id="case_selectallsink_btn" value="hide">Select all sinks</button>
-                              <!--
-                              <button type="button  btn-sm " id="ss_windowpicker" class="btn btn-light" aria-label="Left Align" onclick="sswindowpicker()">
+                              <button type="button  btn-sm " id="ss_windowpicker" title="Select sinks by drawing" class="btn btn-light" aria-label="Left Align" onclick="sswindowpicker()">
                                     <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
-                              -->
-                        </div>
+                              </div>
                               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_hideunselected()" id="case_hideunselected_btn" value="hide">Hide unselected data</button>
                               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_generateinputfile()">Generate Data Files</button>
                               <div id="case_downloadsource_div" style="display: none;"><a href="" id="case_sources_input">Download Source.txt</a></div>
