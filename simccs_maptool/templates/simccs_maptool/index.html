@@ -43,7 +43,7 @@
 <script>
          // TODO: replace with global user session object
          var userIsAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
-         var userIsAuthenticated = true;
+         //var userIsAuthenticated = true;
          $(document).ready(function() {
       
            load_current_experiment();
@@ -1302,6 +1302,7 @@
                               layer.setStyle({weight:2,color:"white",fillColor:"purple",radius:12});
                               selection.push(layer);} else {layer.setStyle(geojsonMarkerOptions);}
                   });
+            draw_layer.remove();
             drawnItems.clearLayers();
             map.removeLayer(drawnItems);
             polygonDrawer.disable();   
@@ -1339,6 +1340,7 @@
                         if (contains){layer.setStyle({weight:2,color:"white",fillColor:"yellow",radius:12});
                         selection_green.push(layer);} else {layer.setStyle(geojsonMarkerOptions_green);};
                   });
+            draw_layer.remove();
             drawnItems1.clearLayers();
             map.removeLayer(drawnItems1); 
             polygonDrawer1.disable();   
