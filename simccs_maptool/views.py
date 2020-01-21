@@ -17,6 +17,7 @@ from django.views.generic import TemplateView
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 DATASETS_BASEPATH = os.path.join(BASEDIR, "simccs", "Datasets")
 CASE_STUDIES_DIR = os.path.join(BASEDIR, "static", "Scenarios")
+DATASETS_METADATA_DIR = os.path.join(BASEDIR, "static", "Datasets")
 SOUTHEASTUS_DATASET_ID = "Southeast_US_2012"
 
 logger = logging.getLogger(__name__)
@@ -430,8 +431,17 @@ def _get_basedata_dir(dataset_dirname):
 
 
 def _get_dataset_dirname(dataset):
+    # Check for case studies specific datasets
     for summary_json_path in glob.glob(
         os.path.join(CASE_STUDIES_DIR, "*", "summary.json")
+    ):
+        with open(summary_json_path, encoding="utf-8") as f:
+            summary_json = json.load(f)
+            if summary_json["dataset-id"] == dataset:
+                return summary_json["dataset-dirname"]
+    # Check for global datasets
+    for summary_json_path in glob.glob(
+        os.path.join(DATASETS_METADATA_DIR, "*", "summary.json")
     ):
         with open(summary_json_path, encoding="utf-8") as f:
             summary_json = json.load(f)
