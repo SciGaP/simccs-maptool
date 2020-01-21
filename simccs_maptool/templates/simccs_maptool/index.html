@@ -291,11 +291,11 @@
          
          var geojsonMarkerOptions = {
          radius: 8,
-         fillColor: "blue",
+         fillColor: "red",
          color: "#000",
          weight: 1,
          opacity: 1,
-         fillOpacity: 0.7,
+         fillOpacity: 0.8,
          pane: "pointsPane"
          };
          
@@ -305,7 +305,7 @@
          color: "#000",
          weight: 1,
          opacity: 1,
-         fillOpacity: 0.7,
+         fillOpacity: 0.8,
          pane: "pointsPane"
          };
       
@@ -318,7 +318,7 @@
          layer.on('click', function (e) {
            var target_id = selection.indexOf(e.target)
            if (target_id >=0 ) {e.target.setStyle(geojsonMarkerOptions);selection.splice(target_id,1);}
-           else {e.target.setStyle({weight:2,color:"white",fillColor:"purple",radius:12});
+           else {e.target.setStyle({weight:3,fillColor:"orangered",radius:12});
                  selection.push(e.target);}
          })};
          
@@ -428,7 +428,7 @@
          layer.on('click', function (e) {
            var target_id = selection_green.indexOf(e.target)
            if (target_id >=0 ) {e.target.setStyle(geojsonMarkerOptions_green);selection_green.splice(target_id,1);}
-           else {e.target.setStyle({weight:2,color:"white",fillColor:"yellow",radius:12});
+           else {e.target.setStyle({weight:3,fillColor:"LawnGreen",radius:12});
                  selection_green.push(e.target);}
          })};
 
@@ -1257,7 +1257,7 @@
             //clear selection array first
             selection = [];
             case_sourceLayer.eachLayer(function(layer) {
-                  layer.setStyle({weight:2,color:"white",fillColor:"purple",radius:12});
+                  layer.setStyle({weight:3,fillColor:"orangered",radius:12});
                   selection.push(layer);
             });
       }
@@ -1267,7 +1267,7 @@
             //clear selection array first
             selection_green = [];
             case_sinkLayer.eachLayer(function(layer) {
-                  layer.setStyle({weight:2,color:"white",fillColor:"yellow",radius:12});
+                  layer.setStyle({weight:3,fillColor:"LawnGreen",radius:12});
                   selection_green.push(layer);
             });
       }
@@ -1292,18 +1292,17 @@
         map.addLayer(drawnItems);
 
         map.on('draw:created', function (e) {
-            var draw_type = e.layerType,
-            draw_layer = e.layer;
+            var draw_type = e.layerType,draw_layer = e.layer;
             //drawnItems.addLayer(layer);
                   selection = [];
                   case_sourceLayer.eachLayer(function(layer) {
                         var contains = turf.inside(layer.toGeoJSON(), draw_layer.toGeoJSON());
                         if (contains){
-                              layer.setStyle({weight:2,color:"white",fillColor:"purple",radius:12});
+                              layer.setStyle({weight:3,fillColor:"orangered",radius:12});
                               selection.push(layer);} else {layer.setStyle(geojsonMarkerOptions);}
                   });
-            draw_layer.remove();
-            drawnItems.clearLayers();
+            //draw_layer.remove();
+            drawnItems.clearLayers(draw_layer);
             map.removeLayer(drawnItems);
             polygonDrawer.disable();   
         }
@@ -1331,17 +1330,16 @@
             map.addLayer(drawnItems1);
 
             map.on('draw:created', function (e) {
-            var draw_type = e.layerType,
-            draw_layer = e.layer;
+            var draw_type = e.layerType,draw_layer = e.layer;
             //drawnItems.addLayer(layer);
                   selection_green = [];
                   case_sinkLayer.eachLayer(function(layer) {
                         var contains = turf.inside(layer.toGeoJSON(), draw_layer.toGeoJSON());
-                        if (contains){layer.setStyle({weight:2,color:"white",fillColor:"yellow",radius:12});
+                        if (contains){layer.setStyle({weight:3,fillColor:"LawnGreen",radius:12});
                         selection_green.push(layer);} else {layer.setStyle(geojsonMarkerOptions_green);};
                   });
-            draw_layer.remove();
-            drawnItems1.clearLayers();
+            //draw_layer.remove();
+            drawnItems1.clearLayers(draw_layer);
             map.removeLayer(drawnItems1); 
             polygonDrawer1.disable();   
             }
