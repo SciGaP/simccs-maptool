@@ -23,3 +23,14 @@ var tag_animals_data = animals_data;
 //api/etag/tag_animal/?format=json
 //var tag_animals_json = '';
 //var tag_animals_data = JSON.parse(tag_animals_json);
+//extract animal list
+
+function animal_list() {
+    var all_animal_list = [];
+    for (var i=0; i<animals_data['results'].length; i++) {
+        all_animal_list.push(animals_data['results'][i]['species']);
+    }
+    return all_animal_list;
+}
+
+var list_of_animal = new Set(animal_list());
