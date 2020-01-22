@@ -1244,7 +1244,8 @@ function extract_reader_location(reader_id) {
       return [reader_latitude, reader_longitude,start_time,end_time]
 }      
 
-var readers_marker = L.featureGroup();
+//var readers_marker = L.featureGroup();
+var readers_marker = L.markerClusterGroup();
 
 function display_etag_data(datatype) {
       //datatype:reader_locations, tag_reads 
@@ -1267,7 +1268,7 @@ function display_etag_data(datatype) {
                   L.marker([reader_lat,reader_lon]).bindPopup(popinfo).addTo(readers_marker);
             }
       map.addLayer(readers_marker);
-      map.fitBounds(readers_marker.getBounds(),{maxZoom:9});
+      map.fitBounds(readers_marker.getBounds(),{maxZoom:10});
       }
       if (datatype == "tag_reads") {
             var optionValue = $("input[name='opt_displaytype']:checked").val();
@@ -1366,10 +1367,12 @@ function clear_map() {
                                     </div></li><li>
                                     <div class="radio">
                                     <label><input type="radio" name="opt_displaytype" value="raw_tag_reads" id="raw_tag_reads"> Raw tag reads</label>
-                                    </div></li><li>
+                                    </div></li>
+                                    <!-- <li>
                                     <div class="radio">
                                     <label><input type="radio" name="opt_displaytype" value="raw_tag_time_series" id="raw_tag_time_series"> Raw tag time series</label>
-                                    </div></li>
+                                    </div>
+                                    </li> -->
                                     </ul>
                               </section>
                         </div>
