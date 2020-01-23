@@ -27,6 +27,10 @@ specified in Django Portal's `settings_local.py` file.
   - `CPLEX_APPLICATION_ID` - The Airavata application module id of the Cplex
     application to launch.
   - `DATASETS_DIR` - Directory of datasets and their basedata (cost network).
+  - `JAVA_OPTIONS` - JVM command line options. Defaults to `-Xmx4g`. May be a
+    list or tuple to pass multiple options.
+  - `MAX_CONCURRENT_JAVA_CALLS` - maximum concurrent calls into Java code
+    allowed across all HTTP requests. Default to 1.
 
 Example of custom settings in a `settings_local.py` file:
 
@@ -54,7 +58,7 @@ pip install pyjnius
 #### Building simccs GitHub repo code
 
 **Note: No longer need to build. Just grab the SimCCS.jar from
-https://github.com/simccs/SimCCS/tree/master/store** 
+https://github.com/simccs/SimCCS/tree/master/store**
 
 Clone https://github.com/simccs/SimCCS
 
