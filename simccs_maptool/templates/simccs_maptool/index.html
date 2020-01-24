@@ -532,6 +532,33 @@
             return sinkdata;
       }
       
+      function case_generatecandidatenetwork() {
+
+            if (selection.length == 0 ) {alert('No sources are selected!');return}
+            if (selection_green.length == 0 ) {alert('No sinks are selected!');return}
+            var sourcedata = case_generatesourcedata();
+            var sinkdata=case_generatesinkdata();
+            var current_dataset_id = get_current_dataset_id();
+            var data = {
+                  sources: sourcedata,
+                  sinks: sinkdata,
+                  dataset: current_dataset_id
+            };
+            AiravataAPI.utils.FetchUtils.showSpinner($.getJSON({url: "/maptool/candidate-network/", data: data}, function( data ) {
+                  // Note: 'data' includes Sinks and Sources but since those are
+                  // already displayed I'm opting to only display the Network
+                  candidateNetworkLayer.clearLayers();
+                  candidateNetworkLayer.addData(data["Network"]);
+                  if (!map.hasLayer(candidateNetworkLayer)) {
+                        candidateNetworkLayer.addTo(map);
+                  }
+                  if (!candidateNetworkLayerAddedToControl) {
+                        layercontrol.addOverlay(candidateNetworkLayer, "Candidate Network");
+                        candidateNetworkLayerAddedToControl = true;
+                  }
+            }));
+      }
+
       function case_generatempsfile() {
             if (selection.length == 0 ) {alert('No sources are selected!');return}
             if (selection_green.length == 0 ) {alert('No sinks are selected!');return}
@@ -1684,7 +1711,9 @@
                               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_generateinputfile()">Generate Data Files</button>
                               <div id="case_downloadsource_div" style="display: none;"><a href="" id="case_sources_input">Download Source.txt</a></div>
                               <div id="case_downloadsink_div" style="display: none;"><a href="" id="case_sinks_input">Download Sinks.txt</a></div>
-                              <br>  
+                              <hr/>
+                              <button type="button" id="bn_generatecandidatenetwork" class="btn btn-primary btn-sm btn-block" onclick="case_generatecandidatenetwork()">Generate Candidate Network</button>
+                              <hr/>
                               <strong>Model Parameters</strong><br>
                               <table>
                                           <tr><td>Capital Recovery Rate</td><td><input id="case_Capital_Recovery_Rate" name="case_Capital_Recovery_Rate" type="text" size=8 value=0.1 required></td></tr>
