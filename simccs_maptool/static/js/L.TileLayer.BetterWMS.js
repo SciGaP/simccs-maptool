@@ -1,3 +1,4 @@
+//source: https://gist.github.com/rclark/6908938
 L.TileLayer.BetterWMS = L.TileLayer.WMS.extend({
   
   onAdd: function (map) {
@@ -22,10 +23,13 @@ L.TileLayer.BetterWMS = L.TileLayer.WMS.extend({
       url: url,
       success: function (data, status, xhr) {
         var err = typeof data === 'string' ? null : data;
-        showResults(err, evt.latlng, data);
+        //Fix for blank popup window
+        var doc = (new DOMParser()).parseFromString(data, "text/html"); 
+        if (doc.body.innerHTML.trim().length > 0)
+          {showResults(err, evt.latlng, data)};
       },
       error: function (xhr, status, error) {
-        showResults(error);  
+        showResults(url,error);  
       }
     });
   },
@@ -48,7 +52,8 @@ L.TileLayer.BetterWMS = L.TileLayer.WMS.extend({
           width: size.x,
           layers: this.wmsParams.layers,
           query_layers: this.wmsParams.layers,
-          info_format: 'text/html'
+          info_format: 'text/html',
+          propertyName: this.wmsParams.propertyName
         };
     
     params[params.version === '1.3.0' ? 'i' : 'x'] = point.x;

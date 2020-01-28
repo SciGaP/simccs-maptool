@@ -714,6 +714,7 @@ var geojsonLineOptions = {
             format: 'image/png',
             transparent: true,
             attribution: "SimCCS",
+            propertyName: 'Name,Type',
             zIndex: 99
         });
 
