@@ -6,7 +6,9 @@ import json
 import logging
 import os
 import tempfile
+from contextlib import ContextDecorator
 from datetime import datetime
+from threading import BoundedSemaphore
 
 import shapefile
 from django.conf import settings
@@ -17,9 +19,22 @@ from django.views.generic import TemplateView
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 DATASETS_BASEPATH = os.path.join(BASEDIR, "simccs", "Datasets")
 CASE_STUDIES_DIR = os.path.join(BASEDIR, "static", "Scenarios")
+DATASETS_METADATA_DIR = os.path.join(BASEDIR, "static", "Datasets")
 SOUTHEASTUS_DATASET_ID = "Southeast_US_2012"
 
 logger = logging.getLogger(__name__)
+
+
+class MaxConcurrentJavaCalls(BoundedSemaphore, ContextDecorator):
+    pass
+
+
+# Only allow MAX_CONCURRENT_JAVA_CALLS concurrent calls into Java code, since
+# the Java code requires a substantial amount of memory. Any views that call
+# into Java code should have this decorator applied to them.
+max_concurrent_java_calls = MaxConcurrentJavaCalls(
+    getattr(settings, "MAX_CONCURRENT_JAVA_CALLS", 1)
+)
 
 
 class HomeView(TemplateView):
@@ -38,6 +53,7 @@ class HelpView(TemplateView):
 
 
 @login_required
+@max_concurrent_java_calls
 def generate_mps(request):
 
     # MPS model parameters
@@ -148,10 +164,14 @@ def generate_mps(request):
             datasets_basepath,
             dataset_dirname,
             scenario,
-            1  # modelVersion - 1 = cap
+            1,  # modelVersion - 1 = cap
         )
     except Exception as e:
-        logger.exception("Error occurred when calling writeMPS: " + str(e.stacktrace) if hasattr(e, "stacktrace") else str(e))
+        logger.exception(
+            "Error occurred when calling writeMPS: " + str(e.stacktrace)
+            if hasattr(e, "stacktrace")
+            else str(e)
+        )
         raise
 
     mps_file_path = os.path.join(scenario_dir, "MIP", "mip.mps")
@@ -168,6 +188,7 @@ def generate_mps(request):
 
 
 @login_required
+@max_concurrent_java_calls
 def experiment_result(request, experiment_id):
     """
     Return a JSON object with nested GeoJSON objects.
@@ -202,6 +223,7 @@ def experiment_result(request, experiment_id):
 
 
 @login_required
+@max_concurrent_java_calls
 def solution_summary(request, experiment_id):
     results_dir = _get_results_dir(request, experiment_id)
     solution = _load_solution(request, results_dir)
@@ -250,8 +272,7 @@ def _create_shapefiles_for_result(request, results_dir):
         data.setSolver(solver)
         logger.debug("Scenario data loaded for {}".format(scenario_dir))
         # load the .mps/.sol solution
-        solution = data.loadSolution(results_dir,
-                                     -1)  # timeslot
+        solution = data.loadSolution(results_dir, -1)  # timeslot
         logger.debug("Solution loaded from {}".format(results_dir))
         # generate shapefiles
         data.makeShapeFiles(results_dir, solution)
@@ -282,8 +303,7 @@ def _load_solution(request, results_dir):
         data.setSolver(solver)
         logger.debug("Scenario data loaded for {}".format(scenario_dir))
         # load the .mps/.sol solution
-        solution = data.loadSolution(results_dir,
-                                     -1)  # timeslot
+        solution = data.loadSolution(results_dir, -1)  # timeslot
         logger.debug("Solution loaded from {}".format(results_dir))
         return solution
     except Exception as e:
@@ -327,6 +347,7 @@ def _get_dataset_from_results_dir(results_dir):
     return os.path.basename(dataset_dir)
 
 
+@max_concurrent_java_calls
 def candidate_network(request):
 
     sources = request.GET.get("sources", None)
@@ -430,8 +451,17 @@ def _get_basedata_dir(dataset_dirname):
 
 
 def _get_dataset_dirname(dataset):
+    # Check for case studies specific datasets
     for summary_json_path in glob.glob(
         os.path.join(CASE_STUDIES_DIR, "*", "summary.json")
+    ):
+        with open(summary_json_path, encoding="utf-8") as f:
+            summary_json = json.load(f)
+            if summary_json["dataset-id"] == dataset:
+                return summary_json["dataset-dirname"]
+    # Check for global datasets
+    for summary_json_path in glob.glob(
+        os.path.join(DATASETS_METADATA_DIR, "*", "summary.json")
     ):
         with open(summary_json_path, encoding="utf-8") as f:
             summary_json = json.load(f)

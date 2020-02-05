@@ -51,13 +51,20 @@ def init_pyjnius():
         logger.info("JAVA_HOME set to '{}'".format(os.environ["JAVA_HOME"]))
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         jnius_config.add_options('-Djava.awt.headless=true')
-        jnius_config.add_options('-Xmx1536m')
+        DEFAULT_JAVA_OPTIONS = ('-Xmx4g',)
+        java_options = getattr(settings, "MAPTOOL_SETTINGS", {}).get(
+            "JAVA_OPTIONS", DEFAULT_JAVA_OPTIONS)
+        if isinstance(java_options, list) or isinstance(java_options, tuple):
+            jnius_config.add_options(*java_options)
+        else:
+            jnius_config.add_options(java_options)
         jnius_config.set_classpath(
             os.path.join(
                 BASE_DIR, "simccs", "lib", "SimCCS.jar"
             )
         )
         logger.info(
-            "Initialized jnius with classpath={}".format(jnius_config.get_classpath())
+            "Initialized jnius with classpath={}, options={}".format(
+                jnius_config.get_classpath(), jnius_config.get_options())
         )
         import jnius  # noqa

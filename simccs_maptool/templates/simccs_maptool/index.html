@@ -925,11 +925,14 @@
          var candidateNetworkLayerAddedToControl = false;
          // ajax interface to generate candidate-network
          function generatecandidatenetwork() {
+            if (selection.length == 0 ) {alert('No sources are selected!');return}
+            if (sinkselection.length == 0 ) {alert('No sinks are selected!');return}
             var sourcedata = generatesourcedata();
             var sinkdata=generatesinkdata();
             var data = {
                   sources: sourcedata,
                   sinks: sinkdata,
+                  dataset: "Lower48US",
             };
             AiravataAPI.utils.FetchUtils.showSpinner($.getJSON({url: "/maptool/candidate-network/", data: data}, function( data ) {
                   // Note: 'data' includes Sinks and Sources but since those are
@@ -971,6 +974,7 @@
                   capacityTarget: capacityTarget ? capacityTarget : 5,
                   sources: sourcedata,
                   sinks: sinkdata,
+                  dataset: "Lower48US",
             };
             AiravataAPI.utils.FetchUtils.showSpinner($.getJSON({url: "/maptool/mps/", data: data}, function( data ) {
                   //{"user_file": "MIP_Files/mip_2019-04-24T145902.mps"}
