@@ -151,11 +151,12 @@ function display_etag_data(datatype) {
                         iconRotate: 0,
                         svg: false
                   });
-                  var tag_id, reader_id,reader_s_time,reader_e_time,pop_info;
+                  var tag_id, reader_id,reader_lat,reader_lon,pop_info;
                   for (var i=0; i<tag_reads['count']; i++) {
                         reader_id = tag_reads['results'][i]['reader_id'];
                         tag_id = tag_reads['results'][i]['tag_id'];
-                        [reader_lat, reader_lon,reader_s_time,reader_e_time]= extract_reader_location(reader_id);
+                        //[reader_lat, reader_lon,reader_s_time,reader_e_time]= extract_reader_location(reader_id);
+                        [reader_lat, reader_lon]=reader_location_dict[reader_id];
                         popinfo = '<p style="font-size:16px"><strong>Tag ID: </strong>' + tag_id + "</p>";
                         popinfo += "<strong>Reader ID</strong>: " + tag_reads['results'][i]['reader_id']+ "<br>";
                         popinfo += "<strong>Read Time</strong>: " + tag_reads['results'][i]['tag_read_time']+ "<br>";
@@ -174,18 +175,39 @@ function display_etag_data(datatype) {
                   map.fitBounds(readers_marker.getBounds(),{maxZoom:10});
             }
             if (optionValue == "raw_tag_reads"){
-                  var rawClusters=L.markerClusterGroup();
-                  for (i=0;i<=49;i++) {
-                        var numMarker = L.ExtraMarkers.icon({
-                      icon: 'fa-number',
-                        markerColor: 'green',
+                  var rawtagicon = L.ExtraMarkers.icon({
                         shape: 'square',
-                        number:i+1,
-                        prefix: 'fa'
+                        markerColor: 'cyan',
+                        prefix: 'fa',
+                        icon: 'fa-paw',
+                        iconColor: 'white',
+                        iconRotate: 0,
+                        svg: false
                         });
-                        L.marker([35.221468,-97.295671], {icon: numMarker}).bindPopup("<h5>animal info:"+(i+1)+"</h5>").addTo(rawClusters);
+                  var tag_id, reader_id,reader_lat,reader_lon,popinfo,animal_id,animal_species;
+                  for (var i=0; i<tag_animals_data['results'].length; i++) {
+                        tag_id = tag_animals_data['results'][i]['tag_id'];
+                        //reader_id = tagid_readerid_dict[tag_id];
+                        reader_id = "TU109876";
+                        animal_id = tag_animals_data['results'][i]['animal_id'];
+                        if (animal_id in animailid_species_dict) {
+                              animal_species = animailid_species_dict[animal_id];}
+                        else {animal_species = "Unknown";}
+                        
+                        popinfo = "<h4><strong>"+animal_species+"</strong></h4>" + "<br>";
+                        popinfo += "<strong>Field Data</strong>:"+ "<br>";
+                        popinfo += "<ul>";
+                        for (var prop in tag_animals_data['results'][i]['field_data']){
+                              popinfo += "<li><strong>" +prop +"</strong>: " +tag_animals_data['results'][i]['field_data'][prop] + "</li>";
+                        };
+                        popinfo += "</ul>";
+
+                        [reader_lat, reader_lon]=reader_location_dict[reader_id];
+                        L.marker([reader_lat,reader_lon],{icon: rawtagicon}).bindPopup(popinfo).addTo(readers_marker);
+
                   }
-                  map.addLayer(rawClusters);
+                  map.addLayer(readers_marker);
+                  map.fitBounds(readers_marker.getBounds(),{maxZoom:10});
             }
 
       }
