@@ -123,7 +123,7 @@ function display_etag_data(datatype) {
       readers_marker.clearLayers();
       if (datatype == "reader_locations") {
             var reader_id, reader_desc, reader_lat,reader_lon,reader_s_time,reader_e_time;
-            var pop_info;
+            var popinfo;
             for (var i=0; i<readers_data['count']; i++) {
                   reader_id = readers_data['results'][i]['reader_id'];
                   reader_desc = readers_data['results'][i]['description'];
@@ -142,17 +142,36 @@ function display_etag_data(datatype) {
       if (datatype == "tag_reads") {
             var optionValue = $("input[name='opt_displaytype']:checked").val();
             if (optionValue == "tag_summaries"){
-                  var tag_number = tag_animals_data['count'];
-                  var numMarker = L.ExtraMarkers.icon({
-                      icon: 'fa-number',
-                        markerColor: 'green',
+                  var tagicon = L.ExtraMarkers.icon({
                         shape: 'square',
-                        number:tag_number,
-                        prefix: 'fa'
-                        });
-                  L.marker([35.221468,-97.295671], {icon: numMarker}).bindPopup("<h4>Put some summary info here!</h4>").addTo(readers_marker);
+                        markerColor: 'cyan',
+                        prefix: 'fas',
+                        icon: 'fa-binoculars',
+                        iconColor: 'white',
+                        iconRotate: 0,
+                        svg: false
+                  });
+                  var tag_id, reader_id,reader_s_time,reader_e_time,pop_info;
+                  for (var i=0; i<tag_reads['count']; i++) {
+                        reader_id = tag_reads['results'][i]['reader_id'];
+                        tag_id = tag_reads['results'][i]['tag_id'];
+                        [reader_lat, reader_lon,reader_s_time,reader_e_time]= extract_reader_location(reader_id);
+                        popinfo = '<p style="font-size:16px"><strong>Tag ID: </strong>' + tag_id + "</p>";
+                        popinfo += "<strong>Reader ID</strong>: " + tag_reads['results'][i]['reader_id']+ "<br>";
+                        popinfo += "<strong>Read Time</strong>: " + tag_reads['results'][i]['tag_read_time']+ "<br>";
+                        popinfo += "<strong>Public</strong>: " + tag_reads['results'][i]['public'] + "<br>";
+                        popinfo += "<strong>Accessory Data</strong>:"+ "<br>";
+                        popinfo += "<ul>";
+                        popinfo += "<li>HUMIDITY: "+tag_reads['results'][i]['accessory_data']['HUMIDITY']+"</li>";
+                        popinfo += "<li>SOLAR_RADIATION: "+tag_reads['results'][i]['accessory_data']['SOLAR_RADIATION']+"</li>";
+                        popinfo += "<li>TEMPERATURE: "+tag_reads['results'][i]['accessory_data']['TEMPERATURE']+"</li>";
+                        popinfo += "</ul>";
+                        reader_id = '';
+                        tag_id = '';
+                        L.marker([reader_lat,reader_lon],{icon: tagicon}).bindPopup(popinfo).addTo(readers_marker);
+                  }
                   map.addLayer(readers_marker);
-                  map.fitBounds(readers_marker.getBounds(),{maxZoom:9});
+                  map.fitBounds(readers_marker.getBounds(),{maxZoom:10});
             }
             if (optionValue == "raw_tag_reads"){
                   var rawClusters=L.markerClusterGroup();
