@@ -79,6 +79,12 @@ $(function() {
             for (var i = 0;i<animals_array.length;i++) {
                   $('#species_selector').append('<option value="' + animals_array[i] + '">' + animals_array[i] + '</option>');
             }
+            $('#tag_selector').empty();
+            var tag_array = Array.from(list_of_tag);
+            for (var i = 0;i<tag_array.length;i++) {
+                  $('#tag_selector').append('<option value="' + tag_array[i] + '">' + tag_array[i] + '</option>');
+            }
+
          });
          // end of doucment ready function
          
@@ -192,21 +198,6 @@ function clear_map() {
             <!--<div class="col-md-3  sidebar">-->
                   <div class="panel-group" id="allmap">
                         <div><center><h4>ETAG Data Portal</h4></center></div>
-                        <div class="card-body" bg-info text-light" style="display: none;">
-                              <div class="dropdown">
-                                          <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                SimCCS Community Case Studies
-                                          </button>
-                                          <div class="dropdown-menu" id="case_studies_menu" aria-labelledby="dropdownMenuButton">
-                                            <button class="dropdown-item" value="Southeast_US_2012" onclick="case_studies(this.value)">Southeast US 2012</button>
-                                            <button class="dropdown-item" value="Midwest_2011_3" onclick="case_studies(this.value)">Midwest 2011</button>
-                                            <button class="dropdown-item" value="GulfCoast_2013_4" onclick="case_studies(this.value)">GulfCoast 2013</button>   
-                                            <button class="dropdown-item" value="TexasPanhandle_2011_5" onclick="case_studies(this.value)">Texas Panhandle 2011</button>   
-                                            <button class="dropdown-item" value="IllinoisBasin_2015_11" onclick="case_studies(this.value)">Illinois Basin 2015</button>   
-                                            <button class="dropdown-item" value="OrdosBasin_2014_10" onclick="case_studies(this.value)">Ordos Basin 2014</button>   
-                                          </div>
-                              </div>
-                        </div>
                   <div class="card border-info">
                         <div class="card-header bg-info text-light">
                               <strong>Display Data</strong>
@@ -255,7 +246,7 @@ function clear_map() {
                                                 <option>Others</option>
                                               </select>
                                     <br><strong>Tag ID</strong>
-                                              <select class="selectpicker" id="tag_id" title="Choose one or more..." data-live-search="true" multiple data-actions-box="true">
+                                              <select class="selectpicker" id="tag_selector" title="Choose one or more..." data-live-search="true" multiple data-actions-box="true">
                                                 <option>620000620</option>
                                                 <option>620000731</option>
                                                 <option>06200005BA</option>
