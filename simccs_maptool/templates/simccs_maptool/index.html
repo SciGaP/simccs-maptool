@@ -228,6 +228,55 @@ $(function() {
       });
 });
 
+function apply_filters() {
+      clear_map();
+      readers_marker.clearLayers();
+
+      //var species_filter_list = [];
+      //var tag_filter_list = [];
+      var species_filter = $('#species_selector').val();
+      var tag_filter = $('#tag_selector').val();
+      var rawtagicon = L.ExtraMarkers.icon({
+            shape: 'square',
+            markerColor: 'cyan',
+            prefix: 'fa',
+            icon: 'fa-paw',
+            iconColor: 'white',
+            iconRotate: 0,
+            svg: false
+            });
+      var tag_id, reader_id,reader_lat,reader_lon,popinfo,animal_id,animal_species;
+      for (var i=0; i<tag_animals_data['results'].length; i++) {
+            tag_id = tag_animals_data['results'][i]['tag_id'];
+            //reader_id = tagid_readerid_dict[tag_id];
+            reader_id = "TU109876";
+            animal_id = tag_animals_data['results'][i]['animal_id'];
+            if (animal_id in animailid_species_dict) {
+                  animal_species = animailid_species_dict[animal_id];}
+            else {animal_species = "Unknown";}
+            
+            if (species_filter != null) {
+                  if (! species_filter.includes(animal_species)) {
+                        continue;}}
+            if (tag_filter != null) {
+                  if (! tag_filter.includes(tag_id)) {
+                        continue;}}
+            popinfo = "<h4><strong>"+animal_species+"</strong></h4>" + "<br>";
+            popinfo += "<strong>Field Data</strong>:"+ "<br>";
+            popinfo += "<ul>";
+            for (var prop in tag_animals_data['results'][i]['field_data']){
+                  popinfo += "<li><strong>" +prop +"</strong>: " +tag_animals_data['results'][i]['field_data'][prop] + "</li>";
+            };
+            popinfo += "</ul>";
+
+            [reader_lat, reader_lon]=reader_location_dict[reader_id];
+            L.marker([reader_lat,reader_lon],{icon: rawtagicon}).bindPopup(popinfo).addTo(readers_marker);
+
+      }
+      map.addLayer(readers_marker);
+      map.fitBounds(readers_marker.getBounds(),{maxZoom:10});
+}
+
 function clear_map() {
       map.eachLayer(function (layer) {
             //keep the basemap layer
@@ -308,7 +357,7 @@ function clear_map() {
                                                   </select>
                                     <br><strong>Date</strong><input type="text" id="amount" style="border: 0; font-weight: bold;" size="40"/><br>
                                     <div id="slider-range"></div><br>
-                                    <button type="button" class="btn btn-primary btn-sm btn-block" ">Apply Filters</button>
+                                    <button type="button" class="btn btn-primary btn-sm btn-block" onclick="apply_filters()">Apply Filters</button>
                                     </div>
                   </div>
                   </div>
