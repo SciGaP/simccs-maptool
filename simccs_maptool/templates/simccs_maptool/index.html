@@ -220,6 +220,14 @@ $(function() {
       });
 });
 
+$(function() {
+    $('input[name=opt_displaytype]').change(function(e) {
+      var optionValue = $("input[name='optradio']:checked").val();
+      if (optionValue == "tag_reads") 
+            {display_etag_data('tag_reads');}
+      });
+});
+
 function clear_map() {
       map.eachLayer(function (layer) {
             //keep the basemap layer
@@ -247,10 +255,10 @@ function clear_map() {
                               <section>  <strong>Data Type</strong>
                                     <ul style="list-style-type:none;padding:0;"><li>
                                     <div class="radio">
-                                    <label><input type="radio" name="optradio" id="reader_locations" checked=checked> Reader locations</label>
+                                    <label><input type="radio" name="optradio" id="reader_locations" value="reader_locations" checked=checked> Reader locations</label>
                                     </div></li><li>
                                     <div class="radio">
-                                    <label><input type="radio" name="optradio" id="tag_reads"> Tag reads</label>
+                                    <label><input type="radio" name="optradio" id="tag_reads" value="tag_reads"> Tag reads</label>
                                     </div></li>
                                     </ul>
                               </section>
