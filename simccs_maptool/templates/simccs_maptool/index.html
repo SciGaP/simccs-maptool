@@ -265,6 +265,7 @@ function apply_filters() {
                   if (! tag_filter.includes(tag_id)) {
                         continue;}}
             popinfo = "<h4><strong>"+animal_species+"</strong></h4>" + "<br>";
+            popinfo += "<strong>"+tag_id +"</strong>" + "<br>";
             popinfo += "<strong>Field Data</strong>:"+ "<br>";
             popinfo += "<ul>";
             for (var prop in tag_animals_data['results'][i]['field_data']){
