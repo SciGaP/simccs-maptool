@@ -79,6 +79,8 @@ $(function() {
             for (var i = 0;i<animals_array.length;i++) {
                   $('#species_selector').append('<option value="' + animals_array[i] + '">' + animals_array[i] + '</option>');
             }
+            // Unknown
+            $('#species_selector').append('<option value="' + 'Unknown' + '">' + 'Unknown' + '</option>');
             $('#tag_selector').empty();
             var tag_array = Array.from(list_of_tag);
             for (var i = 0;i<tag_array.length;i++) {
@@ -234,6 +236,7 @@ function apply_filters() {
 
       //var species_filter_list = [];
       //var tag_filter_list = [];
+      var icount = 0;
       var species_filter = $('#species_selector').val();
       var tag_filter = $('#tag_selector').val();
       var rawtagicon = L.ExtraMarkers.icon({
@@ -271,10 +274,12 @@ function apply_filters() {
 
             [reader_lat, reader_lon]=reader_location_dict[reader_id];
             L.marker([reader_lat,reader_lon],{icon: rawtagicon}).bindPopup(popinfo).addTo(readers_marker);
-
+            icount += 1 ;
       }
-      map.addLayer(readers_marker);
-      map.fitBounds(readers_marker.getBounds(),{maxZoom:10});
+      if (icount >= 1) {
+            map.addLayer(readers_marker);
+            map.fitBounds(readers_marker.getBounds(),{maxZoom:10});}
+      else {alert("Found zero record!");}
 }
 
 function clear_map() {
