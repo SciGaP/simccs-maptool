@@ -539,12 +539,11 @@
             var sourcedata = case_generatesourcedata();
             var sinkdata=case_generatesinkdata();
             var current_dataset_id = get_current_dataset_id();
-            var data = {
-                  sources: sourcedata,
-                  sinks: sinkdata,
-                  dataset: current_dataset_id
-            };
-            AiravataAPI.utils.FetchUtils.showSpinner($.getJSON({url: "/maptool/candidate-network/", data: data}, function( data ) {
+            var formData = new FormData();
+            formData.set('sources', sourcedata);
+            formData.set('sinks', sinkdata);
+            formData.set('dataset', current_dataset_id);
+            AiravataAPI.utils.FetchUtils.post("/maptool/candidate-network/", formData).then(function( data ) {
                   // Note: 'data' includes Sinks and Sources but since those are
                   // already displayed I'm opting to only display the Network
                   candidateNetworkLayer.clearLayers();
@@ -556,7 +555,7 @@
                         layercontrol.addOverlay(candidateNetworkLayer, "Candidate Network");
                         candidateNetworkLayerAddedToControl = true;
                   }
-            }));
+            });
       }
 
       function case_generatempsfile() {
@@ -569,15 +568,14 @@
             var numYears = $("#case_Project_Period").val();
             var capacityTarget = $("#case_Capture_Target").val();
             var current_dataset_id = get_current_dataset_id();
-            var data = {
-                  crf: crf ? crf : 0.1,
-                  numYears: numYears ? numYears : 10,
-                  capacityTarget: capacityTarget ? capacityTarget : 5,
-                  sources: sourcedata,
-                  sinks: sinkdata,
-                  dataset: current_dataset_id
-            };
-            AiravataAPI.utils.FetchUtils.showSpinner($.getJSON({url: "/maptool/mps/", data: data}, function( data ) {
+            var formData = new FormData();
+            formData.set('crf', crf ? crf : 0.1);
+            formData.set('numYears', numYears ? numYears : 10);
+            formData.set('capacityTarget', capacityTarget ? capacityTarget : 5);
+            formData.set('sources', sourcedata);
+            formData.set('sinks', sinkdata);
+            formData.set('dataset', current_dataset_id);
+            AiravataAPI.utils.FetchUtils.post("/maptool/mps/", formData).then(function( data ) {
                   //{"user_file": "MIP_Files/mip_2019-04-24T145902.mps"}
                   //alert(data["user_file"] + " is generated succefully");
                   var m_html =`<div class="modal fade in" id="dynamicModal" tabindex="-1" role="dialog">
@@ -609,7 +607,7 @@
     $("#dynamicModal").modal();
     $("#dynamicModal").modal('show');
 
-            }));
+            });
       }
 
            
@@ -929,12 +927,11 @@
             if (sinkselection.length == 0 ) {alert('No sinks are selected!');return}
             var sourcedata = generatesourcedata();
             var sinkdata=generatesinkdata();
-            var data = {
-                  sources: sourcedata,
-                  sinks: sinkdata,
-                  dataset: "Lower48US",
-            };
-            AiravataAPI.utils.FetchUtils.showSpinner($.getJSON({url: "/maptool/candidate-network/", data: data}, function( data ) {
+            var formData = new FormData();
+            formData.set('sources', sourcedata);
+            formData.set('sinks', sinkdata);
+            formData.set('dataset', "Lower48US");
+            AiravataAPI.utils.FetchUtils.post("/maptool/candidate-network/", formData).then(function( data ) {
                   // Note: 'data' includes Sinks and Sources but since those are
                   // already displayed I'm opting to only display the Network
                   candidateNetworkLayer.clearLayers();
@@ -946,7 +943,7 @@
                         layercontrol.addOverlay(candidateNetworkLayer, "Candidate Network");
                         candidateNetworkLayerAddedToControl = true;
                   }
-            }));
+            });
          }
 
          // ajax interface to generate MPS file
@@ -968,15 +965,14 @@
             var crf = $("#Capital_Recovery_Rate").val();
             var numYears = $("#Project_Period").val();
             var capacityTarget = $("#Capture_Target").val();
-            var data = {
-                  crf: crf ? crf : 0.1,
-                  numYears: numYears ? numYears : 10,
-                  capacityTarget: capacityTarget ? capacityTarget : 5,
-                  sources: sourcedata,
-                  sinks: sinkdata,
-                  dataset: "Lower48US",
-            };
-            AiravataAPI.utils.FetchUtils.showSpinner($.getJSON({url: "/maptool/mps/", data: data}, function( data ) {
+            var formData = new FormData();
+            formData.set('crf', crf ? crf : 0.1);
+            formData.set('numYears', numYears ? numYears : 10);
+            formData.set('capacityTarget', capacityTarget ? capacityTarget : 5);
+            formData.set('sources', sourcedata);
+            formData.set('sinks', sinkdata);
+            formData.set('dataset', "Lower48US");
+            AiravataAPI.utils.FetchUtils.post("/maptool/mps/", formData).then(function( data ) {
                   //{"user_file": "MIP_Files/mip_2019-04-24T145902.mps"}
                   //alert(data["user_file"] + " is generated succefully");
                   m_html =`<div class="modal fade in" id="dynamicModal" tabindex="-1" role="dialog">
@@ -1008,7 +1004,7 @@
     $("#dynamicModal").modal();
     $("#dynamicModal").modal('show');
 
-            }));
+            });
          }
 
          function resetworkingarea(){

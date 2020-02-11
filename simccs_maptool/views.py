@@ -57,12 +57,12 @@ class HelpView(TemplateView):
 def generate_mps(request):
 
     # MPS model parameters
-    capital_recovery_rate = float(request.GET.get("crf", "0.1"))
-    num_years = float(request.GET.get("numYears", 10))
-    capacity_target = float(request.GET.get("capacityTarget", 5))
-    sources = request.GET.get("sources", None)
-    sinks = request.GET.get("sinks", None)
-    dataset = request.GET.get("dataset", SOUTHEASTUS_DATASET_ID)
+    capital_recovery_rate = float(request.POST.get("crf", "0.1"))
+    num_years = float(request.POST.get("numYears", 10))
+    capacity_target = float(request.POST.get("capacityTarget", 5))
+    sources = request.POST["sources"]
+    sinks = request.POST["sinks"]
+    dataset = request.POST["dataset"]
 
     # TODO: provide Django apps with utility for writing to gateway data storage
     userdir = os.path.join(settings.GATEWAY_DATA_STORE_DIR, request.user.username)
@@ -350,9 +350,9 @@ def _get_dataset_from_results_dir(results_dir):
 @max_concurrent_java_calls
 def candidate_network(request):
 
-    sources = request.GET.get("sources", None)
-    sinks = request.GET.get("sinks", None)
-    dataset = request.GET.get("dataset", SOUTHEASTUS_DATASET_ID)
+    sources = request.POST["sources"]
+    sinks = request.POST["sinks"]
+    dataset = request.POST["dataset"]
 
     with tempfile.TemporaryDirectory() as datasets_basepath:
         dataset_dirname = _get_dataset_dirname(dataset)
