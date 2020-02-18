@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import url
 
-from . import views
+from . import geoserver, views
 
 app_name = "simccs_maptool"
 urlpatterns = [
@@ -25,4 +25,5 @@ urlpatterns = [
     url(r"^mps/$", views.generate_mps, name="generate-mps"),
     url(r"^experiment-result/(?P<experiment_id>[^/]+)$", views.experiment_result),
     url(r"^solution-summary/(?P<experiment_id>[^/]+)$", views.solution_summary),
+    url(r"^get-data", geoserver.get_data),
 ]
