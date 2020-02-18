@@ -696,7 +696,7 @@
                  for (i = 0, len = geom[0].length; i < len; i++) {
                  coordstr[i]= (geom[0][i].toString()).replace(',',' ');} 
                  //alert(coordstr.join(','));
-                 var geourl='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&maxFeatures=500&outputFormat=text%2Fjavascript&format_options=callback:loadjson';
+                 var geourl='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&maxFeatures=500&outputFormat=text%2Fjavascript&format_options=callback:loadjson';
                  geourl += '&typeName=' + querylayers;
                  var cqlfilter = '&cql_filter=Intersects(the_geom,Polygon((';
                  cqlfilter += coordstr.join(',');
@@ -718,14 +718,14 @@
                        dataType: "jsonp"
                  });
                  //get sink layer
-                 var sinkurl='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:SCO2T_SALINE_Test&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
+                 var sinkurl='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:SCO2T_SALINE_Test&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
                  sinkurl += cqlfilter;
                  $.ajax({
                        url: sinkurl,
                        jsonp: "callback",
                        dataType: "jsonp"
                  });
-                 var sinkurl2='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:NATCARB_OG&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer2';
+                 var sinkurl2='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:NATCARB_OG&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer2';
                  sinkurl2 += cqlfilter;
                  //$.ajax({
                  //      url: sinkurl2,
@@ -755,7 +755,7 @@
                   }
 
                  //testing code, add geotiff layer
-                 var cost_image_url="https://beta.simccs.org/geoserver/ows?service=WCS&version=2.0.0&request=GetCoverage&coverageId=SimCCS__cost&format=png";
+                 var cost_image_url="https://simccs.org/geoserver/ows?service=WCS&version=2.0.0&request=GetCoverage&coverageId=SimCCS__cost&format=png";
                  // &subset=Lat(29.920588,33.381122)&subset=Long(-89.251876,-83.277539)";
                  cost_image_url += "&subset=Lat(" +lbounds.getSouth() +","+lbounds.getNorth() +")";
                  cost_image_url += "&subset=Long("+lbounds.getWest() + ","+lbounds.getEast() + ")";
@@ -1269,7 +1269,7 @@
                         searchlayer='';
             }
             //get json display as marker
-            var geourl='https://beta.simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&maxFeatures=500&outputFormat=text%2Fjavascript&format_options=callback:loadsearchresult';
+            var geourl='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&maxFeatures=500&outputFormat=text%2Fjavascript&format_options=callback:loadsearchresult';
             geourl += '&typeName=' + searchlayer;
             geourl += "&cql_filter=strToLowerCase(Name) like '" + encodeURIComponent("%" + searchstring + "%'");
             //alert(geourl);

@@ -708,7 +708,7 @@ var geojsonLineOptions = {
             zIndex:1
         });
 
-        var source_all_test_layer_1 = L.tileLayer.betterWms("https://beta.simccs.org/geoserver/SimCCS/ows?", {
+        var source_all_test_layer_1 = L.tileLayer.betterWms("https://simccs.org/geoserver/SimCCS/ows?", {
             //layers: 'SimCCS_Sources_Snapper',
             layers: 'Sources_082819_SimCCS_Format',
             format: 'image/png',
