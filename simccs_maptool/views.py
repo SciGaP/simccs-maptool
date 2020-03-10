@@ -172,7 +172,7 @@ def generate_mps(request):
             if hasattr(e, "stacktrace")
             else str(e)
         )
-        raise
+        return JsonResponse({"detail": str(e)}, status=500)
 
     mps_file_path = os.path.join(scenario_dir, "MIP", "mip.mps")
     rel_mps_file_path = os.path.relpath(mps_file_path, start=userdir)
@@ -198,53 +198,59 @@ def experiment_result(request, experiment_id):
         "Sources": GeoJSON
     }
     """
-    results_dir = _get_results_dir(request, experiment_id)
-    # figure out the scenario directory
-    shapefiles_dir = os.path.join(results_dir, "shapeFiles")
-    geojson_dir = os.path.join(results_dir, "geojson")
-    if not os.path.exists(shapefiles_dir):
-        _create_shapefiles_for_result(request, results_dir)
-    if not os.path.exists(geojson_dir):
-        _create_geojson_for_result(request, results_dir)
-    with open(
-        os.path.join(results_dir, "geojson", "Network.geojson")
-    ) as network_geojson, open(
-        os.path.join(results_dir, "geojson", "Sources.geojson")
-    ) as sources_geojson, open(
-        os.path.join(results_dir, "geojson", "Sinks.geojson")
-    ) as sinks_geojson:
-        return JsonResponse(
-            {
-                "Network": json.load(network_geojson),
-                "Sources": json.load(sources_geojson),
-                "Sinks": json.load(sinks_geojson),
-            }
-        )
+    try:
+        results_dir = _get_results_dir(request, experiment_id)
+        # figure out the scenario directory
+        shapefiles_dir = os.path.join(results_dir, "shapeFiles")
+        geojson_dir = os.path.join(results_dir, "geojson")
+        if not os.path.exists(shapefiles_dir):
+            _create_shapefiles_for_result(request, results_dir)
+        if not os.path.exists(geojson_dir):
+            _create_geojson_for_result(request, results_dir)
+        with open(
+            os.path.join(results_dir, "geojson", "Network.geojson")
+        ) as network_geojson, open(
+            os.path.join(results_dir, "geojson", "Sources.geojson")
+        ) as sources_geojson, open(
+            os.path.join(results_dir, "geojson", "Sinks.geojson")
+        ) as sinks_geojson:
+            return JsonResponse(
+                {
+                    "Network": json.load(network_geojson),
+                    "Sources": json.load(sources_geojson),
+                    "Sinks": json.load(sinks_geojson),
+                }
+            )
+    except Exception as e:
+        return JsonResponse({"detail": str(e)}, status=500)
 
 
 @login_required
 @max_concurrent_java_calls
 def solution_summary(request, experiment_id):
-    results_dir = _get_results_dir(request, experiment_id)
-    solution = _load_solution(request, results_dir)
-    return JsonResponse(
-        {
-            "numOpenedSources": solution.numOpenedSources,
-            "numOpenedSinks": solution.numOpenedSinks,
-            "targetCaptureAmount": solution.captureAmount,
-            "numEdgesOpened": solution.numEdgesOpened,
-            "projectLength": solution.projectLength,
-            "totalCaptureCost": solution.totalAnnualCaptureCost,
-            "unitCaptureCost": solution.unitCaptureCost,
-            "totalTransportCost": solution.totalAnnualTransportCost,
-            "unitTransportCost": solution.unitTransportCost,
-            "totalStorageCost": solution.totalAnnualStorageCost,
-            "unitStorageCost": solution.unitStorageCost,
-            "totalCost": solution.totalCost,
-            "unitTotalCost": solution.unitTotalCost,
-            "crf": solution.getCRF(),
-        }
-    )
+    try:
+        results_dir = _get_results_dir(request, experiment_id)
+        solution = _load_solution(request, results_dir)
+        return JsonResponse(
+            {
+                "numOpenedSources": solution.numOpenedSources,
+                "numOpenedSinks": solution.numOpenedSinks,
+                "targetCaptureAmount": solution.captureAmount,
+                "numEdgesOpened": solution.numEdgesOpened,
+                "projectLength": solution.projectLength,
+                "totalCaptureCost": solution.totalAnnualCaptureCost,
+                "unitCaptureCost": solution.unitCaptureCost,
+                "totalTransportCost": solution.totalAnnualTransportCost,
+                "unitTransportCost": solution.unitTransportCost,
+                "totalStorageCost": solution.totalAnnualStorageCost,
+                "unitStorageCost": solution.unitStorageCost,
+                "totalCost": solution.totalCost,
+                "unitTotalCost": solution.unitTotalCost,
+                "crf": solution.getCRF(),
+            }
+        )
+    except Exception as e:
+        return JsonResponse({"detail": str(e)}, status=500)
 
 
 def _get_results_dir(request, experiment_id):
@@ -428,7 +434,7 @@ def candidate_network(request):
             logger.exception(
                 "Error occurred when loading solution: " + str(e.stacktrace)
             )
-            raise
+            return JsonResponse({"detail": str(e)}, status=500)
 
 
 def _get_basedata_dir(dataset_dirname):
