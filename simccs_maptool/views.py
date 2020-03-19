@@ -204,9 +204,9 @@ def experiment_result(request, experiment_id):
         shapefiles_dir = os.path.join(results_dir, "shapeFiles")
         geojson_dir = os.path.join(results_dir, "geojson")
         if not os.path.exists(shapefiles_dir):
-            _create_shapefiles_for_result(request, results_dir)
+            _create_shapefiles_for_result(results_dir)
         if not os.path.exists(geojson_dir):
-            _create_geojson_for_result(request, results_dir)
+            _create_geojson_for_result(results_dir)
         with open(
             os.path.join(results_dir, "geojson", "Network.geojson")
         ) as network_geojson, open(
@@ -261,9 +261,8 @@ def _get_results_dir(request, experiment_id):
     return experiment.userConfigurationData.experimentDataDir
 
 
-def _create_shapefiles_for_result(request, results_dir):
-    userdir = os.path.join(settings.GATEWAY_DATA_STORE_DIR, request.user.username)
-    datasets_basepath = os.path.join(userdir, "Datasets")
+def _create_shapefiles_for_result(results_dir):
+    datasets_basepath = _get_datasets_dir_from_results_dir(results_dir)
     scenario_dir = os.path.dirname(results_dir)
     scenario = os.path.basename(scenario_dir)
     dataset = _get_dataset_from_results_dir(results_dir)
@@ -293,8 +292,7 @@ def _create_shapefiles_for_result(request, results_dir):
 
 
 def _load_solution(request, results_dir):
-    userdir = os.path.join(settings.GATEWAY_DATA_STORE_DIR, request.user.username)
-    datasets_basepath = os.path.join(userdir, "Datasets")
+    datasets_basepath = _get_datasets_dir_from_results_dir(results_dir)
     scenario_dir = os.path.dirname(results_dir)
     scenario = os.path.basename(scenario_dir)
     dataset = _get_dataset_from_results_dir(results_dir)
@@ -317,7 +315,7 @@ def _load_solution(request, results_dir):
         raise
 
 
-def _create_geojson_for_result(request, results_dir):
+def _create_geojson_for_result(results_dir):
     network_sf = shapefile.Reader(os.path.join(results_dir, "shapeFiles", "Network"))
     sinks_sf = shapefile.Reader(os.path.join(results_dir, "shapeFiles", "Sinks"))
     sources_sf = shapefile.Reader(os.path.join(results_dir, "shapeFiles", "Sources"))
@@ -348,9 +346,20 @@ def _write_shapefile_to_geojson(shapefile, geojson_f):
 
 
 def _get_dataset_from_results_dir(results_dir):
-    scenario_dir = os.path.dirname(results_dir)
-    dataset_dir = os.path.dirname(os.path.dirname(scenario_dir))
+    dataset_dir = _get_dataset_dir_from_results_dir(results_dir)
     return os.path.basename(dataset_dir)
+
+
+def _get_datasets_dir_from_results_dir(results_dir):
+    dataset_dir = _get_dataset_dir_from_results_dir(results_dir)
+    return os.path.dirname(dataset_dir)
+
+
+def _get_dataset_dir_from_results_dir(results_dir):
+    # Results dir is structured like so:
+    # GATEWAY_STORAGE/{username}/Datasets/{dataset}/Scenarios/{scenario}/Results
+    scenario_dir = os.path.dirname(results_dir)
+    return os.path.dirname(os.path.dirname(scenario_dir))
 
 
 @max_concurrent_java_calls
@@ -415,7 +424,7 @@ def candidate_network(request):
             # Must make the CandidateNetwork directory before calling makeCandidateNetworkShapeFiles
             os.makedirs(results_dir, exist_ok=True)
             data.makeCandidateShapeFiles(results_dir)
-            _create_geojson_for_result(request, results_dir)
+            _create_geojson_for_result(results_dir)
             with open(
                 os.path.join(results_dir, "geojson", "Network.geojson")
             ) as network_geojson, open(
