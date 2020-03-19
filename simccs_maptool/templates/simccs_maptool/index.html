@@ -1039,6 +1039,7 @@
          function resetworkingarea(){
            document.getElementById("allmap").style.display="block";
            document.getElementById("workingarea").style.display="none";
+           document.getElementById("model-results").style.display="none";
            //layercontrol.removeLayer(sourceLayer);
            //layercontrol.removeLayer(sinkLayer);
            //layercontrol.removeLayer(sinkLayer2);
@@ -1094,7 +1095,6 @@
           const experimentId = urlParams.get('experiment_id');
           if (experimentId && userIsAuthenticated) {
             document.getElementById("allmap").style.display="none";
-            document.getElementById("workingarea").style.display="block";
             display_experiment_result(experimentId);
             AiravataAPI.services.ExperimentService.retrieve({lookup: experimentId}).then(experiment => {
                   render_experiment_list([experiment], [experimentId]);
@@ -1432,6 +1432,9 @@
                                     </div>
                         </div>
                   </div>
+            <div id="start-over" style="display: none;">
+                  <button type="button" class="btn btn-primary btn-block" onclick="resetworkingarea()">Start Over</button>
+            </div>
             <div class="panel-group" id="allmap">
                   <div class="card border-info">
                         <div class="card-header bg-info text-light">
@@ -1615,7 +1618,12 @@
                   </div>
                <div id="nologinuser_msg" style="display: none;">Gateway user account required. <a href='/auth/login?next=/maptool/'>Login</a>&nbsp;to create SimCCS model scenarios.</div>
                </div>
-                      <div class="card border-info" id="model-results" style="display: none;">
+               </div>
+               <!-- end working area div -->
+
+                  <!-- model-results div -->
+                  <div id="model-results" style="display: none;">
+                      <div class="card border-info">
                         <div class="card-header bg-info text-light">
                               <strong>Results</strong>
                         </div>
@@ -1692,6 +1700,8 @@
                         <br>
                         </div>
                   </div>
+                  <!-- end model-results div -->
+
                </div>
                </div>
 
