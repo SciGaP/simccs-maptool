@@ -1067,7 +1067,7 @@
                   //mymarker.bindPopup(mypopup);
                   return mymarker;       
                   }
-            }).catch(display_error_modal);
+            });
             var result_sourceLayer = new L.geoJSON(data["Sources"], {
                   pointToLayer: function (feature, latlng) {
                   //var mypopup = L.popup().setContent(content_str);
@@ -1083,7 +1083,7 @@
             map.addLayer(result_sourceLayer);
             map.addLayer(result_networkLayer);
         //layercontrol.addOverlay(result_sinkLayer,"Sinks");
-            }));
+            })).catch(display_error_modal);
 
             AiravataAPI.utils.FetchUtils.showSpinner($.getJSON( "/maptool/solution-summary/"+experiment_id, function( data ) {
                   display_solution_summary(data);
