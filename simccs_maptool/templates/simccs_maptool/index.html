@@ -1040,6 +1040,7 @@
            document.getElementById("allmap").style.display="block";
            document.getElementById("workingarea").style.display="none";
            document.getElementById("model-results").style.display="none";
+           document.getElementById("start-over").style.display="none";
            //layercontrol.removeLayer(sourceLayer);
            //layercontrol.removeLayer(sinkLayer);
            //layercontrol.removeLayer(sinkLayer2);
@@ -1095,6 +1096,7 @@
           const experimentId = urlParams.get('experiment_id');
           if (experimentId && userIsAuthenticated) {
             document.getElementById("allmap").style.display="none";
+            document.getElementById("start-over").style.display="block";
             display_experiment_result(experimentId);
             AiravataAPI.services.ExperimentService.retrieve({lookup: experimentId}).then(experiment => {
                   render_experiment_list([experiment], [experimentId]);
@@ -1417,23 +1419,21 @@
       <div class="row main-row">
       <div class="col-md-3">
             <!--<div class="col-md-3  sidebar">-->
-                  <div class="card-body" bg-info text-light">
-                        <div class="dropdown" id="casestudies_menu">
-                                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                          SimCCS Community Case Studies
-                                    </button>
-                                    <div class="dropdown-menu" id="case_studies_menu" aria-labelledby="dropdownMenuButton">
-                                      <button class="dropdown-item" value="Southeast_US_2012" onclick="case_studies(this.value)">Southeast US 2012</button>
-                                      <button class="dropdown-item" value="Midwest_2011_3" onclick="case_studies(this.value)">Midwest 2011</button>
-                                      <button class="dropdown-item" value="GulfCoast_2013_4" onclick="case_studies(this.value)">GulfCoast 2013</button>   
-                                      <button class="dropdown-item" value="TexasPanhandle_2011_5" onclick="case_studies(this.value)">Texas Panhandle 2011</button>   
-                                      <button class="dropdown-item" value="IllinoisBasin_2015_11" onclick="case_studies(this.value)">Illinois Basin 2015</button>   
-                                      <button class="dropdown-item" value="OrdosBasin_2014_10" onclick="case_studies(this.value)">Ordos Basin 2014</button>   
-                                    </div>
-                        </div>
+                  <div class="dropdown mb-3" id="casestudies_menu">
+                              <button class="btn btn-secondary btn-block dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    SimCCS Community Case Studies
+                              </button>
+                              <div class="dropdown-menu" id="case_studies_menu" aria-labelledby="dropdownMenuButton">
+                                    <button class="dropdown-item" value="Southeast_US_2012" onclick="case_studies(this.value)">Southeast US 2012</button>
+                                    <button class="dropdown-item" value="Midwest_2011_3" onclick="case_studies(this.value)">Midwest 2011</button>
+                                    <button class="dropdown-item" value="GulfCoast_2013_4" onclick="case_studies(this.value)">GulfCoast 2013</button>   
+                                    <button class="dropdown-item" value="TexasPanhandle_2011_5" onclick="case_studies(this.value)">Texas Panhandle 2011</button>   
+                                    <button class="dropdown-item" value="IllinoisBasin_2015_11" onclick="case_studies(this.value)">Illinois Basin 2015</button>   
+                                    <button class="dropdown-item" value="OrdosBasin_2014_10" onclick="case_studies(this.value)">Ordos Basin 2014</button>   
+                              </div>
                   </div>
-            <div id="start-over" style="display: none;">
-                  <button type="button" class="btn btn-primary btn-block" onclick="resetworkingarea()">Start Over</button>
+            <div id="start-over" class="mb-3" style="display: none;">
+                  <button type="button" class="btn btn-secondary btn-block" onclick="resetworkingarea()">Start Over</button>
             </div>
             <div class="panel-group" id="allmap">
                   <div class="card border-info">
