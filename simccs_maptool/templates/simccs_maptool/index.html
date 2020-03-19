@@ -1605,20 +1605,21 @@
                               <strong>SimCCS User Workspace</strong>
                         </div>
                         <div class="card-body" >
-                  <div id="loginuser_tools">
-                        <button type="button" id="bn_generatecandidatenetwork" class="btn btn-primary btn-sm btn-block" onclick="generatecandidatenetwork()">Generate Candidate Network</button>
-                        <hr/>
-                        <strong>Model Parameters</strong><br>
-                        <table>
-                                    <tr><td>Capital Recovery Rate</td><td><input id="Capital_Recovery_Rate" name="Capital_Recovery_Rate" type="text" size=8 value="0.1" required></td></tr>
-                                    <tr><td>Project Period (yrs)</td><td><input id="Project_Period" name="Project_Period" type="text" size=8 value="10" required></td></tr>
-                                    <tr><td>Capture Target (MT/y)</td><td><input id="Capture_Target" name="Capture_Target" type="text" size=8 value="5" required></td></tr>
-                        </table><br>
-                        <button type="button" id="bn_generatemps" class="btn btn-primary btn-sm btn-block" onclick="generatempsfile()">Generate MPS file</button>
+                              <div id="loginuser_tools">
+                                    <button type="button" id="bn_generatecandidatenetwork" class="btn btn-primary btn-sm btn-block" onclick="generatecandidatenetwork()">Generate Candidate Network</button>
+                                    <hr/>
+                                    <strong>Model Parameters</strong><br>
+                                    <table>
+                                                <tr><td>Capital Recovery Rate</td><td><input id="Capital_Recovery_Rate" name="Capital_Recovery_Rate" type="text" size=8 value="0.1" required></td></tr>
+                                                <tr><td>Project Period (yrs)</td><td><input id="Project_Period" name="Project_Period" type="text" size=8 value="10" required></td></tr>
+                                                <tr><td>Capture Target (MT/y)</td><td><input id="Capture_Target" name="Capture_Target" type="text" size=8 value="5" required></td></tr>
+                                    </table><br>
+                                    <button type="button" id="bn_generatemps" class="btn btn-primary btn-sm btn-block" onclick="generatempsfile()">Generate MPS file</button>
+                              </div>
+                              <div id="nologinuser_msg" style="display: none;">Gateway user account required. <a href='/auth/login?next=/maptool/'>Login</a>&nbsp;to create SimCCS model scenarios.</div>
+                              </div>
+                        </div>
                   </div>
-               <div id="nologinuser_msg" style="display: none;">Gateway user account required. <a href='/auth/login?next=/maptool/'>Login</a>&nbsp;to create SimCCS model scenarios.</div>
-               </div>
-               </div>
                <!-- end working area div -->
 
                   <!-- model-results div -->
@@ -1700,10 +1701,9 @@
                         <br>
                         </div>
                   </div>
+                  </div>
                   <!-- end model-results div -->
 
-               </div>
-               </div>
 
             <!-- div case_studies  -->
 
