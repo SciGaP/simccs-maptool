@@ -326,8 +326,9 @@
          function sinkOnEachFeature(feature, layer) {
          //bind click
          //layer.bindTooltip("<strong>CO2_Low(t):"+feature.properties.CO2_Low__t.toString()+"<strong>");
-         layer.bindTooltip("<strong>Name: "+feature.properties.Resource_N+"<br>"+"Min Total Sink Cost: "+feature.properties['Min_Total_'].toString()+"<strong>");
-         layer.on('click', function (e) {
+         //layer.bindTooltip("<strong>Name: "+feature.properties.Resource_N+"<br>"+"Min Total Sink Cost: "+feature.properties['Min_Total_'].toString()+"<strong>");
+         layer.bindTooltip("<strong>Name: "+feature.properties['name']+"<br>"+"Sink Capacity: "+feature.properties['sinkcapacity'].toString()+"<strong>");
+            layer.on('click', function (e) {
            var target_id = sinkselection.indexOf(e.target)
            if (target_id >=0 ) {e.target.setStyle({weight:1,color:'grey',fillOpacity:0.4});sinkselection.splice(target_id,1);}
            else {e.target.setStyle({weight:2,color:"white",fillOpacity:0.7});
@@ -751,8 +752,9 @@
                        dataType: "jsonp"
                  });
                  //get sink layer
-                 var sinkurl='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:SCO2T_SALINE_Test&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
-                 sinkurl += cqlfilter;
+                 //var sinkurl='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:SCO2T_SALINE_Test&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
+                 var sinkurl='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:SCO2T_v3_1_2_LowCost_SimCCS_10K&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
+                 sinkurl += cqlfilter.replace("the_geom","geometry");
                  $.ajax({
                        url: sinkurl,
                        jsonp: "callback",
@@ -845,7 +847,8 @@
             var tempstr = "";
             for (i = 0; i < selection.length; i++) {
                   tempstr = "";
-                  tempstr += (i+1).toString()+"\t";
+                  //tempstr += (i+1).toString()+"\t";
+                  tempstr += selection[i].feature.properties["ID"]+"\t";
                   tempstr += selection[i].feature.properties["costFix___"]+"\t";
                   tempstr += selection[i].feature.properties["fixO_M___m"]+"\t";
                   tempstr += selection[i].feature.properties["costVar___"]+"\t";
@@ -856,7 +859,8 @@
                   tempstr += selection[i].feature.properties["X"]+"\t";
                   tempstr += selection[i].feature.properties["Y"]+"\t";
                   // NAME is set same as ID
-                  tempstr += (i+1).toString();
+                  //tempstr += (i+1).toString();
+                  tempstr += selection[i].feature.properties["Name"]+"\t";
                   sourcedata += tempstr + "\n";
             } 
             return sourcedata;
@@ -865,19 +869,20 @@
          function generatesinkdata() {
 
             //NATCARB_SALINE
-            var sinkdata="0\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13\t14\t15\t16" + "\n";
+            var header_array = ["ID", "Sink_ID", "fieldCap(MtCO2)", "costFix($M)", "fixO&M($M/yr)", "wellCap(MtCO2/yr)", "wellCostFix($M)", "wellFixO&M($M/yr)", "varO&M($/tCO2)", "N/A", "LON", "LAT", "N/A", "N/A", "N/A", "N/A", "Name"];
+            var sinkdata=header_array.join('\t') + "\n";
+            //var sinkdata="0\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13\t14\t15\t16" + "\n";
             var sinkcount = sinkselection.length;
             var testfeature = sinkselection[0].feature;
             var saline_flag = false;
             if ('Min_Sink_C' in testfeature.properties) { saline_flag = true;}
- 
             var center_latlon;
             for (i = 0; i < sinkselection.length; i++) {
                   tempstr = "";
-                  // field 0-1: ID
-                  tempstr += (i+1).toString()+"\t";
-                  tempstr += (i+1).toString()+"\t";
                   if (saline_flag){ 
+                        // field 0-1: ID
+                        tempstr += (i+1).toString()+"\t";
+                        tempstr += (i+1).toString()+"\t";
                         //2: Capacity "fieldCap__"
                         tempstr += sinkselection[i].feature.properties['Min_Sink_C'] + "\t";
                         //3: OpeningCost "costFix___"
@@ -910,26 +915,30 @@
                         tempstr += sinkselection[i].feature.properties['Resource_N'];
                   }
                   else {
+                        // field 0-1: ID
+                        tempstr += sinkselection[i].feature.properties['objectid'] + "\t";
+                        tempstr += sinkselection[i].feature.properties['id'] + "\t";
+
                         //2: Capacity "fieldCap__"
-                        tempstr += sinkselection[i].feature.properties['fieldCap__'] + "\t";
+                        tempstr += sinkselection[i].feature.properties['sinkcapacity'] + "\t";
                         //3: OpeningCost "costFix___"
-                        tempstr += sinkselection[i].feature.properties['costFix___'] + "\t";
+                        tempstr += sinkselection[i].feature.properties['sinkfixedcost'] + "\t";
                         //4: OMCost "fixO_M___M"
-                        tempstr += sinkselection[i].feature.properties['fixO_M___M'] + "\t";
+                        tempstr += sinkselection[i].feature.properties['sinkvarom'] + "\t";
                         //5: WellCapacity "wellCap__M"
-                        tempstr += sinkselection[i].feature.properties['wellCap__M'] + "\t";
+                        tempstr += sinkselection[i].feature.properties['wellinjectivity'] + "\t";
                         //6: WellOpeningCost "wellCostFi"
-                        tempstr += sinkselection[i].feature.properties['wellCostFi'] + "\t";
+                        tempstr += sinkselection[i].feature.properties['wellfixedcost'] + "\t";
                         //7: WellOMCost "wellFixO_M"
-                        tempstr += sinkselection[i].feature.properties['wellFixO_M'] + "\t";
+                        tempstr += sinkselection[i].feature.properties['wellfixedom'] + "\t";
                         //8: InjectionCost "varO_M____"
-                        tempstr += sinkselection[i].feature.properties['varO_M____'] + "\t";
+                        tempstr += sinkselection[i].feature.properties['wellvarom'] + "\t";
                         //9: 0
                         tempstr += '0' + "\t";
                         //10: Lon "LON"
-                        tempstr += sinkselection[i].feature.properties['LON'] + "\t";
+                        tempstr += sinkselection[i].feature.properties['xlon'] + "\t";
                         //11: Lat "LAT"
-                        tempstr += sinkselection[i].feature.properties['LAT'] + "\t";
+                        tempstr += sinkselection[i].feature.properties['ylat'] + "\t";
                         //12: 0 
                         tempstr += '0' + "\t";
                         //13: 0
@@ -939,7 +948,7 @@
                         //15: 0
                         tempstr += '0' + "\t";
                         //16: NAME "NAME"
-                        tempstr += sinkselection[i].feature.properties['NAME'];
+                        tempstr += sinkselection[i].feature.properties['name'];
                   }
 
                   //caculate lon lat
@@ -947,7 +956,7 @@
                   //tempstr += center_latlon.lng +"\t";
                   //tempstr += center_latlon.lat +"\t";  
                  
-                  sinkdata += tempstr + "\n";    
+                  sinkdata += tempstr + "\n";
             }
             return sinkdata;
          }
