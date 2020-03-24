@@ -726,7 +726,7 @@ var geojsonLineOptions = {
         //     zIndex:2
         // });
 
-        var sink_sco2t_layer = L.tileLayer.betterWms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
+        var sink_sco2t_layer = L.tileLayer.betterWms("https://simccs.org/geoserver/SimCCS/wms?", {
             layers: 'SCO2T_v3_1_2_LowCost_SimCCS_10K',
             format: 'image/png',
             transparent: true,
