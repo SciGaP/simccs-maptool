@@ -44,7 +44,7 @@
 <script>
          // TODO: replace with global user session object
          var userIsAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
-         //var userIsAuthenticated = true;
+         var userIsAuthenticated = true;
          $(document).ready(function() {
       
            load_current_experiment();
@@ -709,11 +709,14 @@
                  map.addLayer(editableLayers);
          
                  map.on('draw:created', function(e) {
-                       // clear map, remove all layers
-                       map.eachLayer(function (layer) {
-                              //keep the basemap layer
-                              if (layer != osm) {map.removeLayer(layer);};
-                        });
+                  // // clear map, remove all layers
+                  //      map.eachLayer(function (layer) {
+                  //             //keep the basemap layer
+                  //             if (layer != osm) {map.removeLayer(layer);layercontrol.removeLayer(layer);};
+                  //       });
+                  // layercontrol.remove();
+                  // layercontrol = L.control.layers(null,null,{collapsed:false});
+
                  var type = e.layerType,
                  layer = e.layer;
                  editableLayers.addLayer(layer);
@@ -1050,10 +1053,16 @@
            //map.removeLayer(sinkLayer);
            //map.removeLayer(sinkLayer2);
            map.eachLayer(function (layer) {
-                              //keep the basemap layer
-                              if (layer != osm) {layercontrol.removeLayer(layer);map.removeLayer(layer);};
-                              });
-          layercontrol.remove();
+                  //keep the basemap layer
+                  if (layer != osm) {map.removeLayer(layer);
+                        layercontrol.removeLayer(layer);
+                  };
+            });
+            sourceLayer.clearLayers();
+           sinkLayer.clearLayers();
+
+            layercontrol = L.control.layers(null,null,{collapsed:ture});
+            layercontrol.remove(map);
           //layercontrol.layers()._update;
          };
 
@@ -1600,8 +1609,10 @@
                                     <div id="downloadsource_div" style="display: none;"><a href="" id="sources_input">Download Source.txt</a></div>
                                     <div id="downloadsink_div" style="display: none;"><a href="" id="sinks_input">Download Sinks.txt</a></div>
                                     <br>
+                                    <!--
                                     <button type="button" class="btn btn-primary btn-sm btn-block" onclick="resetworkingarea()">Reset Area of Interest</button>
-                                               
+                                    -->
+                                    Please use <img src="/static/images/maptool_icon.jpg" alt="maptool_icon" align="middle" width="37" height="30" style="border:1px solidblack"> on the left column to reset working area.         
                         </div>
                   </div>
                   <div class="card border-info">
@@ -1736,6 +1747,8 @@
                                     <button type="button" id="bn_editcase" class="btn btn-primary btn-sm btn-block" onclick="user_edit_case('Southeast_US')">Edit this scenario</button>
                               </div>
                               <div id="case_nologinuser_msg" style="display: none;">Gateway user account required. <a href='/auth/login?next=/maptool/'>Login</a>&nbsp;to edit SimCCS model scenarios.</div>
+                              <br>
+                              <div>Please use <img src="/static/images/maptool_icon.jpg" alt="maptool_icon" align="middle" width="37" height="30" style="border:1px solidblack"> on the left column to exit case studies.</div>
                         </div>
                         <div class="card-body" id="case_studies_editor_Southeast_US" style="display: none" >
                               Use mouse-click to select source and sink data.<br><br>
