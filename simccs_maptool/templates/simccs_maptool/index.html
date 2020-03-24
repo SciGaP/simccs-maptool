@@ -711,12 +711,13 @@
          
                  map.on('draw:created', function(e) {
                   // // clear map, remove all layers
-                  //      map.eachLayer(function (layer) {
+                  map.eachLayer(function (layer) {
                   //             //keep the basemap layer
-                  //             if (layer != osm) {map.removeLayer(layer);layercontrol.removeLayer(layer);};
-                  //       });
-                  // layercontrol.remove();
-                  // layercontrol = L.control.layers(null,null,{collapsed:false});
+                  if (layer != osm) {map.removeLayer(layer);layercontrol.removeLayer(layer);};
+                         });
+                  //layercontrol.remove();
+                  layercontrol = L.control.layers(null,null,{collapsed:false});
+                  layercontrol.remove();
 
                  var type = e.layerType,
                  layer = e.layer;
