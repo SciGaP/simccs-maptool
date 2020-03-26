@@ -270,7 +270,7 @@ def _get_solution_summary(request, results_dir):
         }
         # Save solution summary to cache
         with open(cached_solution_summary_path, "w") as f:
-            f.write(json.dump(solution_summary))
+            json.dump(solution_summary, f)
         return solution_summary
 
 
