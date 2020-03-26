@@ -230,27 +230,48 @@ def experiment_result(request, experiment_id):
 def solution_summary(request, experiment_id):
     try:
         results_dir = _get_results_dir(request, experiment_id)
-        solution = _load_solution(request, results_dir)
-        return JsonResponse(
-            {
-                "numOpenedSources": solution.numOpenedSources,
-                "numOpenedSinks": solution.numOpenedSinks,
-                "targetCaptureAmount": solution.captureAmount,
-                "numEdgesOpened": solution.numEdgesOpened,
-                "projectLength": solution.projectLength,
-                "totalCaptureCost": solution.totalAnnualCaptureCost,
-                "unitCaptureCost": solution.unitCaptureCost,
-                "totalTransportCost": solution.totalAnnualTransportCost,
-                "unitTransportCost": solution.unitTransportCost,
-                "totalStorageCost": solution.totalAnnualStorageCost,
-                "unitStorageCost": solution.unitStorageCost,
-                "totalCost": solution.totalCost,
-                "unitTotalCost": solution.unitTotalCost,
-                "crf": solution.getCRF(),
-            }
-        )
+        solution_summary = _get_solution_summary(request, results_dir)
+        return JsonResponse(solution_summary)
     except Exception as e:
         return JsonResponse({"detail": str(e)}, status=500)
+
+
+def _get_solution_summary(request, results_dir):
+    cached_solution_summary_path = os.path.join(results_dir, "solution_summary.json")
+    if os.path.exists(cached_solution_summary_path):
+        with open(cached_solution_summary_path) as f:
+            cached_solution_summary = json.load(f)
+    else:
+        cached_solution_summary = None
+    SOLUTION_SUMMARY_CURRENT_VERSION = 1
+    if (
+        cached_solution_summary
+        and cached_solution_summary["version"] == SOLUTION_SUMMARY_CURRENT_VERSION
+    ):
+        return cached_solution_summary
+    else:
+        solution = _load_solution(request, results_dir)
+        solution_summary = {
+            "version": SOLUTION_SUMMARY_CURRENT_VERSION,
+            "numOpenedSources": solution.numOpenedSources,
+            "numOpenedSinks": solution.numOpenedSinks,
+            "targetCaptureAmount": solution.captureAmount,
+            "numEdgesOpened": solution.numEdgesOpened,
+            "projectLength": solution.projectLength,
+            "totalCaptureCost": solution.totalAnnualCaptureCost,
+            "unitCaptureCost": solution.unitCaptureCost,
+            "totalTransportCost": solution.totalAnnualTransportCost,
+            "unitTransportCost": solution.unitTransportCost,
+            "totalStorageCost": solution.totalAnnualStorageCost,
+            "unitStorageCost": solution.unitStorageCost,
+            "totalCost": solution.totalCost,
+            "unitTotalCost": solution.unitTotalCost,
+            "crf": solution.getCRF(),
+        }
+        # Save solution summary to cache
+        with open(cached_solution_summary_path, "w") as f:
+            f.write(json.dump(solution_summary))
+        return solution_summary
 
 
 def _get_results_dir(request, experiment_id):
