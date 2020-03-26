@@ -238,11 +238,13 @@ def solution_summary(request, experiment_id):
 
 def _get_solution_summary(request, results_dir):
     cached_solution_summary_path = os.path.join(results_dir, "solution_summary.json")
+    cached_solution_summary = None
     if os.path.exists(cached_solution_summary_path):
-        with open(cached_solution_summary_path) as f:
-            cached_solution_summary = json.load(f)
-    else:
-        cached_solution_summary = None
+        try:
+            with open(cached_solution_summary_path) as f:
+                cached_solution_summary = json.load(f)
+        except Exception:
+            logger.exception(f"Failed to load {cached_solution_summary_path}")
     SOLUTION_SUMMARY_CURRENT_VERSION = 1
     if (
         cached_solution_summary
@@ -269,8 +271,11 @@ def _get_solution_summary(request, results_dir):
             "crf": solution.getCRF(),
         }
         # Save solution summary to cache
-        with open(cached_solution_summary_path, "w") as f:
-            json.dump(solution_summary, f)
+        try:
+            with open(cached_solution_summary_path, "w") as f:
+                json.dump(solution_summary, f)
+        except Exception:
+            logger.exception(f"Failed to write {cached_solution_summary_path}")
         return solution_summary
 
 
