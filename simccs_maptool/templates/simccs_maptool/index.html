@@ -1325,7 +1325,8 @@
             //get json display as marker
             var geourl='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&maxFeatures=500&outputFormat=text%2Fjavascript&format_options=callback:loadsearchresult';
             geourl += '&typeName=' + searchlayer;
-            geourl += "&cql_filter=strToLowerCase(Name) like '" + encodeURIComponent("%" + searchstring + "%'");
+            var cleanstr = searchstring.trim();
+            geourl += "&cql_filter=strToLowerCase(Name) like '" + encodeURIComponent("%" + cleanstr + "%'");
             //alert(geourl);
             $.ajax({
                        url: geourl,
