@@ -1325,8 +1325,21 @@
             //get json display as marker
             var geourl='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&maxFeatures=500&outputFormat=text%2Fjavascript&format_options=callback:loadsearchresult';
             geourl += '&typeName=' + searchlayer;
-            var cleanstr = searchstring.trim();
+            var cleanstr='';
+            if (searchstring.includes("type:")) {
+                  var query_list = searchstring.split("type:");
+                  cleanstr = query_list[0].trim();
+                  cleanstr = cleanstr.replace(',','');
+                  geourl += "&cql_filter=((strToLowerCase(Name) like '" + encodeURIComponent("%" + cleanstr + "%'") + ") ";
+                  geourl += " and ";
+                  cleanstr = query_list[1].trim();
+                  geourl +=  "(strToLowerCase(Type) like '" + encodeURIComponent("%" + cleanstr + "%'")
+                  geourl += " ))";
+                  //alert(geourl);              
+            } else {
+            cleanstr = searchstring.trim();
             geourl += "&cql_filter=strToLowerCase(Name) like '" + encodeURIComponent("%" + cleanstr + "%'");
+            }     
             //alert(geourl);
             $.ajax({
                        url: geourl,
