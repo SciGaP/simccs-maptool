@@ -48,6 +48,8 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.9/dist/css/bootstrap-select.min.css">
 <!-- Latest compiled and minified JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.9/dist/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
+<script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
 
 <script>
          // TODO: replace with global user session object
@@ -59,7 +61,17 @@
            //map.addLayer(france_source_cluster);
          
            //$('#species_selector').selectpicker();
-         
+           $( "#slider-range" ).slider({
+      range: true,
+      min: 0.0,
+      max: 20.0,
+      values:[0.0,20.0],
+      step: 0.5,
+      slide: function( event, ui ) {
+        $( "#amount" ).val( ui.values[0].toFixed(1) + " - " + ui.values[1].toFixed(2));
+      }
+    });
+  
          $('input:radio').bind('click mousedown', (function() {
              var isChecked;
              return function(event) {
@@ -1571,6 +1583,9 @@
                               </div>
                         </div>
                         <div id="searchsourcediv" class="collapse">
+                              <div>
+                              Extra filters: 
+                              <div>
                               <select class="selectpicker" id="types_selector" title="Choose Types ..." data-live-search="true" multiple data-actions-box="true">
                                     <option>Ammonia/fertilizer</option>
                                     <option>Cement/concrete</option>
@@ -1582,6 +1597,13 @@
                                     <option>Petroleum Refineries</option>
                                     <option>Pulp, paperboard, and saw mills</option>
                               </select>
+                              </div> 
+                              Capturable CO2 (MtCO2/y)
+                              <input type="text" id="amount" style="border: 0; font-weight: bold;" size="20"/><br>
+                              <div id="slider-range"></div><br>
+                              <button type="button" class="btn btn-primary btn-sm btn-block" onclick="apply_filters()">Apply Filters</button>
+                              <br/>
+                              </div>
                         </div> 
       
                         <div><img src="/static/images/sources_snapper_legend.jpg" alt="source_legend" width="80%" height="80%" style="border:1px solidblack"> </div>
