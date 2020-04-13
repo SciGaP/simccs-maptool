@@ -1332,8 +1332,48 @@
             }
       }
 
+      // generate cql-filters 
+      function searchsourceFilters(layerid, searchstring) {
+
+            // test if extra filter in on
+            var isCollapsed = ($('#searchsourcediv').is('.collapse:not(.show)'));
+            //alert(isCollapsed);
+            var cleanstr='';
+            var cqlfilter_str = '';
+            cleanstr = searchstring.trim();
+            if (isCollapsed) {
+                  cqlfilter_str = "&cql_filter=strToLowerCase(Name) like '" + encodeURIComponent("%" + cleanstr + "%'");
+                  showSearchResults(layerid, cqlfilter_str);
+                  return;
+            } 
+      }
+      
+      function apply_filters(layerid) {
+            // get name field
+            var name_str = $('#search-name-value').val().trim();
+            var cqlfilter_str = '';
+            var filter_array = [];
+            var temp_str;
+            if (name_str.length > 0) {
+                  temp_str = "strToLowerCase(Name) like '" + encodeURIComponent("%" + name_str + "%'");
+                  filter_array.push(temp_str);
+            }
+
+            if (filter_array.length == 0 ) {
+                  alert("No filter selected!");
+                  return;
+            }
+            if (filter_array.length == 1) {
+                  cqlfilter_str = "&cql_filter=" + filter_array[0];
+            }
+            alert(cqlfilter_str);
+            showSearchResults(layerid, cqlfilter_str);
+
+      }
+
       //A simple seach function
-      function showSearchResults(layerid, searchstring) {
+      function showSearchResults(layerid, filter_str) {
+            
             var searchlayer;
             switch(layerid) {
                   case "source_all_test":
@@ -1345,21 +1385,22 @@
             //get json display as marker
             var geourl='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&maxFeatures=500&outputFormat=text%2Fjavascript&format_options=callback:loadsearchresult';
             geourl += '&typeName=' + searchlayer;
-            var cleanstr='';
-            if (searchstring.includes("type:")) {
-                  var query_list = searchstring.split("type:");
-                  cleanstr = query_list[0].trim();
-                  cleanstr = cleanstr.replace(',','');
-                  geourl += "&cql_filter=((strToLowerCase(Name) like '" + encodeURIComponent("%" + cleanstr + "%'") + ") ";
-                  geourl += " and ";
-                  cleanstr = query_list[1].trim();
-                  geourl +=  "(strToLowerCase(Type) like '" + encodeURIComponent("%" + cleanstr + "%'")
-                  geourl += " ))";
-                  //alert(geourl);              
-            } else {
-            cleanstr = searchstring.trim();
-            geourl += "&cql_filter=strToLowerCase(Name) like '" + encodeURIComponent("%" + cleanstr + "%'");
-            }     
+            geourl += filter_str;
+            // var cleanstr='';
+            // if (searchstring.includes("type:")) {
+            //       var query_list = searchstring.split("type:");
+            //       cleanstr = query_list[0].trim();
+            //       cleanstr = cleanstr.replace(',','');
+            //       geourl += "&cql_filter=((strToLowerCase(Name) like '" + encodeURIComponent("%" + cleanstr + "%'") + ") ";
+            //       geourl += " and ";
+            //       cleanstr = query_list[1].trim();
+            //       geourl +=  "(strToLowerCase(Type) like '" + encodeURIComponent("%" + cleanstr + "%'")
+            //       geourl += " ))";
+            //       //alert(geourl);              
+            // } else {
+            // cleanstr = searchstring.trim();
+            // geourl += "&cql_filter=strToLowerCase(Name) like '" + encodeURIComponent("%" + cleanstr + "%'");
+            // }     
             //alert(geourl);
             $.ajax({
                        url: geourl,
@@ -1576,13 +1617,13 @@
                         <br><small>(Sources_082819_SimCCS_Format)</small>
                         <div class="btn-toolbar mb-3" role="toolbar" aria-label="Toolbar with button groups">
                               <div class="input-group">
-                                <input type="text" placeholder="search by name" name="searchString" id="search-string-value" size="20" value="" onchange="showSearchResults('source_all_test',this.value)" /> 
+                                <input type="text" placeholder="search by name" name="searchString" id="search-name-value" size="20" value="" onchange="searchsourceFilters('source_all_test',this.value)" /> 
                               </div>
                               <div class="btn-group mr-2" role="group" aria-label="First group">
-                                    <button type="button" class="btn btn-light" data-toggle="collapse" data-target="#searchsourcediv"><i class="fas fa-plus"></i></span></button>
+                                    <button type="button" class="btn btn-light" data-toggle="collapse" aria-expanded="false" data-target="#searchsourcediv"><i class="fas fa-plus"></i></span></button>
                               </div>
                         </div>
-                        <div id="searchsourcediv" class="collapse">
+                        <div id="searchsourcediv" class="collapse" >
                               <div>
                               Extra filters: 
                               <div>
@@ -1598,10 +1639,11 @@
                                     <option>Pulp, paperboard, and saw mills</option>
                               </select>
                               </div> 
+                              <br />
                               Capturable CO2 (MtCO2/y)
                               <input type="text" id="amount" style="border: 0; font-weight: bold;" size="20"/><br>
                               <div id="slider-range"></div><br>
-                              <button type="button" class="btn btn-primary btn-sm btn-block" onclick="apply_filters()">Apply Filters</button>
+                              <button type="button" class="btn btn-primary btn-sm btn-block" onclick="apply_filters('source_all_test')">Apply Filters</button>
                               <br/>
                               </div>
                         </div> 
