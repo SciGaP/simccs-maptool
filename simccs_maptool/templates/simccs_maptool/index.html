@@ -1354,8 +1354,21 @@
             var cqlfilter_str = '';
             var filter_array = [];
             var temp_str;
+            // search by name
             if (name_str.length > 0) {
                   temp_str = "strToLowerCase(Name) like '" + encodeURIComponent("%" + name_str + "%'");
+                  filter_array.push(temp_str);
+            }
+            //search by type
+            // type length 0 ~ 9
+            // ignore length = 0 or 9
+            var types_list = $('#types_selector').val();
+            if (types_list.length == 1) {
+                  temp_str = "Type like '" + encodeURIComponent("%" + types_list[0] + "%'");
+                  filter_array.push(temp_str);
+            }
+            if (types_list.length >= 2 && types_list.length <=8 ) {
+                  temp_str = "Type IN " + "('" + types_list.join("','") + "')";
                   filter_array.push(temp_str);
             }
 
