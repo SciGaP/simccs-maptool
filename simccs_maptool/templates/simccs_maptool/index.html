@@ -71,6 +71,8 @@
         $( "#amount" ).val( ui.values[0].toFixed(1) + " - " + ui.values[1].toFixed(2));
       }
     });
+    //$("#amount").val($( "#slider-range").slider("values", 0) + " - " + $("#slider-range").slider( "values", 1 ));
+
   
          $('input:radio').bind('click mousedown', (function() {
              var isChecked;
@@ -1369,6 +1371,16 @@
             }
             if (types_list.length >= 2 && types_list.length <=8 ) {
                   temp_str = "Type IN " + "('" + types_list.join("','") + "')";
+                  filter_array.push(temp_str);
+            }
+
+            // slider-range
+            var co2_range_0 = $("#slider-range").slider("values", 0);
+            var co2_range_1 = $("#slider-range").slider("values", 1);
+            //alert(co2_range_0.toString() +"," + co2_range_1.toString());
+            // WHERE Capturable BETWEEN 10 AND 20;
+            if (co2_range_0 > 0.0 || co2_range_1 < 20.0) {
+                  temp_str = "Capturable BETWEEN " + co2_range_0.toString() + " AND " + co2_range_1.toString();
                   filter_array.push(temp_str);
             }
 
