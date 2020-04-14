@@ -1328,7 +1328,7 @@
                   });
 
                   map.addLayer(searchlayer);
-                  map.fitBounds(searchlayer.getBounds()); }
+                  map.fitBounds(searchlayer.getBounds(),{maxZoom:10}); }
             else {
                   alert("Zero source is found!");
             }
@@ -1391,7 +1391,12 @@
             if (filter_array.length == 1) {
                   cqlfilter_str = "&cql_filter=" + filter_array[0];
             }
-            alert(cqlfilter_str);
+            if (filter_array.length > 1) {
+                  cqlfilter_str = "&cql_filter=("; 
+                  cqlfilter_str += "(" + filter_array.join(") AND (") + ")";
+                  cqlfilter_str += ")"
+            }
+            //alert(cqlfilter_str);
             showSearchResults(layerid, cqlfilter_str);
 
       }
