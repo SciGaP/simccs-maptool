@@ -72,6 +72,16 @@
       }
     });
     //$("#amount").val($( "#slider-range").slider("values", 0) + " - " + $("#slider-range").slider( "values", 1 ));
+    $( "#slider-range-cost" ).slider({
+      range: true,
+      min: 10.0,
+      max: 100.0,
+      values:[10.0,100.0],
+      step: 0.5,
+      slide: function( event, ui ) {
+        $( "#amount-cost" ).val( ui.values[0].toFixed(1) + " - " + ui.values[1].toFixed(2));
+      }
+    });
 
   
          $('input:radio').bind('click mousedown', (function() {
@@ -1350,6 +1360,22 @@
             } 
       }
       
+      //reset filter
+      function clear_filters(){
+            $('#search-name-value').val("");
+            // reset selector
+            $('#types_selector').val('default');
+            $('#types_selector').selectpicker("refresh");
+            // reset range-select
+            $("#slider-range").slider('values',[0.0,20.0]);
+            $("#amount").val("0.0 - 20.0");
+            $("#slider-range-cost").slider('values',[10.0,100.0]);
+            $("#amount-cost").val("10.0 - 100.0");
+            //$("#slider-range").slider("refresh");
+            if (searchlayer != null)
+                  {map.removeLayer(searchlayer);}
+      }
+
       function apply_filters(layerid) {
             // get name field
             var name_str = $('#search-name-value').val().trim();
@@ -1381,6 +1407,16 @@
             // WHERE Capturable BETWEEN 10 AND 20;
             if (co2_range_0 > 0.0 || co2_range_1 < 20.0) {
                   temp_str = "Capturable BETWEEN " + co2_range_0.toString() + " AND " + co2_range_1.toString();
+                  filter_array.push(temp_str);
+            }
+
+            // slider-range-cost
+            var co2_cost_0 = $("#slider-range-cost").slider("values", 0);
+            var co2_cost_1 = $("#slider-range-cost").slider("values", 1);
+            //alert(co2_cost_0.toString() +"," + co2_cost_1.toString());
+            // WHERE costVar BETWEEN 0 AND 100;
+            if (co2_cost_0 > 10.0 || co2_cost_1 < 100.0) {
+                  temp_str = "costVar___ BETWEEN " + co2_cost_0.toString() + " AND " + co2_cost_1.toString();
                   filter_array.push(temp_str);
             }
 
@@ -1673,7 +1709,12 @@
                               Capturable CO2 (MtCO2/y)
                               <input type="text" id="amount" style="border: 0; font-weight: bold;" size="20"/><br>
                               <div id="slider-range"></div><br>
+                              CostVar ($/tCO2)
+                              <input type="text" id="amount-cost" style="border: 0; font-weight: bold;" size="20"/><br>
+                              <div id="slider-range-cost"></div><br>
+                        
                               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="apply_filters('source_all_test')">Apply Filters</button>
+                              <button type="button" class="btn btn-primary btn-sm btn-block" onclick="clear_filters()">Reset Filters</button>
                               <br/>
                               </div>
                         </div> 
