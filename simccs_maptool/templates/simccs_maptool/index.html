@@ -1422,7 +1422,16 @@
             }
 
             if ($('#searchinmap-option').is(":checked")) {
-                  //alert(map.getBounds());
+                  var lon1 = map.getBounds().getEast().toString();
+                  var lon0 = map.getBounds().getWest().toString();
+                  var lat1 = map.getBounds().getNorth().toString();
+                  var lat0 = map.getBounds().getSouth().toString();
+                  //alert([lon0,lon1,lat0,lat1].join(","));
+                  //Intersects(the_geom,Polygon((-89.679752 31.952162,-89.679752 34.198173,-86.009367 34.198173,-86.009367 31.952162,-89.679752 31.952162)))
+                  temp_str ="Intersects(the_geom,Polygon((";
+                  temp_str += [lon0+" "+lat1,lon1+" "+lat1,lon1+" "+lat0,lon0+" "+lat0,lon0+" "+lat1].join(",");
+                  temp_str += ")))";
+                  filter_array.push(temp_str);
             }
 
             if (filter_array.length == 0 ) {
