@@ -83,6 +83,16 @@
       }
     });
 
+    $( "#slider-range-sinkcost" ).slider({
+      range: true,
+      min: 0.0,
+      max: 20.0,
+      values:[0,20.0],
+      step: 0.5,
+      slide: function( event, ui ) {
+        $( "#amount-sinkcost" ).val( ui.values[0].toFixed(1) + " - " + ui.values[1].toFixed(2));
+      }
+    });
   
          $('input:radio').bind('click mousedown', (function() {
              var isChecked;
@@ -1360,6 +1370,24 @@
             } 
       }
       
+      function refresh_saline() {
+            var fixedcost_0 = $("#slider-range-sinkcost").slider("values", 0);
+            var fixedcost_1 = $("#slider-range-sinkcost").slider("values", 1);
+            // remove sink_sco2t_layer
+            if (map.hasLayer(sink_sco2t_layer)) {map.removeLayer(sink_sco2t_layer);}
+            // define a sink_sco2t_layer
+            sink_sco2t_layer = L.tileLayer.betterWms("https://simccs.org/geoserver/SimCCS/wms?", {
+            layers: 'SCO2T_v3_1_2_LowCost_SimCCS_10K',
+            format: 'image/png',
+            transparent: true,
+            attribution: "SimCCS",
+            propertyName: 'name,sinkcapacity,sinkfixedcost,wellfixedcost,wellvarom',
+            cql_filter:"sinkfixedcost Between " + fixedcost_0.toString() + " AND "+ fixedcost_1.toString(),
+            zIndex:2
+            });
+            map.addLayer(sink_sco2t_layer);
+      }
+
       //reset filter
       function clear_filters(){
             $('#search-name-value').val("");
@@ -1764,7 +1792,15 @@
                                  <input class="form-check-input" type="radio" id="sink_saline_formation">
                                  <label style="font-size: 100%;" class="form-check-label" for="sink_saline_formation">Saline Formation</label>
                                  <br> <small>(SCO2T_Database_v3_1_2)</small>
-                                 <div><img src="/static/images/Saline_legend_1.jpg" alt="saline_legend" width="130px" height="100px" style="border:1px solidblack"> </div>
+                                 <div id="sink_saline_div" >
+                                    <label>SinkFixedCost: 
+                                    <input type="text" id="amount-sinkcost" style="border: 0; font-weight: bold;" size="10"/>
+                              </label>
+                              <table style="width:100%"><tr>
+                                   <td width="80%"> <div id="slider-range-sinkcost"></div></td><td width="5%"></td><td width="15%"><button type="button" class="btn btn-sm btn-light" onclick=refresh_saline()><i class="fas fa-redo"></i></span></button></td>
+                              </tr>
+                              </table>
+                                    <img src="/static/images/Saline_legend_1.jpg" alt="saline_legend" width="130px" height="100px" style="border:1px solidblack"> </div>
                               </div>
                               <div class="form-check">
                                  <input class="form-check-input" type="radio" id="sink_oil_reservoir" >
