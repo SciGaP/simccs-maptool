@@ -1372,6 +1372,7 @@
             $("#slider-range-cost").slider('values',[10.0,100.0]);
             $("#amount-cost").val("10.0 - 100.0");
             //$("#slider-range").slider("refresh");
+            $("#searchinmap-option").prop("checked", false);
             if (searchlayer != null)
                   {map.removeLayer(searchlayer);}
       }
@@ -1418,6 +1419,10 @@
             if (co2_cost_0 > 10.0 || co2_cost_1 < 100.0) {
                   temp_str = "costVar___ BETWEEN " + co2_cost_0.toString() + " AND " + co2_cost_1.toString();
                   filter_array.push(temp_str);
+            }
+
+            if ($('#searchinmap-option').is(":checked")) {
+                  //alert(map.getBounds());
             }
 
             if (filter_array.length == 0 ) {
@@ -1712,8 +1717,11 @@
                               CostVar ($/tCO2)
                               <input type="text" id="amount-cost" style="border: 0; font-weight: bold;" size="20"/><br>
                               <div id="slider-range-cost"></div><br>
-                        
-                              <button type="button" class="btn btn-primary btn-sm btn-block" onclick="apply_filters('source_all_test')">Apply Filters</button>
+                                    <div>
+                                      <input type="checkbox" id="searchinmap-option">
+                                      <label >Search in the current map extent</label>
+                              </div>
+                        <button type="button" class="btn btn-primary btn-sm btn-block" onclick="apply_filters('source_all_test')">Apply Filters</button>
                               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="clear_filters()">Reset Filters</button>
                               <br/>
                               </div>
