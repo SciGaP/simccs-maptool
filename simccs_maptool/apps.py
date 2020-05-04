@@ -61,7 +61,10 @@ def init_pyjnius():
         jnius_config.set_classpath(
             os.path.join(
                 BASE_DIR, "simccs", "lib", "SimCCS.jar"
-            )
+            ),
+            os.path.join(
+                BASE_DIR, "simccs", "lib", "maptool.jar"
+            ),
         )
         logger.info(
             "Initialized jnius with classpath={}, options={}".format(

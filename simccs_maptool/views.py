@@ -21,6 +21,8 @@ DATASETS_BASEPATH = os.path.join(BASEDIR, "simccs", "Datasets")
 CASE_STUDIES_DIR = os.path.join(BASEDIR, "static", "Scenarios")
 DATASETS_METADATA_DIR = os.path.join(BASEDIR, "static", "Datasets")
 SOUTHEASTUS_DATASET_ID = "Southeast_US_2012"
+LOWER48US_DATASET_ID = "Lower48US"
+CACHED_LOWER48US_COST_SURFACE_DATA = None
 
 logger = logging.getLogger(__name__)
 
@@ -146,6 +148,8 @@ def generate_mps(request):
         )
 
     try:
+        _check_cost_surface_data_cache(dataset)
+
         from jnius import autoclass
 
         DataStorer = autoclass("dataStore.DataStorer")
@@ -153,6 +157,9 @@ def generate_mps(request):
         Solver = autoclass("solver.Solver")
         solver = Solver(data)
         data.setSolver(solver)
+        # Use cached cost surface data for Lower48US dataset
+        if dataset == LOWER48US_DATASET_ID and CACHED_LOWER48US_COST_SURFACE_DATA is not None:
+            CACHED_LOWER48US_COST_SURFACE_DATA.populate(data)
         MPSWriter = autoclass("solver.MPSWriter")
         os.mkdir(os.path.join(scenario_dir, "MIP"))
         MPSWriter.writeCapPriceMPS(
@@ -293,6 +300,8 @@ def _create_shapefiles_for_result(results_dir):
     scenario = os.path.basename(scenario_dir)
     dataset = _get_dataset_from_results_dir(results_dir)
     try:
+        _check_cost_surface_data_cache(dataset)
+
         from jnius import autoclass
 
         # initialize the Solver/DataStorer
@@ -301,6 +310,9 @@ def _create_shapefiles_for_result(results_dir):
         Solver = autoclass("solver.Solver")
         solver = Solver(data)
         data.setSolver(solver)
+        # Use cached cost surface data for Lower48US dataset
+        if dataset == LOWER48US_DATASET_ID and CACHED_LOWER48US_COST_SURFACE_DATA is not None:
+            CACHED_LOWER48US_COST_SURFACE_DATA.populate(data)
         logger.debug("Scenario data loaded for {}".format(scenario_dir))
         # load the .mps/.sol solution
         solution = data.loadSolution(results_dir, -1)  # timeslot
@@ -323,6 +335,8 @@ def _load_solution(request, results_dir):
     scenario = os.path.basename(scenario_dir)
     dataset = _get_dataset_from_results_dir(results_dir)
     try:
+        _check_cost_surface_data_cache(dataset)
+
         from jnius import autoclass
 
         # initialize the Solver/DataStorer
@@ -331,6 +345,9 @@ def _load_solution(request, results_dir):
         Solver = autoclass("solver.Solver")
         solver = Solver(data)
         data.setSolver(solver)
+        # Use cached cost surface data for Lower48US dataset
+        if dataset == LOWER48US_DATASET_ID and CACHED_LOWER48US_COST_SURFACE_DATA is not None:
+            CACHED_LOWER48US_COST_SURFACE_DATA.populate(data)
         logger.debug("Scenario data loaded for {}".format(scenario_dir))
         # load the .mps/.sol solution
         solution = data.loadSolution(results_dir, -1)  # timeslot
@@ -438,6 +455,7 @@ def candidate_network(request):
             )
 
         try:
+            _check_cost_surface_data_cache(dataset)
             # Run the Solver to generate candidate graph
             from jnius import autoclass
 
@@ -446,6 +464,9 @@ def candidate_network(request):
             Solver = autoclass("solver.Solver")
             solver = Solver(data)
             data.setSolver(solver)
+            # Use cached cost surface data for Lower48US dataset
+            if dataset == LOWER48US_DATASET_ID and CACHED_LOWER48US_COST_SURFACE_DATA is not None:
+                CACHED_LOWER48US_COST_SURFACE_DATA.populate(data)
             results_dir = os.path.join(scenario_dir, "Network", "CandidateNetwork")
             # Must make the CandidateNetwork directory before calling makeCandidateNetworkShapeFiles
             os.makedirs(results_dir, exist_ok=True)
@@ -509,3 +530,32 @@ def _get_dataset_dirname(dataset):
             if summary_json["dataset-id"] == dataset:
                 return summary_json["dataset-dirname"]
     raise Exception("Unrecognized dataset: {}".format(dataset))
+
+
+def _check_cost_surface_data_cache(dataset):
+    global CACHED_LOWER48US_COST_SURFACE_DATA
+    if dataset == LOWER48US_DATASET_ID and CACHED_LOWER48US_COST_SURFACE_DATA is None:
+        CACHED_LOWER48US_COST_SURFACE_DATA = _load_cost_surface_data()
+
+
+def _load_cost_surface_data():
+    try:
+        logger.info("Loading Lower48US cost surface data ...")
+        dataset, scenario = "Lower48US", "scenario1"
+        basepath = settings.MAPTOOL_SETTINGS["DATASETS_DIR"]
+        from jnius import autoclass
+
+        DataStorer = autoclass("dataStore.DataStorer")
+        Solver = autoclass("solver.Solver")
+        CostSurfaceData = autoclass("maptool.CostSurfaceData")
+        data = DataStorer(basepath, dataset, scenario)
+        solver = Solver(data)
+        data.setSolver(solver)
+        data.loadNetworkCosts()
+        cost_surface_data = CostSurfaceData()
+        cost_surface_data.load(data)
+        logger.info("Loaded Lower48US cost surface data")
+        return cost_surface_data
+    except Exception as e:
+        logger.exception("Error occurred when loading solution: " + str(e.stacktrace))
+        return None
