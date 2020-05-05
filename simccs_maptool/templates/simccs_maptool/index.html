@@ -729,11 +729,17 @@
            function show_drawingtool(){
                   var querylayers = '';
                   querylayers = get_selectedsourcelayers();
-                 if (querylayers == ''){alert("Please select at least one source!"); return;} 
+                 //if (querylayers == ''){alert("Please select at least one source!"); return;} 
+                 // load source layer if not selected
+                 if (querylayers == '') {
+                    // load source layer
+                    map.addLayer(source_all_test_layer_1);
+                    querylayers = 'Sources_082819_SimCCS_Format';
+                 }
                  // Initialise the FeatureGroup to store editable layers
                  var editableLayers = new L.FeatureGroup();
                  map.addLayer(editableLayers);
-                  alert(L.drawVersion);
+                  //alert(L.drawVersion);
                  var drawPluginOptions = {
                  position: 'topright',
                  draw: {
@@ -749,9 +755,10 @@
                  },
                  // disable toolbar item by setting it to false
                  polyline: false,
-                 circle: true, // Turns off this drawing tool
-                 rectangle: true,
+                 circle: {color: '#e1e100',shapeOptions: {color: '#97009c'}},
+                 rectangle: {color: '#e1e100',shapeOptions: {color: '#97009c'}},
                  marker: false,
+                 circlemarker: false,
                  },
                  edit: {
                  featureGroup: editableLayers, //REQUIRED!!
