@@ -726,6 +726,44 @@
            }
 
            var drawControl=0;
+                   // Generate popup content based on layer type
+        // - Returns HTML string, or null if unknown object
+        var getPopupContent = function(layer) {
+            // Marker - add lat/long
+            var content_html = null;
+            if (layer instanceof L.Marker || layer instanceof L.CircleMarker) {
+                return strLatLng(layer.getLatLng());
+            // Circle - lat/long, radius
+            } else if (layer instanceof L.Circle) {
+                var center = layer.getLatLng(),
+                    radius = layer.getRadius();
+                content_html = "Center: "+strLatLng(center)+"<br />"
+                      +"Radius: "+_round(radius, 2)+" m";
+            // Rectangle/Polygon - area
+            } else if (layer instanceof L.Polygon) {
+                var latlngs = layer._defaultShape ? layer._defaultShape() : layer.getLatLngs(),
+                    // in square meters
+                    area = L.GeometryUtil.geodesicArea(latlngs);
+                content_html = "Area: "+ (area/1000000.0).toFixed(2) + " km2";
+            // Polyline - distance
+            } else if (layer instanceof L.Polyline) {
+                var latlngs = layer._defaultShape ? layer._defaultShape() : layer.getLatLngs(),
+                    distance = 0;
+                if (latlngs.length < 2) {
+                    content_html = "Distance: N/A";
+                } else {
+                    for (var i = 0; i < latlngs.length-1; i++) {
+                        distance += latlngs[i].distanceTo(latlngs[i+1]);
+                    }
+                    content_html = "Distance: "+_round(distance, 2)+" m";
+                }
+            }
+            if (content_html == null) { return null;}
+            content_html += '<br>';
+            content_html += '<button name="button">Use this area</button>'
+            return content_html;
+        };
+
            function show_drawingtool(){
                   var querylayers = '';
                   querylayers = get_selectedsourcelayers();
@@ -753,16 +791,17 @@
                        color: '#97009c'
                        }
                  },
-                 // disable toolbar item by setting it to false
-                 polyline: false,
                  circle: {color: '#e1e100',shapeOptions: {color: '#97009c'}},
                  rectangle: {color: '#e1e100',shapeOptions: {color: '#97009c'}},
+                 // disable toolbar item by setting it to false
+                 polyline: false,
                  marker: false,
                  circlemarker: false,
                  },
                  edit: {
                  featureGroup: editableLayers, //REQUIRED!!
-                 remove: false,
+                 poly: {allowIntersection: false},
+                 remove: true,
                  edit: true,
                  }};
                  // Initialise the draw control and pass it the FeatureGroup of editable layers
@@ -771,9 +810,24 @@
                  //map.addLayer(editableLayers);
                  map.on('draw:created', function(e) {
                   var layer = e.layer;
+                  var content = getPopupContent(layer);
+                  if (content !== null) {
+                        layer.bindPopup(content);
+                  }
                   editableLayers.addLayer(layer);  
+                  layer.openPopup();
                  }
-                 )
+                 );
+                 map.on(L.Draw.Event.EDITED, function(e) {
+                  var layers = e.layers,
+                  content = null;
+                  layers.eachLayer(function(layer) {
+                        content = getPopupContent(layer);
+                  if (content !== null) {
+                    layer.setPopupContent(content);
+                    layer.openPopup();
+                        }
+                  });});
             //      map.on('draw:created', function(e) {
             //       // // clear map, remove all layers
             //       map.eachLayer(function (layer) {
