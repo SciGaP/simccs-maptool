@@ -93,6 +93,17 @@
         $( "#amount-sinkcost" ).val( ui.values[0].toFixed(1) + " - " + ui.values[1].toFixed(2));
       }
     });
+
+    $( "#slider-range-sinkcapacity" ).slider({
+      range: true,
+      min: 0.0,
+      max: 130.0,
+      values:[0,130.0],
+      step: 1,
+      slide: function( event, ui ) {
+        $( "#amount-sinkcapacity" ).val( ui.values[0].toFixed(1) + " - " + ui.values[1].toFixed(2));
+      }
+    });
   
          $('input:radio').bind('click mousedown', (function() {
              var isChecked;
@@ -1373,6 +1384,15 @@
       function refresh_saline() {
             var fixedcost_0 = $("#slider-range-sinkcost").slider("values", 0);
             var fixedcost_1 = $("#slider-range-sinkcost").slider("values", 1);
+            var sinkcapacity_0 = $("#slider-range-sinkcapacity").slider("values", 0);
+            var sinkcapacity_1 = $("#slider-range-sinkcapacity").slider("values", 1);
+            var cqlfilter_str = "";
+            cqlfilter_str = "((";
+            cqlfilter_str += "sinkfixedcost Between " + fixedcost_0.toString() + " AND "+ fixedcost_1.toString();
+            cqlfilter_str += ") AND (";
+            cqlfilter_str += "sinkcapacity Between " + sinkcapacity_0.toString() + " AND "+ sinkcapacity_1.toString();
+            cqlfilter_str += "))";
+            //alert(cqlfilter_str);
             // remove sink_sco2t_layer
             if (map.hasLayer(sink_sco2t_layer)) {map.removeLayer(sink_sco2t_layer);}
             // define a sink_sco2t_layer
@@ -1382,7 +1402,7 @@
             transparent: true,
             attribution: "SimCCS",
             propertyName: 'name,sinkcapacity,sinkfixedcost,wellfixedcost,wellvarom',
-            cql_filter:"sinkfixedcost Between " + fixedcost_0.toString() + " AND "+ fixedcost_1.toString(),
+            cql_filter:cqlfilter_str,
             zIndex:2
             });
             map.addLayer(sink_sco2t_layer);
@@ -1800,6 +1820,14 @@
                                    <td width="80%"> <div id="slider-range-sinkcost"></div></td><td width="5%"></td><td width="15%"><button type="button" class="btn btn-sm btn-light" onclick=refresh_saline()><i class="fas fa-redo"></i></span></button></td>
                               </tr>
                               </table>
+                              <label>SinkCapacity: 
+                                    <input type="text" id="amount-sinkcapacity" style="border: 0; font-weight: bold;" size="10"/>
+                              </label>
+                              <table style="width:100%"><tr>
+                                    <td width="80%"> <div id="slider-range-sinkcapacity"></div></td><td width="5%"></td><td width="15%"><button type="button" class="btn btn-sm btn-light" onclick=refresh_saline()><i class="fas fa-redo"></i></span></button></td>
+                               </tr>
+                               </table>
+                 
                                     <img src="/static/images/Saline_legend_1.jpg" alt="saline_legend" width="130px" height="100px" style="border:1px solidblack"> </div>
                               </div>
                               <div class="form-check">
