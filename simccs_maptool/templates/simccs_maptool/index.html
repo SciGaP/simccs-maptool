@@ -729,6 +729,9 @@
                    // Generate popup content based on layer type
         // - Returns HTML string, or null if unknown object
 
+      function loadworkingarea(layer) {
+            alert(layer);
+      }
         var getPopupContent = function(layer) {
             // Marker - add lat/long
             var content_html = null;
@@ -779,6 +782,7 @@
                   pop_str += "Capturable CO2: " + json.capturable.toFixed(2) + " MtCO2/yr<br>";
                   pop_str += "No. of Sinks: " + json.totalsink.toString() + "<br>";
                   pop_str += "Sink Capacity: " + json.sinkcapacity.toFixed(2) + " MtCO2<br>";
+                  pop_str += '<button  type="button" class="btn btn-primary btn-sm" value="'+ geom_str +'" onclick=loadworkingarea(this.value)>Use this area</button>'
 
                   layer.setPopupContent(pop_str);
                   layer.openPopup();
