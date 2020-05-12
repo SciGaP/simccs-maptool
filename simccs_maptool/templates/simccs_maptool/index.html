@@ -728,6 +728,7 @@
            var drawControl=0;
                    // Generate popup content based on layer type
         // - Returns HTML string, or null if unknown object
+
         var getPopupContent = function(layer) {
             // Marker - add lat/long
             var content_html = null;
@@ -759,8 +760,35 @@
                 }
             }
             if (content_html == null) { return null;}
+            // get feature count inside the polygon/rectangle
+            var geom = layer.toGeoJSON()['geometry']['coordinates'];
+            var coordstr=[];
+            for (i = 0, len = geom[0].length; i < len; i++) {
+             coordstr[i]= (geom[0][i].toString()).replace(',',' ');} 
+            var geom_str = coordstr.join(',');
+            $.getJSON("/maptool/get-data",{geom:geom_str})
+            .done(function(json){
+                  //var popup = layer.getPopup();
+                  //popup.setContent( json.toString() );
+                  var latlngs = layer._defaultShape ? layer._defaultShape() : layer.getLatLngs(),
+                    // in square meters
+                    area = L.GeometryUtil.geodesicArea(latlngs);
+                  var pop_str='';
+                  pop_str += "Area: "+ (area/1000000.0).toFixed(2) + " km2" + '<br>';
+                  pop_str += "No. of Sources: " + json.totalsource.toString() + "<br>";
+                  pop_str += "Capturable CO2: " + json.capturable.toFixed(2) + " MtCO2/yr<br>";
+                  layer.setPopupContent(pop_str);
+                  layer.openPopup();
+            }).fail(function(jqxhr, textStatus, error ) {
+                  var err = textStatus + ", " + error;
+                  console.log( "Request Failed: " + err );
+                  return "";
+            });
+            content_html += "<br>Sources: <br>";
+            content_html += "Sinks: <br>";
             content_html += '<br>';
-            content_html += '<button name="button">Use this area</button>'
+            content_html += '<button  type="button" class="btn btn-primary btn-sm">Use this area</button>'
+            content_html = '';
             return content_html;
         };
 
@@ -815,7 +843,7 @@
                         layer.bindPopup(content);
                   }
                   editableLayers.addLayer(layer);  
-                  layer.openPopup();
+                  //layer.openPopup();
                  }
                  );
                  map.on(L.Draw.Event.EDITED, function(e) {
@@ -823,10 +851,10 @@
                   content = null;
                   layers.eachLayer(function(layer) {
                         content = getPopupContent(layer);
-                  if (content !== null) {
-                    layer.setPopupContent(content);
-                    layer.openPopup();
-                        }
+                  // if (content !== null) {
+                  //   layer.setPopupContent(content);
+                  //   layer.openPopup();
+                  //       }
                   });});
             //      map.on('draw:created', function(e) {
             //       // // clear map, remove all layers
