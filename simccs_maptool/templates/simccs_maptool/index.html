@@ -731,14 +731,23 @@
 
       function loadworkingarea(layer) {
             //layer-coordinates
-            //alert(layer);
+            //alert(layer.toGeoJSON()['geometry']['coordinates']);
             map.removeControl(drawControl);
             drawControl = 0;
             map.eachLayer(function (layer) {
             if (layer != osm) {map.removeLayer(layer);};
             });
-
+            var lbounds=layer.getBounds().pad(0.1);
+            var cost_image_url="https://simccs.org/geoserver/ows?service=WCS&version=2.0.0&request=GetCoverage&coverageId=SimCCS__cost&format=png";
+            // &subset=Lat(29.920588,33.381122)&subset=Long(-89.251876,-83.277539)";
+            cost_image_url += "&subset=Lat(" +lbounds.getSouth() +","+lbounds.getNorth() +")";
+            cost_image_url += "&subset=Long("+lbounds.getWest() + ","+lbounds.getEast() + ")";
+            var cost_image_bounds = lbounds;
+            var cost_surface =L.imageOverlay(cost_image_url,cost_image_bounds).addTo(map);
+            lbounds=layer.getBounds().pad(0.5);
+            map.fitBounds(lbounds);
       }
+
         var getPopupContent = function(layer) {
             // Marker - add lat/long
             var content_html = null;
@@ -789,10 +798,15 @@
                   pop_str += "Capturable CO2: " + json.capturable.toFixed(2) + " MtCO2/yr<br>";
                   pop_str += "No. of Sinks: " + json.totalsink.toString() + "<br>";
                   pop_str += "Sink Capacity: " + json.sinkcapacity.toFixed(2) + " MtCO2<br>";
-                  pop_str += '<button  type="button" class="btn btn-primary btn-sm" value="'+ geom_str +'" onclick=loadworkingarea(this.value)>Use this area</button>'
+                  //pop_str += '<button id="testid" type="button" class="btn btn-primary btn-sm" value="'+ geom_str +'" onclick=loadworkingarea(this.value)>Use this area</button>'
+                  var randomid = "testid_" + (Math.floor(Math.random()*1000)).toFixed();
+                  pop_str += '<button id="'+ randomid + '" type="button" class="btn btn-primary btn-sm" >Use this area</button>'
 
                   layer.setPopupContent(pop_str);
                   layer.openPopup();
+                  $( "#"+randomid ).bind( "click", function() {
+                        loadworkingarea(layer);
+                  });
             }).fail(function(jqxhr, textStatus, error ) {
                   var err = textStatus + ", " + error;
                   console.log( "Request Failed: " + err );
