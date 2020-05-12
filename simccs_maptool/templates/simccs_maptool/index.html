@@ -730,7 +730,14 @@
         // - Returns HTML string, or null if unknown object
 
       function loadworkingarea(layer) {
-            alert(layer);
+            //layer-coordinates
+            //alert(layer);
+            map.removeControl(drawControl);
+            drawControl = 0;
+            map.eachLayer(function (layer) {
+            if (layer != osm) {map.removeLayer(layer);};
+            });
+
       }
         var getPopupContent = function(layer) {
             // Marker - add lat/long
