@@ -19,6 +19,7 @@ def get_data(request):
     # TODO get the query parameters from request.GET dictionary
     # TODO return JsonResponse(...)
     geom = request.GET["geom"]
+    method = request.GET["method"]
     geom = geom.replace("%20"," ")
     geom = geom.replace("%2C",",")
     cqlfilter = 'Intersects(the_geom,Polygon((' + geom + ")))"
@@ -28,19 +29,31 @@ def get_data(request):
     #     'maxFeatures':500,'outputFormat':'application/json','typeName':'Sources_082819_SimCCS_Format',
     #     'cql_filter':cqlfilter}
     
-    # sources
-    data = wfs_call('Sources_082819_SimCCS_Format',cqlfilter)
-    # extracting data in json format 
-    # Number of Sources: #
-    # Capturable CO2 of Sources: # MtCO2/yr
-    # Number of Sinks: #
-    # Total Sink Capacity: # MtCO2
-    totalfeatures = data['totalFeatures']
-    capturable = sum([x['properties']['Capturable'] for x in data['features']])
-    # sinks
-    cqlfilter = cqlfilter.replace("the_geom","geometry")
-    data = wfs_call('SCO2T_v3_1_2_LowCost_SimCCS_10K',cqlfilter)
-    totalsink = data['totalFeatures']
-    sinkcapacity = sum([x['properties']['sinkcapacity'] for x in data['features']])
+    
+    if method == "count":
+        # sources
+        data = wfs_call('Sources_082819_SimCCS_Format',cqlfilter)
+        # extracting data in json format 
+        # Number of Sources: #
+        # Capturable CO2 of Sources: # MtCO2/yr
+        # Number of Sinks: #
+        # Total Sink Capacity: # MtCO2
+        totalfeatures = data['totalFeatures']
+        capturable = sum([x['properties']['Capturable'] for x in data['features']])
+        # sinks
+        cqlfilter = cqlfilter.replace("the_geom","geometry")
+        data = wfs_call('SCO2T_v3_1_2_LowCost_SimCCS_10K',cqlfilter)
+        totalsink = data['totalFeatures']
+        sinkcapacity = sum([x['properties']['sinkcapacity'] for x in data['features']])
 
-    return JsonResponse({'totalsource':totalfeatures,'capturable':capturable,'totalsink':totalsink,'sinkcapacity':sinkcapacity})
+        return JsonResponse({'totalsource':totalfeatures,'capturable':capturable,'totalsink':totalsink,'sinkcapacity':sinkcapacity})
+
+    if method == "data":
+        layer = request.GET["layer"]
+        if layer == 'source': 
+            cqlfilter = 'Intersects(the_geom,Polygon((' + geom + ")))"
+            data = wfs_call('Sources_082819_SimCCS_Format',cqlfilter)
+        if layer == 'sink':
+            cqlfilter = 'Intersects(geometry,Polygon((' + geom + ")))"
+            data = wfs_call('SCO2T_v3_1_2_LowCost_SimCCS_10K',cqlfilter)
+        return JsonResponse(data)

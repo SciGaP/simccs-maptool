@@ -434,6 +434,7 @@
          
          onEachFeature: sinkOnEachFeature2
          })
+
            function loadjson(data) {
                  sourceLayer.addData(data);
                  sourceLayer.addTo(map);
@@ -737,14 +738,28 @@
             map.eachLayer(function (layer) {
             if (layer != osm) {map.removeLayer(layer);};
             });
+            var geom = layer.toGeoJSON()['geometry']['coordinates'];
+            var coordstr=[];
+            for (i = 0, len = geom[0].length; i < len; i++) {
+             coordstr[i]= (geom[0][i].toString()).replace(',',' ');} 
+            var geom_str = coordstr.join(',');
+            //callback:loadjson
+            //load sources layer
+            // load cost surface
+            $.getJSON("/maptool/get-data",{geom:geom_str,method:'data',layer:'source'})
+            .done(function(data){loadjson(data)});
+            // load loadsinklayer
+            $.getJSON("/maptool/get-data",{geom:geom_str,method:'data',layer:'sink'})
+            .done(function(data){loadsinklayer(data)});
+
             var lbounds=layer.getBounds().pad(0.1);
             var cost_image_url="https://simccs.org/geoserver/ows?service=WCS&version=2.0.0&request=GetCoverage&coverageId=SimCCS__cost&format=png";
             // &subset=Lat(29.920588,33.381122)&subset=Long(-89.251876,-83.277539)";
             cost_image_url += "&subset=Lat(" +lbounds.getSouth() +","+lbounds.getNorth() +")";
             cost_image_url += "&subset=Long("+lbounds.getWest() + ","+lbounds.getEast() + ")";
             var cost_image_bounds = lbounds;
-            var cost_surface =L.imageOverlay(cost_image_url,cost_image_bounds).addTo(map);
-            lbounds=layer.getBounds().pad(0.5);
+            var cost_surface = L.imageOverlay(cost_image_url,cost_image_bounds).addTo(map);
+            lbounds=layer.getBounds().pad(0.2);
             map.fitBounds(lbounds);
       }
 
@@ -785,7 +800,7 @@
             for (i = 0, len = geom[0].length; i < len; i++) {
              coordstr[i]= (geom[0][i].toString()).replace(',',' ');} 
             var geom_str = coordstr.join(',');
-            $.getJSON("/maptool/get-data",{geom:geom_str})
+            $.getJSON("/maptool/get-data",{geom:geom_str,method:'count'})
             .done(function(json){
                   //var popup = layer.getPopup();
                   //popup.setContent( json.toString() );
