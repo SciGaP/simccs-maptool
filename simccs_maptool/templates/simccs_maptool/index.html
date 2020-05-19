@@ -194,6 +194,9 @@
                              break;
                               case "france_sink":map.removeLayer(france_sink_cluster);
                              break;
+                             case "user_sources": map.removeLayer(sourceLayer); break;
+                             case "user_sinks": map.removeLayer(sinkLayer); break;
+                             case "user_cost": map.removeLayer(user_cost_surface); break;
          
                          }
          
@@ -291,6 +294,10 @@
                              break;
                              case "france_sink":map.addLayer(france_sink_cluster);
                              break;
+                             case "user_sources": map.addLayer(sourceLayer);break;
+                             case "user_sinks": map.addLayer(sinkLayer);break;
+                             case "user_cost": map.addLayer(user_cost_surface); break;
+                             default:alert(radio_button_id + " layer is not found");
                          }
                      }
                  } else {
@@ -397,7 +404,7 @@
            else {e.target.setStyle({weight:2,color:"white",fillOpacity:0.7});
                  sinkselection2.push(e.target);}
          })};
-         
+         var user_cost_surface;
          var sourceLayer = new L.geoJSON('', {
          pointToLayer: function (feature, latlng) {
            var content_str="<strong>"+feature.properties.Type+"<br>"+feature.properties.Name +'<br>Total CO2: '+feature.properties['Total_CO2_']+"</strong>";
@@ -758,9 +765,29 @@
             cost_image_url += "&subset=Lat(" +lbounds.getSouth() +","+lbounds.getNorth() +")";
             cost_image_url += "&subset=Long("+lbounds.getWest() + ","+lbounds.getEast() + ")";
             var cost_image_bounds = lbounds;
-            var cost_surface = L.imageOverlay(cost_image_url,cost_image_bounds).addTo(map);
+            user_cost_surface = L.imageOverlay(cost_image_url,cost_image_bounds).addTo(map);
             lbounds=layer.getBounds().pad(0.2);
             map.fitBounds(lbounds);
+            document.getElementById("allmap").style.display="none";
+            document.getElementById("casestudies_menu").style.display="none";     
+            document.getElementById("workingarea").style.display="block";
+            // set radio button checked
+            document.getElementById("user_cost").checked = true;
+            document.getElementById("user_sinks").checked = true;
+            document.getElementById("user_sources").checked = true;
+
+            // interface for non-login user
+            if (! userIsAuthenticated) {
+            document.getElementById("loginuser_tools").style.display="none";
+            document.getElementById("nologinuser_msg").style.display="block";
+            //document.getElementById("southeastUS_div").style.display="block";
+            }
+            // pull the experiments result
+            if ( userIsAuthenticated) {
+            document.getElementById("loginuser_tools").style.display="block";      
+            document.getElementById("nologinuser_msg").style.display="none";
+            }
+
       }
 
         var getPopupContent = function(layer) {
@@ -989,9 +1016,13 @@
             //      var cost_surface =L.imageOverlay(cost_image_url,cost_image_bounds).addTo(map);
             //      layercontrol.addOverlay(cost_surface,"Cost");
             // });
-         
-         
            };
+
+         function user_layer_control(event){
+            var isChecked = event.checked;
+            alert(isChecked);
+         } 
+
          function hideunselected() {
             sourceLayer.eachLayer(function(layer) {
                   var target_id = selection.indexOf(layer);
@@ -2008,6 +2039,16 @@
                         </div>
                         <div class="card-body" >
                                     Use mouse-click to select source and sink data.<br>
+                                    <div class="user_sources_div">
+                                          <label><input type="radio" id="user_sources" checked /><strong>&nbsp;Sources</strong></label>
+                                    </div>
+                                    <div class="user_sinks_div">
+                                          <label><input type="radio" id="user_sinks" checked /><strong>&nbsp;Sinks</strong></label>
+                                    </div>
+                                    <div class="user_cost_div">
+                                          <label><input type="radio" id="user_cost" checked /><strong>&nbsp;Cost Surface</strong></label>
+                                    </div>
+                     
                                     <button type="button" class="btn btn-primary btn-sm btn-block" onclick="hideunselected()">Hide unselected data</button>
                                     <!-- <button type="button" class="btn btn-primary btn-sm btn-block" onclick="downloaddata()">Download data</button>
                                        -->
