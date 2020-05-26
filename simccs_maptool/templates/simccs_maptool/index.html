@@ -52,6 +52,8 @@
 <script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
 
 <script>
+         var Maptool = window.Maptool || {};
+         Maptool.FeatureFlag = Maptool.FeatureFlag || {};
          // TODO: replace with global user session object
          var userIsAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
          $(document).ready(function() {
@@ -659,39 +661,71 @@
             formData.set('sources', sourcedata);
             formData.set('sinks', sinkdata);
             formData.set('dataset', current_dataset_id);
-            AiravataAPI.utils.FetchUtils.post("/maptool/mps/", formData).then(function( data ) {
-                  //{"user_file": "MIP_Files/mip_2019-04-24T145902.mps"}
-                  //alert(data["user_file"] + " is generated succefully");
-                  var m_html =`<div class="modal fade in" id="dynamicModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Generate MPS file</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <p><strong class="text-break"> user_file </strong> was generated successfully.</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary">
-            <a href="/workspace/applications/{{ cplex_application_id }}/create_experiment?Cplex-input-file=user_input_file&experiment-data-dir=results_dir" style="color:inherit">Create Experiment</a></button>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>`;
-      var teststr = data["user_file"];
-      m_html = m_html.replace("user_file",teststr);
-      m_html = m_html.replace("user_input_file",teststr)
-      var results_dir = data["results_dir"];
-      m_html = m_html.replace("results_dir", results_dir);
-    $('body').append(m_html);
-    $("#dynamicModal").modal();
-    $("#dynamicModal").modal('show');
+            if (Maptool.FeatureFlag.cloneable) {
 
-            }).catch(display_error_modal);
+                  AiravataAPI.utils.FetchUtils.post("/maptool/mps2/", formData).then(function( data ) {
+                        var m_html =`<div class="modal fade in" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+      <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title">Generate MPS file</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body">
+            <p><strong class="text-break">mps file</strong> was generated successfully.</p>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-primary">
+                  <a href="/workspace/applications/${Maptool.FeatureFlag.cloneable.cplexApplicationId}/create_experiment?Sources=sources_input_file&Sinks=sinks_input_file&Cplex-input-file=user_input_file&Dataset-id=${current_dataset_id}" style="color:inherit">Create Experiment</a></button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+      </div>
+      </div>
+      </div>`;
+            m_html = m_html.replace("user_input_file", data["mps"]);
+            m_html = m_html.replace("sources_input_file", data["sources"]);
+            m_html = m_html.replace("sinks_input_file", data["sinks"]);
+            $(m_html).appendTo('body').modal('show');
+
+                  }).catch(display_error_modal);
+            } else {
+
+                  AiravataAPI.utils.FetchUtils.post("/maptool/mps/", formData).then(function( data ) {
+                        //{"user_file": "MIP_Files/mip_2019-04-24T145902.mps"}
+                        //alert(data["user_file"] + " is generated succefully");
+                        var m_html =`<div class="modal fade in" id="dynamicModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+      <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title">Generate MPS file</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body">
+            <p><strong class="text-break"> user_file </strong> was generated successfully.</p>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-primary">
+                  <a href="/workspace/applications/{{ cplex_application_id }}/create_experiment?Cplex-input-file=user_input_file&experiment-data-dir=results_dir" style="color:inherit">Create Experiment</a></button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+      </div>
+      </div>
+      </div>`;
+            var teststr = data["user_file"];
+            m_html = m_html.replace("user_file",teststr);
+            m_html = m_html.replace("user_input_file",teststr)
+            var results_dir = data["results_dir"];
+            m_html = m_html.replace("results_dir", results_dir);
+      $('body').append(m_html);
+      $("#dynamicModal").modal();
+      $("#dynamicModal").modal('show');
+
+                  }).catch(display_error_modal);
+            }
       }
 
            
@@ -1068,39 +1102,72 @@
             formData.set('sources', sourcedata);
             formData.set('sinks', sinkdata);
             formData.set('dataset', "Lower48US");
-            AiravataAPI.utils.FetchUtils.post("/maptool/mps/", formData).then(function( data ) {
-                  //{"user_file": "MIP_Files/mip_2019-04-24T145902.mps"}
-                  //alert(data["user_file"] + " is generated succefully");
-                  m_html =`<div class="modal fade in" id="dynamicModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Generate MPS file</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <p><strong class="text-break"> user_file </strong> was generated successfully.</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary">
-            <a href="/workspace/applications/{{ cplex_application_id }}/create_experiment?Cplex-input-file=user_input_file&experiment-data-dir=results_dir" style="color:inherit">Create Experiment</a></button>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>`;
-      var teststr = data["user_file"];
-      m_html = m_html.replace("user_file",teststr);
-      m_html = m_html.replace("user_input_file",teststr)
-      var results_dir = data["results_dir"];
-      m_html = m_html.replace("results_dir", results_dir);
-    $('body').append(m_html);
-    $("#dynamicModal").modal();
-    $("#dynamicModal").modal('show');
+            if (Maptool.FeatureFlag.cloneable) {
 
-            }).catch(display_error_modal);
+                  AiravataAPI.utils.FetchUtils.post("/maptool/mps2/", formData).then(function( data ) {
+                        m_html =`<div class="modal fade in" id="dynamicModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+      <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title">Generate MPS file</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body">
+            <p><strong class="text-break">mps file</strong> was generated successfully.</p>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-primary">
+                  <a href="/workspace/applications/${Maptool.FeatureFlag.cloneable.cplexApplicationId}/create_experiment?Sources=sources_input_file&Sinks=sinks_input_file&Cplex-input-file=user_input_file&Dataset-id=${current_dataset_id}" style="color:inherit">Create Experiment</a></button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+      </div>
+      </div>
+      </div>`;
+            m_html = m_html.replace("user_input_file", data["mps"]);
+            m_html = m_html.replace("sources_input_file", data["sources"]);
+            m_html = m_html.replace("sinks_input_file", data["sinks"]);
+      $('body').append(m_html);
+      $("#dynamicModal").modal();
+      $("#dynamicModal").modal('show');
+
+                  }).catch(display_error_modal);
+            } else {
+                  AiravataAPI.utils.FetchUtils.post("/maptool/mps/", formData).then(function( data ) {
+                        //{"user_file": "MIP_Files/mip_2019-04-24T145902.mps"}
+                        //alert(data["user_file"] + " is generated succefully");
+                        m_html =`<div class="modal fade in" id="dynamicModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+      <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title">Generate MPS file</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body">
+            <p><strong class="text-break"> user_file </strong> was generated successfully.</p>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-primary">
+                  <a href="/workspace/applications/{{ cplex_application_id }}/create_experiment?Cplex-input-file=user_input_file&experiment-data-dir=results_dir" style="color:inherit">Create Experiment</a></button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+      </div>
+      </div>
+      </div>`;
+            var teststr = data["user_file"];
+            m_html = m_html.replace("user_file",teststr);
+            m_html = m_html.replace("user_input_file",teststr)
+            var results_dir = data["results_dir"];
+            m_html = m_html.replace("results_dir", results_dir);
+      $('body').append(m_html);
+      $("#dynamicModal").modal();
+      $("#dynamicModal").modal('show');
+
+                  }).catch(display_error_modal);
+            }
          }
 
          function resetworkingarea(){

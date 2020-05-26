@@ -16,6 +16,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.generic import TemplateView
 
+from . import django_airavata_sdk, simccs_helper
+
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 DATASETS_BASEPATH = os.path.join(BASEDIR, "simccs", "Datasets")
 CASE_STUDIES_DIR = os.path.join(BASEDIR, "static", "Scenarios")
@@ -158,7 +160,10 @@ def generate_mps(request):
         solver = Solver(data)
         data.setSolver(solver)
         # Use cached cost surface data for Lower48US dataset
-        if dataset == LOWER48US_DATASET_ID and CACHED_LOWER48US_COST_SURFACE_DATA is not None:
+        if (
+            dataset == LOWER48US_DATASET_ID
+            and CACHED_LOWER48US_COST_SURFACE_DATA is not None
+        ):
             CACHED_LOWER48US_COST_SURFACE_DATA.populate(data)
         MPSWriter = autoclass("solver.MPSWriter")
         os.mkdir(os.path.join(scenario_dir, "MIP"))
@@ -196,6 +201,72 @@ def generate_mps(request):
 
 @login_required
 @max_concurrent_java_calls
+def generate_mps2(request):
+
+    # MPS model parameters
+    capital_recovery_rate = float(request.POST.get("crf", "0.1"))
+    num_years = float(request.POST.get("numYears", 10))
+    capacity_target = float(request.POST.get("capacityTarget", 5))
+    sources = request.POST["sources"]
+    sinks = request.POST["sinks"]
+    dataset_id = request.POST["dataset"]
+
+    with tempfile.TemporaryDirectory() as datasets_basepath:
+        # TODO: _get_dataset_dir that combines these two?
+        dataset_dirname = _get_dataset_dirname(dataset_id)
+        basedata_dir = _get_basedata_dir(dataset_dirname)
+        # Create the scenario directory
+        # TODO: add the candidatenetwork file too
+        simccs_helper.create_scenario_dir(
+            datasets_basepath,
+            os.path.dirname(basedata_dir),
+            sources=sources,
+            sinks=sinks,
+            scenario="scenario1",
+        )
+        simccs_helper.write_mps_file(
+            datasets_basepath,
+            dataset_dirname,
+            "scenario1",
+            capital_recovery_rate=capital_recovery_rate,
+            num_years=num_years,
+            capacity_target=capacity_target,
+        )
+        with open(
+            simccs_helper.get_sources_file(
+                datasets_basepath, dataset_dirname, "scenario1"
+            )
+        ) as sources_file, open(
+            simccs_helper.get_sinks_file(
+                datasets_basepath, dataset_dirname, "scenario1"
+            )
+        ) as sinks_file, open(
+            simccs_helper.get_mps_file(datasets_basepath, dataset_dirname, "scenario1")
+        ) as mps_file:
+            # open(
+            #     simccs_helper.get_candidate_network_file(
+            #         datasets_basepath, dataset_dirname, "scenario1"
+            #     )
+            # ) as candidate_network_file,
+            sources_dp = django_airavata_sdk.save_input_file(request, sources_file)
+            sinks_dp = django_airavata_sdk.save_input_file(request, sinks_file)
+            # candidate_network_dp = django_airavata_sdk.save_input_file(
+            #     request, candidate_network_file
+            # )
+            mps_dp = django_airavata_sdk.save_input_file(request, mps_file)
+
+    return JsonResponse(
+        {
+            "sources": sources_dp.productUri,
+            "sinks": sinks_dp.productUri,
+            "mps": mps_dp.productUri,
+            # "candidate-network": candidate_network_dp.productUri,
+        }
+    )
+
+
+@login_required
+@max_concurrent_java_calls
 def experiment_result(request, experiment_id):
     """
     Return a JSON object with nested GeoJSON objects.
@@ -206,12 +277,13 @@ def experiment_result(request, experiment_id):
     }
     """
     try:
-        results_dir = _get_results_dir(request, experiment_id)
+        experiment = _get_experiment(request, experiment_id)
+        results_dir = _get_results_dir(experiment)
         # figure out the scenario directory
         shapefiles_dir = os.path.join(results_dir, "shapeFiles")
         geojson_dir = os.path.join(results_dir, "geojson")
         if not os.path.exists(shapefiles_dir):
-            _create_shapefiles_for_result(results_dir)
+            _create_shapefiles_for_result(experiment, results_dir)
         if not os.path.exists(geojson_dir):
             _create_geojson_for_result(results_dir)
         with open(
@@ -236,14 +308,15 @@ def experiment_result(request, experiment_id):
 @max_concurrent_java_calls
 def solution_summary(request, experiment_id):
     try:
-        results_dir = _get_results_dir(request, experiment_id)
-        solution_summary = _get_solution_summary(request, results_dir)
+        experiment = _get_experiment(request, experiment_id)
+        results_dir = _get_results_dir(experiment)
+        solution_summary = _get_solution_summary(request, experiment, results_dir)
         return JsonResponse(solution_summary)
     except Exception as e:
         return JsonResponse({"detail": str(e)}, status=500)
 
 
-def _get_solution_summary(request, results_dir):
+def _get_solution_summary(request, experiment, results_dir):
     cached_solution_summary_path = os.path.join(results_dir, "solution_summary.json")
     cached_solution_summary = None
     if os.path.exists(cached_solution_summary_path):
@@ -259,7 +332,7 @@ def _get_solution_summary(request, results_dir):
     ):
         return cached_solution_summary
     else:
-        solution = _load_solution(request, results_dir)
+        solution = _load_solution(request, experiment, results_dir)
         solution_summary = {
             "version": SOLUTION_SUMMARY_CURRENT_VERSION,
             "numOpenedSources": solution.numOpenedSources,
@@ -286,76 +359,169 @@ def _get_solution_summary(request, results_dir):
         return solution_summary
 
 
-def _get_results_dir(request, experiment_id):
-    experiment = request.airavata_client.getExperiment(
-        request.authz_token, experiment_id
-    )
-    # Get the experimentDataDir which is the Results/ directory
+def _get_experiment(request, experiment_id):
+    return request.airavata_client.getExperiment(request.authz_token, experiment_id)
+
+
+def _get_results_dir(experiment):
+    # Get the experimentDataDir (which is the Results/ directory in v1 layout)
     return experiment.userConfigurationData.experimentDataDir
 
 
-def _create_shapefiles_for_result(results_dir):
-    datasets_basepath = _get_datasets_dir_from_results_dir(results_dir)
-    scenario_dir = os.path.dirname(results_dir)
-    scenario = os.path.basename(scenario_dir)
-    dataset = _get_dataset_from_results_dir(results_dir)
-    try:
-        _check_cost_surface_data_cache(dataset)
+def _create_shapefiles_for_result(experiment, results_dir):
+    # v2 experiment files layout
+    if os.path.dirname(os.path.dirname(results_dir)) == "Scenarios":
+        sources = _get_experiment_file(experiment, "Sources", input_file=True)
+        sinks = _get_experiment_file(experiment, "Sinks", input_file=True)
+        # mps = _get_experiment_file(experiment, "Cplex-input-file", input_file=True)
+        # solution = _get_experiment_file(experiment, "Cplex-solution", input_file=False)
+        dataset_id = _get_experiment_value(experiment, "Dataset-id")
+        with tempfile.TemporaryDirectory() as datasets_basepath:
+            # TODO: _get_dataset_dir that combines these two?
+            dataset_dirname = _get_dataset_dirname(dataset_id)
+            basedata_dir = _get_basedata_dir(dataset_dirname)
+            # Create the scenario directory
+            # TODO: add the candidatenetwork file too
+            simccs_helper.create_scenario_dir(
+                datasets_basepath,
+                os.path.dirname(basedata_dir),
+                sources=sources,
+                sinks=sinks,
+                # Technically we don't even need these, they are loaded by
+                # make_shapefiles
+                # mps=mps,
+                # solution=solution,
+                scenario="scenario1",
+            )
+            simccs_helper.make_shapefiles(
+                datasets_basepath, dataset_dirname, "scenario1", results_dir
+            )
+    # v1 experiment files layout
+    else:
+        datasets_basepath = _get_datasets_dir_from_results_dir(results_dir)
+        scenario_dir = os.path.dirname(results_dir)
+        scenario = os.path.basename(scenario_dir)
+        dataset = _get_dataset_from_results_dir(results_dir)
+        try:
+            _check_cost_surface_data_cache(dataset)
 
-        from jnius import autoclass
+            from jnius import autoclass
 
-        # initialize the Solver/DataStorer
-        DataStorer = autoclass("dataStore.DataStorer")
-        data = DataStorer(datasets_basepath, dataset, scenario)
-        Solver = autoclass("solver.Solver")
-        solver = Solver(data)
-        data.setSolver(solver)
-        # Use cached cost surface data for Lower48US dataset
-        if dataset == LOWER48US_DATASET_ID and CACHED_LOWER48US_COST_SURFACE_DATA is not None:
-            CACHED_LOWER48US_COST_SURFACE_DATA.populate(data)
-        logger.debug("Scenario data loaded for {}".format(scenario_dir))
-        # load the .mps/.sol solution
-        solution = data.loadSolution(results_dir, -1)  # timeslot
-        logger.debug("Solution loaded from {}".format(results_dir))
-        # generate shapefiles
-        data.makeShapeFiles(results_dir, solution)
-        logger.debug(
-            "Shape files created in {}".format(os.path.join(results_dir, "shapeFiles"))
-        )
-    except Exception as e:
-        logger.exception(
-            "Error occurred when calling makeShapeFiles: " + str(e.stacktrace)
-        )
-        raise
+            # initialize the Solver/DataStorer
+            DataStorer = autoclass("dataStore.DataStorer")
+            data = DataStorer(datasets_basepath, dataset, scenario)
+            Solver = autoclass("solver.Solver")
+            solver = Solver(data)
+            data.setSolver(solver)
+            # Use cached cost surface data for Lower48US dataset
+            if (
+                dataset == LOWER48US_DATASET_ID
+                and CACHED_LOWER48US_COST_SURFACE_DATA is not None
+            ):
+                CACHED_LOWER48US_COST_SURFACE_DATA.populate(data)
+            logger.debug("Scenario data loaded for {}".format(scenario_dir))
+            # load the .mps/.sol solution
+            solution = data.loadSolution(results_dir, -1)  # timeslot
+            logger.debug("Solution loaded from {}".format(results_dir))
+            # generate shapefiles
+            data.makeShapeFiles(results_dir, solution)
+            logger.debug(
+                "Shape files created in {}".format(
+                    os.path.join(results_dir, "shapeFiles")
+                )
+            )
+        except Exception as e:
+            logger.exception(
+                "Error occurred when calling makeShapeFiles: " + str(e.stacktrace)
+            )
+            raise
 
 
-def _load_solution(request, results_dir):
-    datasets_basepath = _get_datasets_dir_from_results_dir(results_dir)
-    scenario_dir = os.path.dirname(results_dir)
-    scenario = os.path.basename(scenario_dir)
-    dataset = _get_dataset_from_results_dir(results_dir)
-    try:
-        _check_cost_surface_data_cache(dataset)
+# TODO: this would be a good candidate to add to SDK
+def _get_experiment_file(request, experiment, name, input_file=False):
+    data_product_uri = None
+    if input_file:
+        for exp_input in experiment.experimentInputs:
+            if exp_input.name == name:
+                data_product_uri = exp_input.value
+    else:
+        for exp_output in experiment.experimentOutputs:
+            if exp_output.name == name:
+                data_product_uri = exp_output.value
+    if data_product_uri:
+        return django_airavata_sdk.open_file(request, data_product_uri)
+    else:
+        return None
 
-        from jnius import autoclass
 
-        # initialize the Solver/DataStorer
-        DataStorer = autoclass("dataStore.DataStorer")
-        data = DataStorer(datasets_basepath, dataset, scenario)
-        Solver = autoclass("solver.Solver")
-        solver = Solver(data)
-        data.setSolver(solver)
-        # Use cached cost surface data for Lower48US dataset
-        if dataset == LOWER48US_DATASET_ID and CACHED_LOWER48US_COST_SURFACE_DATA is not None:
-            CACHED_LOWER48US_COST_SURFACE_DATA.populate(data)
-        logger.debug("Scenario data loaded for {}".format(scenario_dir))
-        # load the .mps/.sol solution
-        solution = data.loadSolution(results_dir, -1)  # timeslot
-        logger.debug("Solution loaded from {}".format(results_dir))
-        return solution
-    except Exception as e:
-        logger.exception("Error occurred when loading solution: " + str(e.stacktrace))
-        raise
+# TODO: this would be a good candidate to add to SDK
+def _get_experiment_value(experiment, name):
+    # TODO: check type and convert to numeric types
+    for exp_input in experiment.experimentInputs:
+        if exp_input.name == name:
+            return exp_input.value
+    return None  # if not found
+
+
+def _load_solution(request, experiment, results_dir):
+    # v2 experiment files layout
+    if os.path.dirname(os.path.dirname(results_dir)) == "Scenarios":
+        sources = _get_experiment_file(experiment, "Sources", input_file=True)
+        sinks = _get_experiment_file(experiment, "Sinks", input_file=True)
+        # mps = _get_experiment_file(experiment, "Cplex-input-file", input_file=True)
+        # solution = _get_experiment_file(experiment, "Cplex-solution", input_file=False)
+        dataset_id = _get_experiment_value(experiment, "Dataset-id")
+        with tempfile.TemporaryDirectory() as datasets_basepath:
+            # TODO: _get_dataset_dir that combines these two?
+            dataset_dirname = _get_dataset_dirname(dataset_id)
+            basedata_dir = _get_basedata_dir(dataset_dirname)
+            # Create the scenario directory
+            # TODO: add the candidatenetwork file too
+            simccs_helper.create_scenario_dir(
+                datasets_basepath,
+                os.path.dirname(basedata_dir),
+                sources=sources,
+                sinks=sinks,
+                # Technically we don't even need these, they are loaded by
+                # make_shapefiles
+                # mps=mps,
+                # solution=solution,
+                scenario="scenario1",
+            )
+            simccs_helper.load_solution(
+                datasets_basepath, dataset_dirname, "scenario1", results_dir
+            )
+    # v1 experiment files layout
+    else:
+        datasets_basepath = _get_datasets_dir_from_results_dir(results_dir)
+        scenario_dir = os.path.dirname(results_dir)
+        scenario = os.path.basename(scenario_dir)
+        dataset = _get_dataset_from_results_dir(results_dir)
+        try:
+            _check_cost_surface_data_cache(dataset)
+
+            from jnius import autoclass
+
+            # initialize the Solver/DataStorer
+            DataStorer = autoclass("dataStore.DataStorer")
+            data = DataStorer(datasets_basepath, dataset, scenario)
+            Solver = autoclass("solver.Solver")
+            solver = Solver(data)
+            data.setSolver(solver)
+            # Use cached cost surface data for Lower48US dataset
+            if (
+                dataset == LOWER48US_DATASET_ID
+                and CACHED_LOWER48US_COST_SURFACE_DATA is not None
+            ):
+                CACHED_LOWER48US_COST_SURFACE_DATA.populate(data)
+            logger.debug("Scenario data loaded for {}".format(scenario_dir))
+            # load the .mps/.sol solution
+            solution = data.loadSolution(results_dir, -1)  # timeslot
+            logger.debug("Solution loaded from {}".format(results_dir))
+            return solution
+        except Exception as e:
+            logger.exception("Error occurred when loading solution: " + str(e.stacktrace))
+            raise
 
 
 def _create_geojson_for_result(results_dir):
@@ -465,7 +631,10 @@ def candidate_network(request):
             solver = Solver(data)
             data.setSolver(solver)
             # Use cached cost surface data for Lower48US dataset
-            if dataset == LOWER48US_DATASET_ID and CACHED_LOWER48US_COST_SURFACE_DATA is not None:
+            if (
+                dataset == LOWER48US_DATASET_ID
+                and CACHED_LOWER48US_COST_SURFACE_DATA is not None
+            ):
                 CACHED_LOWER48US_COST_SURFACE_DATA.populate(data)
             results_dir = os.path.join(scenario_dir, "Network", "CandidateNetwork")
             # Must make the CandidateNetwork directory before calling makeCandidateNetworkShapeFiles
