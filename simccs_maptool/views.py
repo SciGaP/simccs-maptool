@@ -283,7 +283,7 @@ def experiment_result(request, experiment_id):
         shapefiles_dir = os.path.join(results_dir, "shapeFiles")
         geojson_dir = os.path.join(results_dir, "geojson")
         if not os.path.exists(shapefiles_dir):
-            _create_shapefiles_for_result(experiment, results_dir)
+            _create_shapefiles_for_result(request, experiment, results_dir)
         if not os.path.exists(geojson_dir):
             _create_geojson_for_result(results_dir)
         with open(
@@ -368,13 +368,13 @@ def _get_results_dir(experiment):
     return experiment.userConfigurationData.experimentDataDir
 
 
-def _create_shapefiles_for_result(experiment, results_dir):
+def _create_shapefiles_for_result(request, experiment, results_dir):
     # v2 experiment files layout
     if os.path.basename(os.path.dirname(os.path.dirname(results_dir))) != "Scenarios":
-        sources = _get_experiment_file(experiment, "Sources", input_file=True)
-        sinks = _get_experiment_file(experiment, "Sinks", input_file=True)
-        # mps = _get_experiment_file(experiment, "Cplex-input-file", input_file=True)
-        # solution = _get_experiment_file(experiment, "Cplex-solution", input_file=False)
+        sources = _get_experiment_file(request, experiment, "Sources", input_file=True)
+        sinks = _get_experiment_file(request, experiment, "Sinks", input_file=True)
+        # mps = _get_experiment_file(request, experiment, "Cplex-input-file", input_file=True)
+        # solution = _get_experiment_file(request, experiment, "Cplex-solution", input_file=False)
         dataset_id = _get_experiment_value(experiment, "Dataset-id")
         with tempfile.TemporaryDirectory() as datasets_basepath:
             # TODO: _get_dataset_dir that combines these two?
@@ -466,10 +466,10 @@ def _get_experiment_value(experiment, name):
 def _load_solution(request, experiment, results_dir):
     # v2 experiment files layout
     if os.path.basename(os.path.dirname(os.path.dirname(results_dir))) != "Scenarios":
-        sources = _get_experiment_file(experiment, "Sources", input_file=True)
-        sinks = _get_experiment_file(experiment, "Sinks", input_file=True)
-        # mps = _get_experiment_file(experiment, "Cplex-input-file", input_file=True)
-        # solution = _get_experiment_file(experiment, "Cplex-solution", input_file=False)
+        sources = _get_experiment_file(request, experiment, "Sources", input_file=True)
+        sinks = _get_experiment_file(request, experiment, "Sinks", input_file=True)
+        # mps = _get_experiment_file(request, experiment, "Cplex-input-file", input_file=True)
+        # solution = _get_experiment_file(request, experiment, "Cplex-solution", input_file=False)
         dataset_id = _get_experiment_value(experiment, "Dataset-id")
         with tempfile.TemporaryDirectory() as datasets_basepath:
             # TODO: _get_dataset_dir that combines these two?
