@@ -43,10 +43,10 @@ def _write_scenario_file(file_path, file_contents):
     file_dirname = os.path.dirname(file_path)
     if not os.path.exists(file_dirname):
         os.mkdir(file_dirname)
-    with open(file_path, mode="w") as scenario_file:
+    with open(file_path, mode="wb") as scenario_file:
         src_file = file_contents
         if isinstance(src_file, str):
-            src_file = io.StringIO(src_file)
+            src_file = io.BytesIO(src_file.encode())
         shutil.copyfileobj(src_file, scenario_file)
 
 
