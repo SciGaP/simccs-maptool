@@ -490,7 +490,7 @@ def _load_solution(request, experiment, results_dir):
                 # solution=solution,
                 scenario="scenario1",
             )
-            simccs_helper.load_solution(
+            return simccs_helper.load_solution(
                 datasets_basepath, dataset_dirname, "scenario1", results_dir
             )
     # v1 experiment files layout
