@@ -370,7 +370,7 @@ def _get_results_dir(experiment):
 
 def _create_shapefiles_for_result(experiment, results_dir):
     # v2 experiment files layout
-    if os.path.dirname(os.path.dirname(results_dir)) == "Scenarios":
+    if os.path.basename(os.path.dirname(os.path.dirname(results_dir))) != "Scenarios":
         sources = _get_experiment_file(experiment, "Sources", input_file=True)
         sinks = _get_experiment_file(experiment, "Sinks", input_file=True)
         # mps = _get_experiment_file(experiment, "Cplex-input-file", input_file=True)
@@ -465,7 +465,7 @@ def _get_experiment_value(experiment, name):
 
 def _load_solution(request, experiment, results_dir):
     # v2 experiment files layout
-    if os.path.dirname(os.path.dirname(results_dir)) == "Scenarios":
+    if os.path.basename(os.path.dirname(os.path.dirname(results_dir))) != "Scenarios":
         sources = _get_experiment_file(experiment, "Sources", input_file=True)
         sinks = _get_experiment_file(experiment, "Sinks", input_file=True)
         # mps = _get_experiment_file(experiment, "Cplex-input-file", input_file=True)
