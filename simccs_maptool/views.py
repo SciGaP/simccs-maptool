@@ -301,6 +301,7 @@ def experiment_result(request, experiment_id):
                 }
             )
     except Exception as e:
+        logger.exception("Failed to generate geojson result files")
         return JsonResponse({"detail": str(e)}, status=500)
 
 
@@ -313,6 +314,7 @@ def solution_summary(request, experiment_id):
         solution_summary = _get_solution_summary(request, experiment, results_dir)
         return JsonResponse(solution_summary)
     except Exception as e:
+        logger.exception("Failed to generate solution summary")
         return JsonResponse({"detail": str(e)}, status=500)
 
 
