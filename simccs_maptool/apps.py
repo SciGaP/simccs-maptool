@@ -5,6 +5,8 @@ import jnius_config
 from django.apps import AppConfig
 from django.conf import settings
 
+from simccs_maptool import datasets, simccs_helper
+
 logger = logging.getLogger(__name__)
 
 
@@ -22,22 +24,25 @@ class MapToolConfig(AppConfig):
     """
     nav = [
         {
-            'label': 'Map Tool',
-            'icon': 'fa fa-map',
-            'url': 'simccs_maptool:home',
-            'active_prefixes': [''],
+            "label": "Map Tool",
+            "icon": "fa fa-map",
+            "url": "simccs_maptool:home",
+            "active_prefixes": [""],
         },
         {
-            'label': 'Documentation Links',
-            'icon': 'fa fa-question',
-            'url': 'simccs_maptool:help',
-            'active_prefixes': ['help'],
+            "label": "Documentation Links",
+            "icon": "fa fa-question",
+            "url": "simccs_maptool:help",
+            "active_prefixes": ["help"],
         },
     ]
 
     def ready(self):
         logger.info("MapToolConfig.ready() called")
         init_pyjnius()
+        # get path of Lower48US dataset and set it as a cached cost surface on simccs_helper
+        lower48_basedata_dir = datasets.get_basedata_dir(datasets.LOWER48US_DATASET_ID)
+        simccs_helper.register_cost_surface_data_cache(lower48_basedata_dir)
 
 
 def init_pyjnius():
@@ -50,24 +55,22 @@ def init_pyjnius():
             os.environ["JAVA_HOME"] = settings.JAVA_HOME
         logger.info("JAVA_HOME set to '{}'".format(os.environ["JAVA_HOME"]))
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-        jnius_config.add_options('-Djava.awt.headless=true')
-        DEFAULT_JAVA_OPTIONS = ('-Xmx4g',)
+        jnius_config.add_options("-Djava.awt.headless=true")
+        DEFAULT_JAVA_OPTIONS = ("-Xmx4g",)
         java_options = getattr(settings, "MAPTOOL_SETTINGS", {}).get(
-            "JAVA_OPTIONS", DEFAULT_JAVA_OPTIONS)
+            "JAVA_OPTIONS", DEFAULT_JAVA_OPTIONS
+        )
         if isinstance(java_options, list) or isinstance(java_options, tuple):
             jnius_config.add_options(*java_options)
         else:
             jnius_config.add_options(java_options)
         jnius_config.set_classpath(
-            os.path.join(
-                BASE_DIR, "simccs", "lib", "SimCCS.jar"
-            ),
-            os.path.join(
-                BASE_DIR, "simccs", "lib", "maptool.jar"
-            ),
+            os.path.join(BASE_DIR, "simccs", "lib", "SimCCS.jar"),
+            os.path.join(BASE_DIR, "simccs", "lib", "maptool.jar"),
         )
         logger.info(
             "Initialized jnius with classpath={}, options={}".format(
-                jnius_config.get_classpath(), jnius_config.get_options())
+                jnius_config.get_classpath(), jnius_config.get_options()
+            )
         )
         import jnius  # noqa

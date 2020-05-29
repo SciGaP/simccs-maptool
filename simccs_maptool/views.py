@@ -17,6 +17,7 @@ from django.http import JsonResponse
 from django.views.generic import TemplateView
 
 from . import django_airavata_sdk, simccs_helper
+from simccs_maptool import datasets
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 DATASETS_BASEPATH = os.path.join(BASEDIR, "simccs", "Datasets")
@@ -213,56 +214,65 @@ def generate_mps2(request):
 
     with tempfile.TemporaryDirectory() as datasets_basepath:
         # TODO: _get_dataset_dir that combines these two?
-        dataset_dirname = _get_dataset_dirname(dataset_id)
-        basedata_dir = _get_basedata_dir(dataset_dirname)
-        # Create the scenario directory
-        # TODO: add the candidatenetwork file too
-        simccs_helper.create_scenario_dir(
-            datasets_basepath,
-            os.path.dirname(basedata_dir),
-            sources=sources,
-            sinks=sinks,
-            scenario="scenario1",
-        )
-        simccs_helper.write_mps_file(
-            datasets_basepath,
-            dataset_dirname,
-            "scenario1",
-            capital_recovery_rate=capital_recovery_rate,
-            num_years=num_years,
-            capacity_target=capacity_target,
-        )
-        with open(
-            simccs_helper.get_sources_file(
-                datasets_basepath, dataset_dirname, "scenario1"
+        basedata_dir = datasets.get_basedata_dir(dataset_id)
+        # TODO: datasets.get_dataset_dir
+        dataset_dir = os.path.dirname(basedata_dir)
+        dataset_dirname = os.path.basename(dataset_dir)
+        try:
+            # Create the scenario directory
+            # TODO: add the candidatenetwork file too
+            # TODO: return scenario_dir
+            simccs_helper.create_scenario_dir(
+                datasets_basepath,
+                dataset_dir,
+                sources=sources,
+                sinks=sinks,
+                scenario="scenario1",
             )
-        ) as sources_file, open(
-            simccs_helper.get_sinks_file(
-                datasets_basepath, dataset_dirname, "scenario1"
+            # TODO: pass scenario_dir instead of datasets_basepath,
+            # dataset_dirname, and scenario
+            simccs_helper.write_mps_file(
+                datasets_basepath,
+                dataset_dirname,
+                "scenario1",
+                capital_recovery_rate=capital_recovery_rate,
+                num_years=num_years,
+                capacity_target=capacity_target,
             )
-        ) as sinks_file, open(
-            simccs_helper.get_mps_file(datasets_basepath, dataset_dirname, "scenario1")
-        ) as mps_file:
-            # open(
-            #     simccs_helper.get_candidate_network_file(
-            #         datasets_basepath, dataset_dirname, "scenario1"
-            #     )
-            # ) as candidate_network_file,
-            sources_dp = django_airavata_sdk.save_input_file(request, sources_file)
-            sinks_dp = django_airavata_sdk.save_input_file(request, sinks_file)
-            # candidate_network_dp = django_airavata_sdk.save_input_file(
-            #     request, candidate_network_file
-            # )
-            mps_dp = django_airavata_sdk.save_input_file(request, mps_file)
-
-    return JsonResponse(
-        {
-            "sources": sources_dp.productUri,
-            "sinks": sinks_dp.productUri,
-            "mps": mps_dp.productUri,
-            # "candidate-network": candidate_network_dp.productUri,
-        }
-    )
+            with open(
+                simccs_helper.get_sources_file(
+                    datasets_basepath, dataset_dirname, "scenario1"
+                )
+            ) as sources_file, open(
+                simccs_helper.get_sinks_file(
+                    datasets_basepath, dataset_dirname, "scenario1"
+                )
+            ) as sinks_file, open(
+                simccs_helper.get_mps_file(
+                    datasets_basepath, dataset_dirname, "scenario1"
+                )
+            ) as mps_file:
+                # open(
+                #     simccs_helper.get_candidate_network_file(
+                #         datasets_basepath, dataset_dirname, "scenario1"
+                #     )
+                # ) as candidate_network_file,
+                sources_dp = django_airavata_sdk.save_input_file(request, sources_file)
+                sinks_dp = django_airavata_sdk.save_input_file(request, sinks_file)
+                # candidate_network_dp = django_airavata_sdk.save_input_file(
+                #     request, candidate_network_file
+                # )
+                mps_dp = django_airavata_sdk.save_input_file(request, mps_file)
+            return JsonResponse(
+                {
+                    "sources": sources_dp.productUri,
+                    "sinks": sinks_dp.productUri,
+                    "mps": mps_dp.productUri,
+                    # "candidate-network": candidate_network_dp.productUri,
+                }
+            )
+        except Exception as e:
+            return JsonResponse({"detail": str(e)}, status=500)
 
 
 @login_required
@@ -522,7 +532,9 @@ def _load_solution(request, experiment, results_dir):
             logger.debug("Solution loaded from {}".format(results_dir))
             return solution
         except Exception as e:
-            logger.exception("Error occurred when loading solution: " + str(e.stacktrace))
+            logger.exception(
+                "Error occurred when loading solution: " + str(e.stacktrace)
+            )
             raise
 
 
@@ -579,69 +591,29 @@ def candidate_network(request):
     sources = request.POST["sources"]
     sinks = request.POST["sinks"]
     dataset = request.POST["dataset"]
+    scenario = "scenario1"
 
     with tempfile.TemporaryDirectory() as datasets_basepath:
+        # TODO: _get_dataset_dir that combines these two?
         dataset_dirname = _get_dataset_dirname(dataset)
-        dataset_dir = os.path.join(datasets_basepath, dataset_dirname)
-        os.makedirs(dataset_dir, exist_ok=True)
-        # Symlink in the BaseData directory for the dataset
-        basedata_dir = os.path.join(dataset_dir, "BaseData")
-        if not os.path.exists(basedata_dir):
-            os.symlink(_get_basedata_dir(dataset_dirname), basedata_dir)
-        # Create a scenario directory
-        scenarios_dir = os.path.join(dataset_dir, "Scenarios")
-        os.makedirs(scenarios_dir, exist_ok=True)
-        scenario_dir = os.path.join(
-            scenarios_dir,
-            "scenario_{}".format(datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")),
-        )
-        os.mkdir(scenario_dir)
-
-        scenario = os.path.basename(scenario_dir)
-        # Write Sources.txt
-        os.mkdir(os.path.join(scenario_dir, "Sources"))
-        with open(
-            os.path.join(scenario_dir, "Sources", "Sources.txt"), mode="w"
-        ) as sources_file:
-            sources_file.write(sources)
-        # Write Sinks.txt
-        os.mkdir(os.path.join(scenario_dir, "Sinks"))
-        with open(
-            os.path.join(scenario_dir, "Sinks", "Sinks.txt"), mode="w"
-        ) as sinks_file:
-            sinks_file.write(sinks)
-        # Write Linear.txt
-        os.mkdir(os.path.join(scenario_dir, "Transport"))
-        with open(
-            os.path.join(scenario_dir, "Transport", "Linear.txt"), mode="w"
-        ) as linear:
-            linear.write(
-                """ID	X (Con)	C (Con)	X (ROW)	C (ROW)
-1	0.0762	0.1789	0.0069	0.1174
-2	0.0162	0.4932	0.0009	0.1511
-"""
-            )
-
+        basedata_dir = _get_basedata_dir(dataset_dirname)
         try:
-            _check_cost_surface_data_cache(dataset)
-            # Run the Solver to generate candidate graph
-            from jnius import autoclass
-
-            DataStorer = autoclass("dataStore.DataStorer")
-            data = DataStorer(datasets_basepath, dataset_dirname, scenario)
-            Solver = autoclass("solver.Solver")
-            solver = Solver(data)
-            data.setSolver(solver)
-            # Use cached cost surface data for Lower48US dataset
-            if (
-                dataset == LOWER48US_DATASET_ID
-                and CACHED_LOWER48US_COST_SURFACE_DATA is not None
-            ):
-                CACHED_LOWER48US_COST_SURFACE_DATA.populate(data)
-            results_dir = os.path.join(scenario_dir, "Network", "CandidateNetwork")
-            # Must make the CandidateNetwork directory before calling makeCandidateNetworkShapeFiles
-            os.makedirs(results_dir, exist_ok=True)
-            data.makeCandidateShapeFiles(results_dir)
+            # Create the scenario directory
+            simccs_helper.create_scenario_dir(
+                datasets_basepath,
+                os.path.dirname(basedata_dir),
+                sources=sources,
+                sinks=sinks,
+                scenario=scenario,
+            )
+            simccs_helper.make_candidate_network_shapefiles(
+                datasets_basepath, dataset_dirname, scenario
+            )
+            candidate_network_path = simccs_helper.get_candidate_network_file(
+                datasets_basepath, dataset_dirname, scenario
+            )
+            # the shapefiles will be in the CandidateNetwork directory
+            results_dir = os.path.dirname(candidate_network_path)
             _create_geojson_for_result(results_dir)
             with open(
                 os.path.join(results_dir, "geojson", "Network.geojson")
@@ -649,18 +621,18 @@ def candidate_network(request):
                 os.path.join(results_dir, "geojson", "Sources.geojson")
             ) as sources_geojson, open(
                 os.path.join(results_dir, "geojson", "Sinks.geojson")
-            ) as sinks_geojson:
+            ) as sinks_geojson, open(
+                candidate_network_path
+            ) as candidate_network:
                 return JsonResponse(
                     {
                         "Network": json.load(network_geojson),
                         "Sources": json.load(sources_geojson),
                         "Sinks": json.load(sinks_geojson),
+                        "CandidateNetwork": candidate_network.read(),
                     }
                 )
         except Exception as e:
-            logger.exception(
-                "Error occurred when loading solution: " + str(e.stacktrace)
-            )
             return JsonResponse({"detail": str(e)}, status=500)
 
 

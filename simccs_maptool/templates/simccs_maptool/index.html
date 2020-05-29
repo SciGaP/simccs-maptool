@@ -1096,12 +1096,13 @@
             var numYears = $("#Project_Period").val();
             var capacityTarget = $("#Capture_Target").val();
             var formData = new FormData();
+            var current_dataset_id = "Lower48US";
             formData.set('crf', crf ? crf : 0.1);
             formData.set('numYears', numYears ? numYears : 10);
             formData.set('capacityTarget', capacityTarget ? capacityTarget : 5);
             formData.set('sources', sourcedata);
             formData.set('sinks', sinkdata);
-            formData.set('dataset', "Lower48US");
+            formData.set('dataset', current_dataset_id);
             if (Maptool.FeatureFlag.cloneable) {
 
                   AiravataAPI.utils.FetchUtils.post("/maptool/mps2/", formData).then(function( data ) {
