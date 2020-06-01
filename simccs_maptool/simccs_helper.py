@@ -5,19 +5,27 @@ import shutil
 
 logger = logging.getLogger(__name__)
 
-# clients of module can set keys on this of BaseData directories that should be cached
+# keys are the BaseData directories that should be cached
 CACHED_COST_SURFACES = {}
 
 
-def register_cost_surface_data_cache(basedata_dir):
-    real_basedata_dir = os.path.realpath(basedata_dir)
+def register_cost_surface_data_cache(dataset_dir):
+    # Since the BaseData directory is the directory symlinked into the scenario
+    # directory, use it's path as the key for cost surfaces that should be
+    # cached
+    real_basedata_dir = os.path.realpath(os.path.join(dataset_dir, "BaseData"))
     CACHED_COST_SURFACES[real_basedata_dir] = None
 
 
 def create_scenario_dir(
     basepath, dataset_dir, sources, sinks, mps=None, solution=None, scenario="scenario1"
 ):
-    """Create scenario directory structure populated with inputs."""
+    """Create scenario directory structure populated with inputs.
+
+    The basepath is assumed to be an empty directory. The dataset_dir's
+    BaseData directory will be symlinked into the constructed scenario
+    directory under basepath.
+    """
     dataset_dirname = os.path.basename(dataset_dir)
     local_dataset_dir = os.path.join(basepath, dataset_dirname)
     os.makedirs(local_dataset_dir, exist_ok=True)
@@ -42,6 +50,7 @@ def create_scenario_dir(
         _write_scenario_file(os.path.join(scenario_dir, "MIP", "mip.mps"), mps)
     if solution:
         _write_scenario_file(os.path.join(scenario_dir, "Results", "soln.sol"))
+    return scenario_dir
 
 
 def _write_scenario_file(file_path, file_contents):
@@ -55,40 +64,29 @@ def _write_scenario_file(file_path, file_contents):
         shutil.copyfileobj(src_file, scenario_file)
 
 
-def get_sources_file(basepath, dataset_dir, scenario="scenario1"):
+def get_sources_file(scenario_dir):
+    return os.path.join(scenario_dir, "Sources", "Sources.txt")
+
+
+def get_sinks_file(scenario_dir):
+    return os.path.join(scenario_dir, "Sinks", "Sinks.txt")
+
+
+def get_mps_file(scenario_dir):
+    return os.path.join(scenario_dir, "MIP", "mip.mps")
+
+
+def get_candidate_network_file(scenario_dir):
     return os.path.join(
-        _get_scenario_dir(basepath, dataset_dir, scenario), "Sources", "Sources.txt"
+        scenario_dir, "Network", "CandidateNetwork", "CandidateNetwork.txt"
     )
 
 
-def get_sinks_file(basepath, dataset_dir, scenario="scenario1"):
-    return os.path.join(
-        _get_scenario_dir(basepath, dataset_dir, scenario), "Sinks", "Sinks.txt"
-    )
-
-
-def get_mps_file(basepath, dataset_dir, scenario="scenario1"):
-    return os.path.join(
-        _get_scenario_dir(basepath, dataset_dir, scenario), "MIP", "mip.mps"
-    )
-
-
-def get_candidate_network_file(basepath, dataset_dir, scenario="scenario1"):
-    return os.path.join(
-        _get_scenario_dir(basepath, dataset_dir, scenario),
-        "Network",
-        "CandidateNetwork",
-        "CandidateNetwork.txt",
-    )
-
-
-def _get_scenario_dir(basepath, dataset_dir, scenario):
-    dataset_dirname = os.path.basename(dataset_dir)
-    return os.path.join(basepath, dataset_dirname, "Scenarios", scenario)
-
-
-def make_candidate_network_shapefiles(basepath, dataset_dirname, scenario):
+def make_candidate_network_shapefiles(scenario_dir):
     try:
+        basepath, dataset_dirname, scenario = _get_scenario_path_components(
+            scenario_dir
+        )
         cost_surface_data = _get_cached_cost_surface_data(basepath, dataset_dirname)
         from jnius import autoclass
 
@@ -99,7 +97,6 @@ def make_candidate_network_shapefiles(basepath, dataset_dirname, scenario):
         data.setSolver(solver)
         if cost_surface_data is not None:
             cost_surface_data.populate(data)
-        scenario_dir = _get_scenario_dir(basepath, dataset_dirname, scenario)
         results_dir = os.path.join(scenario_dir, "Network", "CandidateNetwork")
         # Must make the CandidateNetwork directory before calling
         # makeCandidateNetworkShapeFiles
@@ -115,16 +112,24 @@ def make_candidate_network_shapefiles(basepath, dataset_dirname, scenario):
         raise e
 
 
+def _get_scenario_path_components(scenario_dir):
+    """Return tuple of basepath, dataset dir name and scenario."""
+    dataset_dir = os.path.dirname(os.path.dirname(scenario_dir))
+    return (
+        os.path.dirname(dataset_dir),  # basepath
+        os.path.basename(dataset_dir),  # dataset directory name
+        os.path.basename(scenario_dir),  # scenario name
+    )
+
+
 def write_mps_file(
-    basepath,
-    dataset_dirname,
-    scenario,
-    capital_recovery_rate=0.1,
-    num_years=10,
-    capacity_target=5,
+    scenario_dir, capital_recovery_rate=0.1, num_years=10, capacity_target=5
 ):
 
     try:
+        basepath, dataset_dirname, scenario = _get_scenario_path_components(
+            scenario_dir
+        )
         cost_surface_data = _get_cached_cost_surface_data(basepath, dataset_dirname)
         from jnius import autoclass
 
@@ -137,7 +142,6 @@ def write_mps_file(
         if cost_surface_data is not None:
             cost_surface_data.populate(data)
         MPSWriter = autoclass("solver.MPSWriter")
-        scenario_dir = os.path.join(basepath, dataset_dirname, "Scenarios", scenario)
         os.mkdir(os.path.join(scenario_dir, "MIP"))
         MPSWriter.writeCapPriceMPS(
             "mip.mps",
@@ -159,8 +163,11 @@ def write_mps_file(
         raise e
 
 
-def make_shapefiles(basepath, dataset_dirname, scenario, results_dir):
+def make_shapefiles(scenario_dir, results_dir):
     try:
+        basepath, dataset_dirname, scenario = _get_scenario_path_components(
+            scenario_dir
+        )
         cost_surface_data = _get_cached_cost_surface_data(basepath, dataset_dirname)
         from jnius import autoclass
 
@@ -190,8 +197,11 @@ def make_shapefiles(basepath, dataset_dirname, scenario, results_dir):
         raise e
 
 
-def load_solution(basepath, dataset_dirname, scenario, results_dir):
+def load_solution(scenario_dir, results_dir):
     try:
+        basepath, dataset_dirname, scenario = _get_scenario_path_components(
+            scenario_dir
+        )
         cost_surface_data = _get_cached_cost_surface_data(basepath, dataset_dirname)
         from jnius import autoclass
 
@@ -218,13 +228,15 @@ def load_solution(basepath, dataset_dirname, scenario, results_dir):
 
 
 def _get_cached_cost_surface_data(basepath, dataset_dirname):
-    basedata_dir = os.path.realpath(os.path.join(basepath, dataset_dirname, "BaseData"))
-    if basedata_dir in CACHED_COST_SURFACES:
-        if CACHED_COST_SURFACES[basedata_dir] is None:
-            CACHED_COST_SURFACES[basedata_dir] = _load_cost_surface_data(
+    real_basedata_dir = os.path.realpath(
+        os.path.join(basepath, dataset_dirname, "BaseData")
+    )
+    if real_basedata_dir in CACHED_COST_SURFACES:
+        if CACHED_COST_SURFACES[real_basedata_dir] is None:
+            CACHED_COST_SURFACES[real_basedata_dir] = _load_cost_surface_data(
                 basepath, dataset_dirname
             )
-        return CACHED_COST_SURFACES[basedata_dir]
+        return CACHED_COST_SURFACES[real_basedata_dir]
     else:
         return None
 

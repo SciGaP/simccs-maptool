@@ -41,8 +41,8 @@ class MapToolConfig(AppConfig):
         logger.info("MapToolConfig.ready() called")
         init_pyjnius()
         # get path of Lower48US dataset and set it as a cached cost surface on simccs_helper
-        lower48_basedata_dir = datasets.get_basedata_dir(datasets.LOWER48US_DATASET_ID)
-        simccs_helper.register_cost_surface_data_cache(lower48_basedata_dir)
+        lower48_dir = datasets.get_dataset_dir(datasets.LOWER48US_DATASET_ID)
+        simccs_helper.register_cost_surface_data_cache(lower48_dir)
 
 
 def init_pyjnius():

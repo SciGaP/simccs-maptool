@@ -15,21 +15,21 @@ LOWER48US_DATASET_ID = "Lower48US"
 logger = logging.getLogger(__name__)
 
 
-def get_basedata_dir(dataset_id):
+def get_dataset_dir(dataset_id):
 
     dataset_dirname = _get_dataset_dirname(dataset_id)
     if "DATASETS_DIR" in getattr(settings, "MAPTOOL_SETTINGS", {}):
         datasets_basepath = settings.MAPTOOL_SETTINGS["DATASETS_DIR"]
-        basedata_dir = os.path.join(datasets_basepath, dataset_dirname, "BaseData")
-        if os.path.exists(basedata_dir):
-            return basedata_dir
+        dataset_dir = os.path.join(datasets_basepath, dataset_dirname)
+        if os.path.exists(dataset_dir):
+            return dataset_dir
     else:
         logger.warning("Setting MAPTOOL_SETTINGS['DATASETS_DIR'] is not defined")
     # For backwards compatibility, allow loading BaseData from within this repo
     # (SoutheastUS only)
-    basedata_dir = os.path.join(DATASETS_BASEPATH, dataset_dirname, "BaseData")
-    if os.path.exists(basedata_dir):
-        return basedata_dir
+    dataset_dir = os.path.join(DATASETS_BASEPATH, dataset_dirname)
+    if os.path.exists(dataset_dir):
+        return dataset_dir
     raise Exception(
         "Unable to find basedata directory for dataset {}".format(dataset_id)
     )

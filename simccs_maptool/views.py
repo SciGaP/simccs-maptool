@@ -213,44 +213,25 @@ def generate_mps2(request):
     dataset_id = request.POST["dataset"]
 
     with tempfile.TemporaryDirectory() as datasets_basepath:
-        # TODO: _get_dataset_dir that combines these two?
-        basedata_dir = datasets.get_basedata_dir(dataset_id)
-        # TODO: datasets.get_dataset_dir
-        dataset_dir = os.path.dirname(basedata_dir)
-        dataset_dirname = os.path.basename(dataset_dir)
+        dataset_dir = datasets.get_dataset_dir(dataset_id)
         try:
             # Create the scenario directory
             # TODO: add the candidatenetwork file too
-            # TODO: return scenario_dir
-            simccs_helper.create_scenario_dir(
-                datasets_basepath,
-                dataset_dir,
-                sources=sources,
-                sinks=sinks,
-                scenario="scenario1",
+            scenario_dir = simccs_helper.create_scenario_dir(
+                datasets_basepath, dataset_dir, sources=sources, sinks=sinks
             )
-            # TODO: pass scenario_dir instead of datasets_basepath,
-            # dataset_dirname, and scenario
             simccs_helper.write_mps_file(
-                datasets_basepath,
-                dataset_dirname,
-                "scenario1",
+                scenario_dir,
                 capital_recovery_rate=capital_recovery_rate,
                 num_years=num_years,
                 capacity_target=capacity_target,
             )
             with open(
-                simccs_helper.get_sources_file(
-                    datasets_basepath, dataset_dirname, "scenario1"
-                )
+                simccs_helper.get_sources_file(scenario_dir)
             ) as sources_file, open(
-                simccs_helper.get_sinks_file(
-                    datasets_basepath, dataset_dirname, "scenario1"
-                )
+                simccs_helper.get_sinks_file(scenario_dir)
             ) as sinks_file, open(
-                simccs_helper.get_mps_file(
-                    datasets_basepath, dataset_dirname, "scenario1"
-                )
+                simccs_helper.get_mps_file(scenario_dir)
             ) as mps_file:
                 # open(
                 #     simccs_helper.get_candidate_network_file(
@@ -389,25 +370,20 @@ def _create_shapefiles_for_result(request, experiment, results_dir):
         # solution = _get_experiment_file(request, experiment, "Cplex-solution", input_file=False)
         dataset_id = _get_experiment_value(experiment, "Dataset-id")
         with tempfile.TemporaryDirectory() as datasets_basepath:
-            # TODO: _get_dataset_dir that combines these two?
-            dataset_dirname = _get_dataset_dirname(dataset_id)
-            basedata_dir = _get_basedata_dir(dataset_dirname)
+            dataset_dir = datasets.get_dataset_dir(dataset_id)
             # Create the scenario directory
             # TODO: add the candidatenetwork file too
-            simccs_helper.create_scenario_dir(
+            scenario_dir = simccs_helper.create_scenario_dir(
                 datasets_basepath,
-                os.path.dirname(basedata_dir),
+                dataset_dir,
                 sources=sources,
                 sinks=sinks,
                 # Technically we don't even need these, they are loaded by
                 # make_shapefiles
                 # mps=mps,
                 # solution=solution,
-                scenario="scenario1",
             )
-            simccs_helper.make_shapefiles(
-                datasets_basepath, dataset_dirname, "scenario1", results_dir
-            )
+            simccs_helper.make_shapefiles(scenario_dir, results_dir)
     # v1 experiment files layout
     else:
         datasets_basepath = _get_datasets_dir_from_results_dir(results_dir)
@@ -484,25 +460,20 @@ def _load_solution(request, experiment, results_dir):
         # solution = _get_experiment_file(request, experiment, "Cplex-solution", input_file=False)
         dataset_id = _get_experiment_value(experiment, "Dataset-id")
         with tempfile.TemporaryDirectory() as datasets_basepath:
-            # TODO: _get_dataset_dir that combines these two?
-            dataset_dirname = _get_dataset_dirname(dataset_id)
-            basedata_dir = _get_basedata_dir(dataset_dirname)
+            dataset_dir = datasets.get_dataset_dir(dataset_id)
             # Create the scenario directory
             # TODO: add the candidatenetwork file too
-            simccs_helper.create_scenario_dir(
+            scenario_dir = simccs_helper.create_scenario_dir(
                 datasets_basepath,
-                os.path.dirname(basedata_dir),
+                dataset_dir,
                 sources=sources,
                 sinks=sinks,
                 # Technically we don't even need these, they are loaded by
                 # make_shapefiles
                 # mps=mps,
                 # solution=solution,
-                scenario="scenario1",
             )
-            return simccs_helper.load_solution(
-                datasets_basepath, dataset_dirname, "scenario1", results_dir
-            )
+            return simccs_helper.load_solution(scenario_dir, results_dir)
     # v1 experiment files layout
     else:
         datasets_basepath = _get_datasets_dir_from_results_dir(results_dir)
@@ -591,26 +562,20 @@ def candidate_network(request):
     sources = request.POST["sources"]
     sinks = request.POST["sinks"]
     dataset = request.POST["dataset"]
-    scenario = "scenario1"
 
     with tempfile.TemporaryDirectory() as datasets_basepath:
-        # TODO: _get_dataset_dir that combines these two?
-        dataset_dirname = _get_dataset_dirname(dataset)
-        basedata_dir = _get_basedata_dir(dataset_dirname)
+        dataset_dir = datasets.get_dataset_dir(dataset)
         try:
             # Create the scenario directory
-            simccs_helper.create_scenario_dir(
+            scenario_dir = simccs_helper.create_scenario_dir(
                 datasets_basepath,
-                os.path.dirname(basedata_dir),
+                dataset_dir,
                 sources=sources,
                 sinks=sinks,
-                scenario=scenario,
             )
-            simccs_helper.make_candidate_network_shapefiles(
-                datasets_basepath, dataset_dirname, scenario
-            )
+            simccs_helper.make_candidate_network_shapefiles(scenario_dir)
             candidate_network_path = simccs_helper.get_candidate_network_file(
-                datasets_basepath, dataset_dirname, scenario
+                scenario_dir
             )
             # the shapefiles will be in the CandidateNetwork directory
             results_dir = os.path.dirname(candidate_network_path)
