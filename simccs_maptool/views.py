@@ -388,41 +388,7 @@ def _create_shapefiles_for_result(request, experiment, results_dir):
     else:
         datasets_basepath = _get_datasets_dir_from_results_dir(results_dir)
         scenario_dir = os.path.dirname(results_dir)
-        scenario = os.path.basename(scenario_dir)
-        dataset = _get_dataset_from_results_dir(results_dir)
-        try:
-            _check_cost_surface_data_cache(dataset)
-
-            from jnius import autoclass
-
-            # initialize the Solver/DataStorer
-            DataStorer = autoclass("dataStore.DataStorer")
-            data = DataStorer(datasets_basepath, dataset, scenario)
-            Solver = autoclass("solver.Solver")
-            solver = Solver(data)
-            data.setSolver(solver)
-            # Use cached cost surface data for Lower48US dataset
-            if (
-                dataset == LOWER48US_DATASET_ID
-                and CACHED_LOWER48US_COST_SURFACE_DATA is not None
-            ):
-                CACHED_LOWER48US_COST_SURFACE_DATA.populate(data)
-            logger.debug("Scenario data loaded for {}".format(scenario_dir))
-            # load the .mps/.sol solution
-            solution = data.loadSolution(results_dir, -1)  # timeslot
-            logger.debug("Solution loaded from {}".format(results_dir))
-            # generate shapefiles
-            data.makeShapeFiles(results_dir, solution)
-            logger.debug(
-                "Shape files created in {}".format(
-                    os.path.join(results_dir, "shapeFiles")
-                )
-            )
-        except Exception as e:
-            logger.exception(
-                "Error occurred when calling makeShapeFiles: " + str(e.stacktrace)
-            )
-            raise
+        simccs_helper.make_shapefiles(scenario_dir, results_dir)
 
 
 # TODO: this would be a good candidate to add to SDK
@@ -478,35 +444,7 @@ def _load_solution(request, experiment, results_dir):
     else:
         datasets_basepath = _get_datasets_dir_from_results_dir(results_dir)
         scenario_dir = os.path.dirname(results_dir)
-        scenario = os.path.basename(scenario_dir)
-        dataset = _get_dataset_from_results_dir(results_dir)
-        try:
-            _check_cost_surface_data_cache(dataset)
-
-            from jnius import autoclass
-
-            # initialize the Solver/DataStorer
-            DataStorer = autoclass("dataStore.DataStorer")
-            data = DataStorer(datasets_basepath, dataset, scenario)
-            Solver = autoclass("solver.Solver")
-            solver = Solver(data)
-            data.setSolver(solver)
-            # Use cached cost surface data for Lower48US dataset
-            if (
-                dataset == LOWER48US_DATASET_ID
-                and CACHED_LOWER48US_COST_SURFACE_DATA is not None
-            ):
-                CACHED_LOWER48US_COST_SURFACE_DATA.populate(data)
-            logger.debug("Scenario data loaded for {}".format(scenario_dir))
-            # load the .mps/.sol solution
-            solution = data.loadSolution(results_dir, -1)  # timeslot
-            logger.debug("Solution loaded from {}".format(results_dir))
-            return solution
-        except Exception as e:
-            logger.exception(
-                "Error occurred when loading solution: " + str(e.stacktrace)
-            )
-            raise
+        return simccs_helper.load_solution(scenario_dir, results_dir)
 
 
 def _create_geojson_for_result(results_dir):
