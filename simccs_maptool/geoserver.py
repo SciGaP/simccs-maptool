@@ -56,7 +56,10 @@ def get_data(request):
         if layer == 'source': 
             cqlfilter = 'Intersects(the_geom,Polygon((' + geom + ")))"
             data = wfs_call('Sources_082819_SimCCS_Format',cqlfilter)
-        if layer == 'sink':
+        if layer == 'sink_saline':
             cqlfilter = 'Intersects(geometry,Polygon((' + geom + ")))"
             data = wfs_call('SCO2T_v3_1_2_LowCost_SimCCS_10K',cqlfilter)
+        if layer == 'sink_og':
+            cqlfilter = 'Intersects(the_geom,Polygon((' + geom + ")))"
+            data = wfs_call('NATCARB_OG_Test',cqlfilter)
         return JsonResponse(data)

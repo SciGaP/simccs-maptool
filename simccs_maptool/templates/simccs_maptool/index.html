@@ -195,7 +195,8 @@
                               case "france_sink":map.removeLayer(france_sink_cluster);
                              break;
                              case "user_sources": map.removeLayer(sourceLayer); break;
-                             case "user_sinks": map.removeLayer(sinkLayer); break;
+                             case "user_sinks_saline": map.removeLayer(sinkLayer); break;
+                             case "user_sinks_og": map.removeLayer(sinkLayer2); break;
                              case "user_cost": map.removeLayer(user_cost_surface); break;
          
                          }
@@ -295,7 +296,8 @@
                              case "france_sink":map.addLayer(france_sink_cluster);
                              break;
                              case "user_sources": map.addLayer(sourceLayer);break;
-                             case "user_sinks": map.addLayer(sinkLayer);break;
+                             case "user_sinks_saline": map.addLayer(sinkLayer);break;
+                             case "user_sinks_og": map.addLayer(sinkLayer2);break;
                              case "user_cost": map.addLayer(user_cost_surface); break;
                              default:alert(radio_button_id + " layer is not found");
                          }
@@ -419,12 +421,12 @@
          });
          
          var sinkLayer = new L.geoJSON('',{style: function(feature){
-           var co2 = feature.properties['varO_M____'];
+           var co2 = feature.properties['sinkvarom'];
            var fillcolor = ''; 
            if (co2 >=3.0) {fillcolor = '#f50000';} 
            else if (co2 >=1.0 && co2 < 3) {fillcolor ='#fdff00'}
            else {fillcolor = '#00f905'}
-           return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.3,pane: "polygonsPane"};
+           return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.5,pane: "polygonsPane"};
          },
          
          onEachFeature: sinkOnEachFeature
@@ -436,7 +438,7 @@
            if (co2 >= 1 && co2 < 5e+06) {fillcolor = '#f50000';} 
            else if (co2 >=5e+06 && co2 < 5e+07) {fillcolor ='#fdff00'}
            else {fillcolor = '#00f905'}
-           return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.3,pane: "polygonsPane"};
+           return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.5,pane: "polygonsPane"};
          },
          
          onEachFeature: sinkOnEachFeature2
@@ -445,20 +447,20 @@
            function loadjson(data) {
                  sourceLayer.addData(data);
                  sourceLayer.addTo(map);
-                 layercontrol.addOverlay(sourceLayer,"Sources");
+                 //layercontrol.addOverlay(sourceLayer,"Sources");
            }
          
            function loadsinklayer(data) {
                  sinkLayer.addData(data);
                  sinkLayer.addTo(map);
-                 layercontrol.addOverlay(sinkLayer,"Sinks:Saline");
+                 //layercontrol.addOverlay(sinkLayer,"Sinks:Saline");
                  //sinkLayer.bringToBack();
            }
            
            function loadsinklayer2(data) {
                  sinkLayer2.addData(data);
                  sinkLayer2.addTo(map);
-                 layercontrol.addOverlay(sinkLayer2,"Sinks:Oil/Gas");
+                 //layercontrol.addOverlay(sinkLayer2,"Sinks:Oil/Gas");
                  //sinkLayer.bringToBack();
            }
            //hard coded need to be rewrite later
@@ -756,8 +758,10 @@
             $.getJSON("/maptool/get-data",{geom:geom_str,method:'data',layer:'source'})
             .done(function(data){loadjson(data)});
             // load loadsinklayer
-            $.getJSON("/maptool/get-data",{geom:geom_str,method:'data',layer:'sink'})
+            $.getJSON("/maptool/get-data",{geom:geom_str,method:'data',layer:'sink_saline'})
             .done(function(data){loadsinklayer(data)});
+            $.getJSON("/maptool/get-data",{geom:geom_str,method:'data',layer:'sink_og'})
+            .done(function(data){loadsinklayer2(data)});
 
             var lbounds=layer.getBounds().pad(0.1);
             var cost_image_url="https://simccs.org/geoserver/ows?service=WCS&version=2.0.0&request=GetCoverage&coverageId=SimCCS__cost&format=png";
@@ -773,7 +777,8 @@
             document.getElementById("workingarea").style.display="block";
             // set radio button checked
             document.getElementById("user_cost").checked = true;
-            document.getElementById("user_sinks").checked = true;
+            document.getElementById("user_sinks_saline").checked = true;
+            document.getElementById("user_sinks_og").checked = true;
             document.getElementById("user_sources").checked = true;
 
             // interface for non-login user
@@ -1053,7 +1058,7 @@
             // Facility_N City State Latitude Longitude Industry_T CO2_Emissi
             //ID costFix ($M) fixO&M ($M/y) varO&M ($/tCO2) capMax (MtCO2/y) N/A LON LAT NAME
             if (selection.length == 0 ) {alert('No sources are selected!');return}
-            if (sinkselection.length == 0 ) {alert('No sinks are selected!');return}
+            if (sinkselection.length == 0 && sinkselection2.length == 0) {alert('No sinks are selected!');return}
             var sourcedata = generatesourcedata();
             //alert(sourcedata);
 
@@ -1184,6 +1189,52 @@
                  
                   sinkdata += tempstr + "\n";
             }
+            for (i = 0; i < sinkselection2.length; i++) {
+                  tempstr = "";
+                        // field 0-1: ID
+                        tempstr += sinkselection2[i].feature.properties['New_OG_ID'] + "\t";
+                        tempstr += sinkselection2[i].feature.properties['NATCARB_OG'] + "\t";
+
+                        //2: Capacity "fieldCap__"
+                        tempstr += sinkselection2[i].feature.properties['VOL_LOW'] + "\t";
+                        //3: OpeningCost "costFix___"
+                        tempstr += sinkselection2[i].feature.properties['costFix'] + "\t";
+                        //4: OMCost "fixO_M___M"
+                        tempstr += sinkselection2[i].feature.properties['fixO_M'] + "\t";
+                        //5: WellCapacity "wellCap__M"
+                        tempstr += sinkselection2[i].feature.properties['wellCap'] + "\t";
+                        //6: WellOpeningCost "wellCostFi"
+                        tempstr += sinkselection2[i].feature.properties['wellCostFi'] + "\t";
+                        //7: WellOMCost "wellFixO_M"
+                        tempstr += sinkselection2[i].feature.properties['wellFixO_M'] + "\t";
+                        //8: InjectionCost "varO_M____"
+                        tempstr += sinkselection2[i].feature.properties['Cost_Dolla'] + "\t";
+                        //9: 0
+                        tempstr += '0' + "\t";
+                        //10: Lon "LON"
+                        tempstr += sinkselection2[i].feature.properties['Longitude'] + "\t";
+                        //11: Lat "LAT"
+                        tempstr += sinkselection2[i].feature.properties['Latitude'] + "\t";
+                        //12: 0 
+                        tempstr += '0' + "\t";
+                        //13: 0
+                        tempstr += '0' + "\t";
+                        //14: 0
+                        tempstr += '0' + "\t";
+                        //15: 0
+                        tempstr += '0' + "\t";
+                        //16: NAME "NAME"
+                        tempstr += sinkselection2[i].feature.properties['FIELD_NAME'];
+                  
+
+                  //caculate lon lat
+                  //center_latlon = (sinkselection[i].getBounds()).getCenter();
+                  //tempstr += center_latlon.lng +"\t";
+                  //tempstr += center_latlon.lat +"\t";  
+                 
+                  sinkdata += tempstr + "\n";
+            }
+            
             return sinkdata;
          }
 
@@ -2051,11 +2102,19 @@
                                                       <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
                                    
                                     </div>
-                                    <div class="user_sinks_div">
-                                          <label><input type="radio" id="user_sinks" checked /><strong>&nbsp;Sinks</strong></label>
+                                    <div class="user_sinks_saline_div">
+                                          <label><input type="radio" id="user_sinks_saline" checked /><strong>&nbsp;Saline Sinks</strong></label>
                                     </div>
                                     <div class="btn-group btn-group-sm btn-block">
-                                    <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_selectallsink()" id="case_selectallsink_btn" value="hide">Select all sinks</button>
+                                    <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_selectallsink()" id="case_selectallsink_btn" value="hide">Select all Saline</button>
+                                    <button type="button  btn-sm " id="ss_windowpicker_sink" title="Select sinks by drawing" value="sink" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_sink()>
+                                          <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
+                                    </div>
+                                    <div class="user_sinks_og_div">
+                                          <label><input type="radio" id="user_sinks_og" checked /><strong>&nbsp;Oil/Gas Sinks</strong></label>
+                                    </div>
+                                    <div class="btn-group btn-group-sm btn-block">
+                                    <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_selectallsink()" id="case_selectallsink_btn" value="hide">Select all Oil/Gas</button>
                                     <button type="button  btn-sm " id="ss_windowpicker_sink" title="Select sinks by drawing" value="sink" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_sink()>
                                           <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
                                     </div>
