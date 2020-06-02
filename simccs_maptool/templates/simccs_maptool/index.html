@@ -835,11 +835,15 @@
                     // in square meters
                     area = L.GeometryUtil.geodesicArea(latlngs);
                   var pop_str='';
+                  pop_str+='<p style="font-size:14px">';
                   pop_str += "Area: "+ (area/1000000.0).toFixed(2) + " km2" + '<br>';
                   pop_str += "No. of Sources: " + json.totalsource.toString() + "<br>";
                   pop_str += "Capturable CO2: " + json.capturable.toFixed(2) + " MtCO2/yr<br>";
-                  pop_str += "No. of Sinks: " + json.totalsink.toString() + "<br>";
-                  pop_str += "Sink Capacity: " + json.sinkcapacity.toFixed(2) + " MtCO2<br>";
+                  pop_str += "No. of Saline Sinks: " + json.totalsink_saline.toString() + "<br>";
+                  pop_str += "Saline Sink Capacity: " + json.sinkcapacity_saline.toFixed(2) + " MtCO2<br>";
+                  pop_str += "No. of Oil/Gas Sinks: " + json.totalsink_og.toString() + "<br>";
+                  pop_str += "Oil/Gas Sink Capacity: " + json.sinkcapacity_og.toFixed(2) + " MtCO2<br>";
+                  pop_str +="</p>";
                   //pop_str += '<button id="testid" type="button" class="btn btn-primary btn-sm" value="'+ geom_str +'" onclick=loadworkingarea(this.value)>Use this area</button>'
                   var randomid = "testid_" + (Math.floor(Math.random()*1000)).toFixed();
                   pop_str += '<button id="'+ randomid + '" type="button" class="btn btn-primary btn-sm" >Use this area</button>'
@@ -2041,10 +2045,21 @@
                                     Use mouse-click to select source and sink data.<br>
                                     <div class="user_sources_div">
                                           <label><input type="radio" id="user_sources" checked /><strong>&nbsp;Sources</strong></label>
+                                          <div class="btn-group btn-group-sm btn-block">
+                                                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_selectallsource()" id="case_selectallsource_btn" value="hide">Select all sources</button>
+                                                <button type="button  btn-sm" id="ss_windowpicker_source" title="Select sources by drawing" value="source" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_source()>
+                                                      <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
+                                   
                                     </div>
                                     <div class="user_sinks_div">
                                           <label><input type="radio" id="user_sinks" checked /><strong>&nbsp;Sinks</strong></label>
                                     </div>
+                                    <div class="btn-group btn-group-sm btn-block">
+                                    <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_selectallsink()" id="case_selectallsink_btn" value="hide">Select all sinks</button>
+                                    <button type="button  btn-sm " id="ss_windowpicker_sink" title="Select sinks by drawing" value="sink" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_sink()>
+                                          <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
+                                    </div>
+                               </div>
                                     <div class="user_cost_div">
                                           <label><input type="radio" id="user_cost" checked /><strong>&nbsp;Cost Surface</strong></label>
                                     </div>

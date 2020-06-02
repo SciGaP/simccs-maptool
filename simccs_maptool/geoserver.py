@@ -40,13 +40,16 @@ def get_data(request):
         # Total Sink Capacity: # MtCO2
         totalfeatures = data['totalFeatures']
         capturable = sum([x['properties']['Capturable'] for x in data['features']])
-        # sinks
+        # sinks: Oil/Gas Reservoir
+        data = wfs_call('NATCARB_OG_Test',cqlfilter)
+        totalsink_og = data['totalFeatures']
+        sinkcapacity_og = sum([x['properties']['VOL_LOW'] for x in data['features']])
+        # sinks Saline Formation
         cqlfilter = cqlfilter.replace("the_geom","geometry")
         data = wfs_call('SCO2T_v3_1_2_LowCost_SimCCS_10K',cqlfilter)
-        totalsink = data['totalFeatures']
-        sinkcapacity = sum([x['properties']['sinkcapacity'] for x in data['features']])
-
-        return JsonResponse({'totalsource':totalfeatures,'capturable':capturable,'totalsink':totalsink,'sinkcapacity':sinkcapacity})
+        totalsink_saline = data['totalFeatures']
+        sinkcapacity_saline = sum([x['properties']['sinkcapacity'] for x in data['features']])
+        return JsonResponse({'totalsource':totalfeatures,'capturable':capturable,'totalsink_og':totalsink_og,'sinkcapacity_og':sinkcapacity_og,'totalsink_saline':totalsink_saline,'sinkcapacity_saline':sinkcapacity_saline})
 
     if method == "data":
         layer = request.GET["layer"]
