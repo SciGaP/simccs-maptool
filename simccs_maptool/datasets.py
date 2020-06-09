@@ -11,6 +11,7 @@ CASE_STUDIES_DIR = os.path.join(BASEDIR, "static", "Scenarios")
 DATASETS_METADATA_DIR = os.path.join(BASEDIR, "static", "Datasets")
 # Dataset IDs
 LOWER48US_DATASET_ID = "Lower48US"
+SOUTHEASTUS_DATASET_ID = "Southeast_US_2012"
 
 logger = logging.getLogger(__name__)
 

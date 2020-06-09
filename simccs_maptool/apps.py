@@ -40,9 +40,13 @@ class MapToolConfig(AppConfig):
     def ready(self):
         logger.info("MapToolConfig.ready() called")
         init_pyjnius()
-        # get path of Lower48US dataset and set it as a cached cost surface on simccs_helper
-        lower48_dir = datasets.get_dataset_dir(datasets.LOWER48US_DATASET_ID)
-        simccs_helper.register_cost_surface_data_cache(lower48_dir)
+        try:
+            # get path of Lower48US dataset and set it as a cached cost surface on simccs_helper
+            # note: dataset may not exist, need to check
+            lower48_dir = datasets.get_dataset_dir(datasets.LOWER48US_DATASET_ID)
+            simccs_helper.register_cost_surface_data_cache(lower48_dir)
+        except Exception as e:
+            logger.warning("Unable to register Lower48US cost surface cache: " + str(e))
 
 
 def init_pyjnius():

@@ -47,7 +47,7 @@ def create_scenario_dir(
 """,
     )
     if mps:
-        _write_scenario_file(os.path.join(scenario_dir, "MIP", "mip.mps"), mps)
+        _write_scenario_file(os.path.join(scenario_dir, "MIP", "cap.mps"), mps)
     if solution:
         _write_scenario_file(os.path.join(scenario_dir, "Results", "soln.sol"))
     return scenario_dir
@@ -73,7 +73,7 @@ def get_sinks_file(scenario_dir):
 
 
 def get_mps_file(scenario_dir):
-    return os.path.join(scenario_dir, "MIP", "mip.mps")
+    return os.path.join(scenario_dir, "MIP", "cap.mps")
 
 
 def get_candidate_network_file(scenario_dir):
@@ -144,7 +144,6 @@ def write_mps_file(
         MPSWriter = autoclass("solver.MPSWriter")
         os.mkdir(os.path.join(scenario_dir, "MIP"))
         MPSWriter.writeCapPriceMPS(
-            "mip.mps",
             data,
             capital_recovery_rate,
             num_years,
@@ -152,7 +151,7 @@ def write_mps_file(
             basepath,
             dataset_dirname,
             scenario,
-            1,  # modelVersion - 1 = cap
+            'c',  # modelVersion = "c" for capture
         )
     except Exception as e:
         logger.exception(
