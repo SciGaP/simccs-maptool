@@ -1780,18 +1780,45 @@
             });
       }
 
-      function sswindowpicker_source() {
- 
+      //user select all sources
+      function user_selectallsource() {
+            //clear selection array first
+            selection = [];
+            sourceLayer.eachLayer(function(layer) {
+                  layer.setStyle({weight:3,fillColor:"orangered",radius:12});
+                  selection.push(layer);
+            });
+      }
+
+      function user_selectallsink(type) {
+            // two types: "og" "saline"
+            //clear selection array first
+            if (type == "saline") {
+            sinkselection = [];
+            sinkLayer.eachLayer(function(layer) {
+                  layer.setStyle({weight:2,color:"white",fillOpacity:0.7});
+                  sinkselection.push(layer);
+            });}
+            if (type == "og") {
+            sinkselection2 = [];
+            sinkLayer2.eachLayer(function(layer) {
+                  layer.setStyle({weight:2,color:"white",fillOpacity:0.7});
+                  sinkselection2.push(layer);
+            });}
+      }
+
+      function sswindowpicker_source(type) {
+            // two types: case_study/user
             var polygon_options = {
             showArea: false,
             shapeOptions: {
                 stroke: true,
-                color: '#6e83f0',
-                weight: 4,
-                opacity: 0.8,
+                color: 'black',
+                weight: 6,
+                opacity: 1,
                 fill: true,
                 fillColor: null, //same as color by default
-                fillOpacity: 0.2,
+                fillOpacity: 0.5,
                 clickable: true
             }
         };
@@ -1803,12 +1830,20 @@
             var draw_type = e.layerType,draw_layer = e.layer;
             //drawnItems.addLayer(layer);
                   selection = [];
+                  if (type == "case_study") {
                   case_sourceLayer.eachLayer(function(layer) {
                         var contains = turf.inside(layer.toGeoJSON(), draw_layer.toGeoJSON());
                         if (contains){
                               layer.setStyle({weight:3,fillColor:"orangered",radius:12});
                               selection.push(layer);} else {layer.setStyle(geojsonMarkerOptions);}
-                  });
+                  });}
+                  if (type == "user") {
+                  sourceLayer.eachLayer(function(layer) {
+                        var contains = turf.inside(layer.toGeoJSON(), draw_layer.toGeoJSON());
+                        if (contains){
+                              layer.setStyle({weight:3,fillColor:"orangered",radius:12});
+                              selection.push(layer);} else {layer.setStyle(geojsonMarkerOptions);}
+                  });}
             //draw_layer.remove();
             drawnItems.clearLayers(draw_layer);
             map.removeLayer(drawnItems);
@@ -2097,8 +2132,8 @@
                                     <div class="user_sources_div">
                                           <label><input type="radio" id="user_sources" checked /><strong>&nbsp;Sources</strong></label>
                                           <div class="btn-group btn-group-sm btn-block">
-                                                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_selectallsource()" id="case_selectallsource_btn" value="hide">Select all sources</button>
-                                                <button type="button  btn-sm" id="ss_windowpicker_source" title="Select sources by drawing" value="source" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_source()>
+                                                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="user_selectallsource()" id="case_selectallsource_btn" value="hide">Select all sources</button>
+                                                <button type="button  btn-sm" id="ss_windowpicker_source" title="Select sources by drawing" value="source" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_source("user")>
                                                       <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
                                    
                                     </div>
@@ -2106,7 +2141,7 @@
                                           <label><input type="radio" id="user_sinks_saline" checked /><strong>&nbsp;Saline Sinks</strong></label>
                                     </div>
                                     <div class="btn-group btn-group-sm btn-block">
-                                    <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_selectallsink()" id="case_selectallsink_btn" value="hide">Select all Saline</button>
+                                    <button type="button" class="btn btn-primary btn-sm btn-block" onclick="user_selectallsink('saline')" id="case_selectallsink_btn" value="hide">Select all Saline</button>
                                     <button type="button  btn-sm " id="ss_windowpicker_sink" title="Select sinks by drawing" value="sink" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_sink()>
                                           <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
                                     </div>
@@ -2114,7 +2149,7 @@
                                           <label><input type="radio" id="user_sinks_og" checked /><strong>&nbsp;Oil/Gas Sinks</strong></label>
                                     </div>
                                     <div class="btn-group btn-group-sm btn-block">
-                                    <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_selectallsink()" id="case_selectallsink_btn" value="hide">Select all Oil/Gas</button>
+                                    <button type="button" class="btn btn-primary btn-sm btn-block" onclick="user_selectallsink('og')" id="case_selectallsink_btn" value="hide">Select all Oil/Gas</button>
                                     <button type="button  btn-sm " id="ss_windowpicker_sink" title="Select sinks by drawing" value="sink" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_sink()>
                                           <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
                                     </div>
@@ -2276,7 +2311,7 @@
                               
                               <div class="btn-group btn-group-sm btn-block">
                               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_selectallsource()" id="case_selectallsource_btn" value="hide">Select all sources</button>
-                              <button type="button  btn-sm" id="ss_windowpicker_source" title="Select sources by drawing" value="source" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_source()>
+                              <button type="button  btn-sm" id="ss_windowpicker_source" title="Select sources by drawing" value="source" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_source("case_study")>
                                     <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
                         </div>
                               <div class="btn-group btn-group-sm btn-block">
