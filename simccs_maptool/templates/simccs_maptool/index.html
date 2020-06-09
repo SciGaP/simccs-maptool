@@ -1033,18 +1033,41 @@
          } 
 
          function hideunselected() {
-            sourceLayer.eachLayer(function(layer) {
+            var btn_status = $("#hideunselected_btn").val();
+            //alert(btn_status);
+            if (btn_status == 'hide') {
+                  sourceLayer.eachLayer(function(layer) {
                   var target_id = selection.indexOf(layer);
                   if (target_id <0) {layer.remove();};
-            });
-            sinkLayer.eachLayer(function(layer) {
-                  var target_id = sinkselection.indexOf(layer);
-                  if (target_id <0) {layer.remove();};
-            });
-            sinkLayer2.eachLayer(function(layer) {
-                  var target_id = sinkselection2.indexOf(layer);
-                  if (target_id <0) {layer.remove();};
-            });
+                  });
+                  sinkLayer.eachLayer(function(layer) {
+                        var target_id = sinkselection.indexOf(layer);
+                        if (target_id <0) {layer.remove();};
+                  });
+                  sinkLayer2.eachLayer(function(layer) {
+                        var target_id = sinkselection2.indexOf(layer);
+                        if (target_id <0) {layer.remove();};
+                  });
+                  $("#hideunselected_btn").html("Show unselected data");
+                  $("#hideunselected_btn").val("unhide");}
+            else {
+                  sourceLayer.eachLayer(function(layer) {
+                  var target_id = selection.indexOf(layer);
+                  if (target_id <0) {layer.addTo(map);};
+                  });
+                  sinkLayer.eachLayer(function(layer) {
+                        var target_id = sinkselection.indexOf(layer);
+                        if (target_id <0) {layer.addTo(map);};
+                  });
+                  sinkLayer2.eachLayer(function(layer) {
+                        var target_id = sinkselection2.indexOf(layer);
+                        if (target_id <0) {layer.addTo(map);};
+                  });
+
+                  $("#hideunselected_btn").html("Hide unselected data");
+                  $("#hideunselected_btn").val("hide");
+            }
+
          };
 
          function downloadcsv(text, name, type,hyperid) {
@@ -2179,7 +2202,7 @@
                                           <label><input type="radio" id="user_cost" checked /><strong>&nbsp;Cost Surface</strong></label>
                                     </div>
                      
-                                    <button type="button" class="btn btn-primary btn-sm btn-block" onclick="hideunselected()">Hide unselected data</button>
+                                    <button type="button" class="btn btn-primary btn-sm btn-block" id="hideunselected_btn" onclick="hideunselected()" value="hide">Hide unselected data</button>
                                     <!-- <button type="button" class="btn btn-primary btn-sm btn-block" onclick="downloaddata()">Download data</button>
                                        -->
                                     <button type="button" class="btn btn-primary btn-sm btn-block" onclick="generateinputfile()">Generate Data Files</button>
