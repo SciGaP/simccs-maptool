@@ -7,7 +7,6 @@ import logging
 import os
 import tempfile
 from contextlib import ContextDecorator
-from datetime import datetime
 from threading import BoundedSemaphore
 
 import shapefile
@@ -60,149 +59,6 @@ class HelpView(TemplateView):
 @login_required
 @max_concurrent_java_calls
 def generate_mps(request):
-
-    # MPS model parameters
-    capital_recovery_rate = float(request.POST.get("crf", "0.1"))
-    num_years = float(request.POST.get("numYears", 10))
-    capacity_target = float(request.POST.get("capacityTarget", 5))
-    sources = request.POST["sources"]
-    sinks = request.POST["sinks"]
-    dataset = request.POST["dataset"]
-
-    # TODO: provide Django apps with utility for writing to gateway data storage
-    userdir = os.path.join(settings.GATEWAY_DATA_STORE_DIR, request.user.username)
-    datasets_basepath = os.path.join(userdir, "Datasets")
-    dataset_dirname = _get_dataset_dirname(dataset)
-    dataset_dir = os.path.join(datasets_basepath, dataset_dirname)
-    os.makedirs(dataset_dir, exist_ok=True)
-    # Symlink in the BaseData directory for the dataset
-    basedata_dir = os.path.join(dataset_dir, "BaseData")
-    if not os.path.exists(basedata_dir):
-        os.symlink(_get_basedata_dir(dataset_dirname), basedata_dir)
-    # Create a scenario directory
-    scenarios_dir = os.path.join(dataset_dir, "Scenarios")
-    os.makedirs(scenarios_dir, exist_ok=True)
-    scenario_dir = os.path.join(
-        scenarios_dir,
-        "scenario_{}".format(datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")),
-    )
-    os.mkdir(scenario_dir)
-
-    scenario = os.path.basename(scenario_dir)
-    # Write Sources.txt
-    os.mkdir(os.path.join(scenario_dir, "Sources"))
-    with open(
-        os.path.join(scenario_dir, "Sources", "Sources.txt"), mode="w"
-    ) as sources_file:
-        if sources is not None:
-            sources_file.write(sources)
-        else:
-            sources_file.write(
-                """ID	costFix ($M)	fixO&M ($M/y)	varO&M ($/tCO2)	capMax (MtCO2/y)	N/A	LON	LAT	NAME
-1	2842.8	223.4	81.93	7.236	1	-88.0103	31.0069	1
-2	3052.4	234.5	58	7.236	1	-86.4567	33.2442	2
-3	407.9	52.5	106.78	0.297	1	-85.9708	34.0128	3
-4	2108.5	192	71.9	4.635	1	-87.2003	33.6446	4
-5	904.4	80.1	67.06	2.034	1	-87.7811	32.6017	5
-6	3959	258.9	36.12	17.901	1	-87.0597	33.6319	6
-7	1910.5	160.8	94.74	3.276	1	-87.2289	30.5661	7
-8	539.6	62.9	88.11	1.26	1	-85.7003	30.2689	8
-9	339.6	48.6	123.82	0.018	1	-84.8869	30.6689	9
-10	4535	288.8	79.8	17.928	1	-84.9192	34.1256	10
-11	1424	141.5	69.03	3.096	1	-85.3456	34.2533	11
-12	2361	190.6	77.67	5.319	1	-83.2994	33.1942	12
-13	834.4	78.4	83.98	1.782	1	-84.475	33.8244	13
-14	474.6	73.3	93.05	1.026	1	-81.1458	32.1486	14
-15	264.7	31.1	81.24	0.027	1	-84.1322	31.4444	15
-16	5295	311.2	41.91	20.331	1	-83.8072	33.0583	16
-17	2539	155.1	67.62	6.129	1	-85.0345	33.4124	17
-18	2307.4	239.4	72.62	4.059	1	-84.8986	33.4622	18
-19	1405.6	102.3	68.72	2.529	1	-89.0265	30.4408	19
-20	2091	128.6	89.68	5.013	1	-88.5574	30.5335	20
-"""
-            )
-    # Write Sinks.txt
-    os.mkdir(os.path.join(scenario_dir, "Sinks"))
-    with open(os.path.join(scenario_dir, "Sinks", "Sinks.txt"), mode="w") as sinks_file:
-        if sinks is not None:
-            sinks_file.write(sinks)
-        else:
-            sinks_file.write(
-                """0	1	2	3	4	5	6	7	8	9	10	11	12	13	14	15	16
-1	1	379	40.951	0.000	0.375	4.575	0.175	2.61	0	-91.2980	28.9920	0	0	0	0	Gulf offshore
-2	2	379	40.951	0.000	0.375	4.575	0.175	2.61	0	-91.1764	31.5559	0	0	0	0	Cranfield
-3	3	360	63.063	0.000	0.180	3.859	0.201	3.02	0	-88.5068	30.5078	0	0	0	0	Escatawpa
-4	4	498	63.063	0.000	0.500	3.602	0.181	2.84	0	-88.2337	31.0930	0	0	0	0	Citronelle
-5	5	480	18.178	0.000	0.500	4.204	0.191	2.74	0	-86.7961	30.7153	0	0	0	0	Disposal Area 1 (DA1)
-6	6	549	63.063	0.000	0.600	3.017	0.154	2.83	0	-84.8449	30.6128	0	0	0	0	Disposal Area 2 (DA1b)
-7	7	845	63.063	0.000	0.800	2.930	0.135	2.77	0	-81.6781	31.7306	0	0	0	0	Disposal Area 3 (DA2)
-"""
-            )
-    # Write Linear.txt
-    os.mkdir(os.path.join(scenario_dir, "Transport"))
-    with open(
-        os.path.join(scenario_dir, "Transport", "Linear.txt"), mode="w"
-    ) as linear:
-        linear.write(
-            """ID	X (Con)	C (Con)	X (ROW)	C (ROW)
-1	0.0762	0.1789	0.0069	0.1174
-2	0.0162	0.4932	0.0009	0.1511
-"""
-        )
-
-    try:
-        _check_cost_surface_data_cache(dataset)
-
-        from jnius import autoclass
-
-        DataStorer = autoclass("dataStore.DataStorer")
-        data = DataStorer(datasets_basepath, dataset_dirname, scenario)
-        Solver = autoclass("solver.Solver")
-        solver = Solver(data)
-        data.setSolver(solver)
-        # Use cached cost surface data for Lower48US dataset
-        if (
-            dataset == LOWER48US_DATASET_ID
-            and CACHED_LOWER48US_COST_SURFACE_DATA is not None
-        ):
-            CACHED_LOWER48US_COST_SURFACE_DATA.populate(data)
-        MPSWriter = autoclass("solver.MPSWriter")
-        os.mkdir(os.path.join(scenario_dir, "MIP"))
-        MPSWriter.writeCapPriceMPS(
-            "mip.mps",
-            data,
-            capital_recovery_rate,
-            num_years,
-            capacity_target,
-            datasets_basepath,
-            dataset_dirname,
-            scenario,
-            1,  # modelVersion - 1 = cap
-        )
-    except Exception as e:
-        logger.exception(
-            "Error occurred when calling writeMPS: " + str(e.stacktrace)
-            if hasattr(e, "stacktrace")
-            else str(e)
-        )
-        return JsonResponse({"detail": str(e)}, status=500)
-
-    mps_file_path = os.path.join(scenario_dir, "MIP", "mip.mps")
-    rel_mps_file_path = os.path.relpath(mps_file_path, start=userdir)
-    results_dir = os.path.join(scenario_dir, "Results")
-    os.mkdir(results_dir)
-    # symlink the mps file into this Results directory (makeShapeFiles expects
-    # .mps and .sol files to be in the same directory)
-    os.symlink(mps_file_path, os.path.join(results_dir, "mip.mps"))
-    rel_results_dir = os.path.relpath(results_dir, start=userdir)
-    return JsonResponse(
-        {"user_file": rel_mps_file_path, "results_dir": rel_results_dir}
-    )
-
-
-@login_required
-@max_concurrent_java_calls
-def generate_mps2(request):
 
     # MPS model parameters
     capital_recovery_rate = float(request.POST.get("crf", "0.1"))
@@ -366,8 +222,6 @@ def _create_shapefiles_for_result(request, experiment, results_dir):
     if os.path.basename(os.path.dirname(os.path.dirname(results_dir))) != "Scenarios":
         sources = _get_experiment_file(request, experiment, "Sources", input_file=True)
         sinks = _get_experiment_file(request, experiment, "Sinks", input_file=True)
-        # mps = _get_experiment_file(request, experiment, "Cplex-input-file", input_file=True)
-        # solution = _get_experiment_file(request, experiment, "Cplex-solution", input_file=False)
         dataset_id = _get_experiment_value(experiment, "Dataset-id")
         with tempfile.TemporaryDirectory() as datasets_basepath:
             dataset_dir = datasets.get_dataset_dir(dataset_id)
@@ -422,8 +276,6 @@ def _load_solution(request, experiment, results_dir):
     if os.path.basename(os.path.dirname(os.path.dirname(results_dir))) != "Scenarios":
         sources = _get_experiment_file(request, experiment, "Sources", input_file=True)
         sinks = _get_experiment_file(request, experiment, "Sinks", input_file=True)
-        # mps = _get_experiment_file(request, experiment, "Cplex-input-file", input_file=True)
-        # solution = _get_experiment_file(request, experiment, "Cplex-solution", input_file=False)
         dataset_id = _get_experiment_value(experiment, "Dataset-id")
         with tempfile.TemporaryDirectory() as datasets_basepath:
             dataset_dir = datasets.get_dataset_dir(dataset_id)
@@ -506,10 +358,7 @@ def candidate_network(request):
         try:
             # Create the scenario directory
             scenario_dir = simccs_helper.create_scenario_dir(
-                datasets_basepath,
-                dataset_dir,
-                sources=sources,
-                sinks=sinks,
+                datasets_basepath, dataset_dir, sources=sources, sinks=sinks
             )
             simccs_helper.make_candidate_network_shapefiles(scenario_dir)
             candidate_network_path = simccs_helper.get_candidate_network_file(
@@ -576,32 +425,3 @@ def _get_dataset_dirname(dataset):
             if summary_json["dataset-id"] == dataset:
                 return summary_json["dataset-dirname"]
     raise Exception("Unrecognized dataset: {}".format(dataset))
-
-
-def _check_cost_surface_data_cache(dataset):
-    global CACHED_LOWER48US_COST_SURFACE_DATA
-    if dataset == LOWER48US_DATASET_ID and CACHED_LOWER48US_COST_SURFACE_DATA is None:
-        CACHED_LOWER48US_COST_SURFACE_DATA = _load_cost_surface_data()
-
-
-def _load_cost_surface_data():
-    try:
-        logger.info("Loading Lower48US cost surface data ...")
-        dataset, scenario = "Lower48US", "scenario1"
-        basepath = settings.MAPTOOL_SETTINGS["DATASETS_DIR"]
-        from jnius import autoclass
-
-        DataStorer = autoclass("dataStore.DataStorer")
-        Solver = autoclass("solver.Solver")
-        CostSurfaceData = autoclass("maptool.CostSurfaceData")
-        data = DataStorer(basepath, dataset, scenario)
-        solver = Solver(data)
-        data.setSolver(solver)
-        data.loadNetworkCosts()
-        cost_surface_data = CostSurfaceData()
-        cost_surface_data.load(data)
-        logger.info("Loaded Lower48US cost surface data")
-        return cost_surface_data
-    except Exception as e:
-        logger.exception("Error occurred when loading solution: " + str(e.stacktrace))
-        return None

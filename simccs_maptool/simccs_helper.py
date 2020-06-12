@@ -138,7 +138,8 @@ def write_mps_file(
         Solver = autoclass("solver.Solver")
         solver = Solver(data)
         data.setSolver(solver)
-        # TODO: really only need cost_surface_data if we don't have the candidate network
+        # TODO: really only need cost_surface_data if we don't have the
+        # candidate network
         if cost_surface_data is not None:
             cost_surface_data.populate(data)
         MPSWriter = autoclass("solver.MPSWriter")
@@ -151,7 +152,7 @@ def write_mps_file(
             basepath,
             dataset_dirname,
             scenario,
-            'c',  # modelVersion = "c" for capture
+            "c",  # modelVersion = "c" for capture
         )
     except Exception as e:
         logger.exception(
@@ -176,7 +177,8 @@ def make_shapefiles(scenario_dir, results_dir):
         solver = Solver(data)
         data.setSolver(solver)
         logger.debug(f"Scenario data loaded for {basepath}:{scenario}")
-        # TODO: really only need cost_surface_data if we don't have the candidate network
+        # TODO: really only need cost_surface_data if we don't have the
+        # candidate network
         if cost_surface_data is not None:
             cost_surface_data.populate(data)
         # load the .mps/.sol solution
@@ -210,7 +212,8 @@ def load_solution(scenario_dir, results_dir):
         solver = Solver(data)
         data.setSolver(solver)
         logger.debug(f"Scenario data loaded for {basepath}:{scenario}")
-        # TODO: really only need cost_surface_data if we don't have the candidate network
+        # TODO: really only need cost_surface_data if we don't have the
+        # candidate network
         if cost_surface_data is not None:
             cost_surface_data.populate(data)
         # load the .mps/.sol solution

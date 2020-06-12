@@ -23,7 +23,6 @@ urlpatterns = [
     url(r"^help/$", views.HelpView.as_view(), name="help"),
     url(r"^candidate-network/$", views.candidate_network, name="candidate-network"),
     url(r"^mps/$", views.generate_mps, name="generate-mps"),
-    url(r"^mps2/$", views.generate_mps2, name="generate-mps2"),
     url(r"^experiment-result/(?P<experiment_id>[^/]+)$", views.experiment_result),
     url(r"^solution-summary/(?P<experiment_id>[^/]+)$", views.solution_summary),
     url(r"^get-data", geoserver.get_data),
