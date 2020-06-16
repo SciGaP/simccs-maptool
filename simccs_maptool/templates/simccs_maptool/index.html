@@ -7,7 +7,7 @@
 <link rel="stylesheet" type="text/css" href="{% static 'css/MarkerCluster.css' %}" />
 <link rel="stylesheet" type="text/css" href="{% static 'css/MarkerCluster_Default.css' %}" />
 <link rel="stylesheet" type="text/css" href="{% static 'css/leaflet.css' %}" />
-<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.2.3/leaflet.draw.css" />
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
 <style type="text/css">
       #map{
       /*margin-left: 20px;*/
@@ -37,7 +37,7 @@
 {% block scripts %}
 <script src="{% static 'js/leaflet.js' %}"></script>
 <script src="{% static 'js/leaflet.markercluster-src.js' %}"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.2.3/leaflet.draw.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 <script src="{% static 'js/L.TileLayer.BetterWMS.js' %}" ></script>
 <script src="{% static 'js/leafletMap.js' %}" ></script>
 <script src="{% static 'js/casestudies.js' %}" ></script>
@@ -196,6 +196,10 @@
                              break;
                               case "france_sink":map.removeLayer(france_sink_cluster);
                              break;
+                             case "user_sources": map.removeLayer(sourceLayer); break;
+                             case "user_sinks_saline": map.removeLayer(sinkLayer); break;
+                             case "user_sinks_og": map.removeLayer(sinkLayer2); break;
+                             case "user_cost": map.removeLayer(user_cost_surface); break;
          
                          }
          
@@ -293,6 +297,11 @@
                              break;
                              case "france_sink":map.addLayer(france_sink_cluster);
                              break;
+                             case "user_sources": map.addLayer(sourceLayer);break;
+                             case "user_sinks_saline": map.addLayer(sinkLayer);break;
+                             case "user_sinks_og": map.addLayer(sinkLayer2);break;
+                             case "user_cost": map.addLayer(user_cost_surface); break;
+                             default:alert(radio_button_id + " layer is not found");
                          }
                      }
                  } else {
@@ -399,7 +408,7 @@
            else {e.target.setStyle({weight:2,color:"white",fillOpacity:0.7});
                  sinkselection2.push(e.target);}
          })};
-         
+         var user_cost_surface;
          var sourceLayer = new L.geoJSON('', {
          pointToLayer: function (feature, latlng) {
            var content_str="<strong>"+feature.properties.Type+"<br>"+feature.properties.Name +'<br>Total CO2: '+feature.properties['Total_CO2_']+"</strong>";
@@ -414,12 +423,12 @@
          });
          
          var sinkLayer = new L.geoJSON('',{style: function(feature){
-           var co2 = feature.properties['varO_M____'];
+           var co2 = feature.properties['sinkvarom'];
            var fillcolor = ''; 
            if (co2 >=3.0) {fillcolor = '#f50000';} 
            else if (co2 >=1.0 && co2 < 3) {fillcolor ='#fdff00'}
            else {fillcolor = '#00f905'}
-           return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.3,pane: "polygonsPane"};
+           return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.5,pane: "polygonsPane"};
          },
          
          onEachFeature: sinkOnEachFeature
@@ -431,28 +440,29 @@
            if (co2 >= 1 && co2 < 5e+06) {fillcolor = '#f50000';} 
            else if (co2 >=5e+06 && co2 < 5e+07) {fillcolor ='#fdff00'}
            else {fillcolor = '#00f905'}
-           return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.3,pane: "polygonsPane"};
+           return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.5,pane: "polygonsPane"};
          },
          
          onEachFeature: sinkOnEachFeature2
          })
+
            function loadjson(data) {
                  sourceLayer.addData(data);
                  sourceLayer.addTo(map);
-                 layercontrol.addOverlay(sourceLayer,"Sources");
+                 //layercontrol.addOverlay(sourceLayer,"Sources");
            }
          
            function loadsinklayer(data) {
                  sinkLayer.addData(data);
                  sinkLayer.addTo(map);
-                 layercontrol.addOverlay(sinkLayer,"Sinks:Saline");
+                 //layercontrol.addOverlay(sinkLayer,"Sinks:Saline");
                  //sinkLayer.bringToBack();
            }
            
            function loadsinklayer2(data) {
                  sinkLayer2.addData(data);
                  sinkLayer2.addTo(map);
-                 layercontrol.addOverlay(sinkLayer2,"Sinks:Oil/Gas");
+                 //layercontrol.addOverlay(sinkLayer2,"Sinks:Oil/Gas");
                  //sinkLayer.bringToBack();
            }
            //hard coded need to be rewrite later
@@ -722,14 +732,155 @@
            }
 
            var drawControl=0;
+                   // Generate popup content based on layer type
+        // - Returns HTML string, or null if unknown object
+
+      function loadworkingarea(layer) {
+            //layer-coordinates
+            //alert(layer.toGeoJSON()['geometry']['coordinates']);
+            map.removeControl(drawControl);
+            drawControl = 0;
+            map.eachLayer(function (layer) {
+            if (layer != osm) {map.removeLayer(layer);};
+            });
+            var geom = layer.toGeoJSON()['geometry']['coordinates'];
+            var coordstr=[];
+            for (i = 0, len = geom[0].length; i < len; i++) {
+             coordstr[i]= (geom[0][i].toString()).replace(',',' ');} 
+            var geom_str = coordstr.join(',');
+            //callback:loadjson
+            //load sources layer
+            // load cost surface
+            $.getJSON("/maptool/get-data",{geom:geom_str,method:'data',layer:'source'})
+            .done(function(data){loadjson(data)});
+            // load loadsinklayer
+            $.getJSON("/maptool/get-data",{geom:geom_str,method:'data',layer:'sink_saline'})
+            .done(function(data){loadsinklayer(data)});
+            $.getJSON("/maptool/get-data",{geom:geom_str,method:'data',layer:'sink_og'})
+            .done(function(data){loadsinklayer2(data)});
+
+            var lbounds=layer.getBounds().pad(0.1);
+            var cost_image_url="https://simccs.org/geoserver/ows?service=WCS&version=2.0.0&request=GetCoverage&coverageId=SimCCS__cost&format=png";
+            // &subset=Lat(29.920588,33.381122)&subset=Long(-89.251876,-83.277539)";
+            cost_image_url += "&subset=Lat(" +lbounds.getSouth() +","+lbounds.getNorth() +")";
+            cost_image_url += "&subset=Long("+lbounds.getWest() + ","+lbounds.getEast() + ")";
+            var cost_image_bounds = lbounds;
+            user_cost_surface = L.imageOverlay(cost_image_url,cost_image_bounds).addTo(map);
+            lbounds=layer.getBounds().pad(0.2);
+            map.fitBounds(lbounds);
+            document.getElementById("allmap").style.display="none";
+            document.getElementById("casestudies_menu").style.display="none";     
+            document.getElementById("workingarea").style.display="block";
+            // set radio button checked
+            document.getElementById("user_cost").checked = true;
+            document.getElementById("user_sinks_saline").checked = true;
+            document.getElementById("user_sinks_og").checked = true;
+            document.getElementById("user_sources").checked = true;
+
+            // interface for non-login user
+            if (! userIsAuthenticated) {
+            document.getElementById("loginuser_tools").style.display="none";
+            document.getElementById("nologinuser_msg").style.display="block";
+            //document.getElementById("southeastUS_div").style.display="block";
+            }
+            // pull the experiments result
+            if ( userIsAuthenticated) {
+            document.getElementById("loginuser_tools").style.display="block";      
+            document.getElementById("nologinuser_msg").style.display="none";
+            }
+
+      }
+
+        var getPopupContent = function(layer) {
+            // Marker - add lat/long
+            var content_html = null;
+            if (layer instanceof L.Marker || layer instanceof L.CircleMarker) {
+                return strLatLng(layer.getLatLng());
+            // Circle - lat/long, radius
+            } else if (layer instanceof L.Circle) {
+                var center = layer.getLatLng(),
+                    radius = layer.getRadius();
+                content_html = "Center: "+strLatLng(center)+"<br />"
+                      +"Radius: "+_round(radius, 2)+" m";
+            // Rectangle/Polygon - area
+            } else if (layer instanceof L.Polygon) {
+                var latlngs = layer._defaultShape ? layer._defaultShape() : layer.getLatLngs(),
+                    // in square meters
+                    area = L.GeometryUtil.geodesicArea(latlngs);
+                content_html = "Area: "+ (area/1000000.0).toFixed(2) + " km2";
+            // Polyline - distance
+            } else if (layer instanceof L.Polyline) {
+                var latlngs = layer._defaultShape ? layer._defaultShape() : layer.getLatLngs(),
+                    distance = 0;
+                if (latlngs.length < 2) {
+                    content_html = "Distance: N/A";
+                } else {
+                    for (var i = 0; i < latlngs.length-1; i++) {
+                        distance += latlngs[i].distanceTo(latlngs[i+1]);
+                    }
+                    content_html = "Distance: "+_round(distance, 2)+" m";
+                }
+            }
+            if (content_html == null) { return null;}
+            // get feature count inside the polygon/rectangle
+            var geom = layer.toGeoJSON()['geometry']['coordinates'];
+            var coordstr=[];
+            for (i = 0, len = geom[0].length; i < len; i++) {
+             coordstr[i]= (geom[0][i].toString()).replace(',',' ');} 
+            var geom_str = coordstr.join(',');
+            $.getJSON("/maptool/get-data",{geom:geom_str,method:'count'})
+            .done(function(json){
+                  //var popup = layer.getPopup();
+                  //popup.setContent( json.toString() );
+                  var latlngs = layer._defaultShape ? layer._defaultShape() : layer.getLatLngs(),
+                    // in square meters
+                    area = L.GeometryUtil.geodesicArea(latlngs);
+                  var pop_str='';
+                  pop_str+='<p style="font-size:14px">';
+                  pop_str += "Area: "+ (area/1000000.0).toFixed(2) + " km2" + '<br>';
+                  pop_str += "No. of Sources: " + json.totalsource.toString() + "<br>";
+                  pop_str += "Capturable CO2: " + json.capturable.toFixed(2) + " MtCO2/yr<br>";
+                  pop_str += "No. of Saline Sinks: " + json.totalsink_saline.toString() + "<br>";
+                  pop_str += "Saline Sink Capacity: " + json.sinkcapacity_saline.toFixed(2) + " MtCO2<br>";
+                  pop_str += "No. of Oil/Gas Sinks: " + json.totalsink_og.toString() + "<br>";
+                  pop_str += "Oil/Gas Sink Capacity: " + json.sinkcapacity_og.toFixed(2) + " MtCO2<br>";
+                  pop_str +="</p>";
+                  //pop_str += '<button id="testid" type="button" class="btn btn-primary btn-sm" value="'+ geom_str +'" onclick=loadworkingarea(this.value)>Use this area</button>'
+                  var randomid = "testid_" + (Math.floor(Math.random()*1000)).toFixed();
+                  pop_str += '<button id="'+ randomid + '" type="button" class="btn btn-primary btn-sm" >Use this area</button>'
+
+                  layer.setPopupContent(pop_str);
+                  layer.openPopup();
+                  $( "#"+randomid ).bind( "click", function() {
+                        loadworkingarea(layer);
+                  });
+            }).fail(function(jqxhr, textStatus, error ) {
+                  var err = textStatus + ", " + error;
+                  console.log( "Request Failed: " + err );
+                  return "";
+            });
+            content_html += "<br>Sources: <br>";
+            content_html += "Sinks: <br>";
+            content_html += '<br>';
+            content_html += '<button  type="button" class="btn btn-primary btn-sm">Use this area</button>'
+            content_html = '';
+            return content_html;
+        };
+
            function show_drawingtool(){
                   var querylayers = '';
                   querylayers = get_selectedsourcelayers();
-                 if (querylayers == ''){alert("Please select at least one source!"); return;} 
+                 //if (querylayers == ''){alert("Please select at least one source!"); return;} 
+                 // load source layer if not selected
+                 if (querylayers == '') {
+                    // load source layer
+                    map.addLayer(source_all_test_layer_1);
+                    querylayers = 'Sources_082819_SimCCS_Format';
+                 }
                  // Initialise the FeatureGroup to store editable layers
                  var editableLayers = new L.FeatureGroup();
                  map.addLayer(editableLayers);
-         
+                  //alert(L.drawVersion);
                  var drawPluginOptions = {
                  position: 'topright',
                  draw: {
@@ -743,127 +894,176 @@
                        color: '#97009c'
                        }
                  },
+                 circle: {color: '#e1e100',shapeOptions: {color: '#97009c'}},
+                 rectangle: {color: '#e1e100',shapeOptions: {color: '#97009c'}},
                  // disable toolbar item by setting it to false
                  polyline: false,
-                 circle: true, // Turns off this drawing tool
-                 rectangle: true,
                  marker: false,
+                 circlemarker: false,
                  },
                  edit: {
                  featureGroup: editableLayers, //REQUIRED!!
-                 remove: false
+                 poly: {allowIntersection: false},
+                 remove: true,
+                 edit: true,
                  }};
                  // Initialise the draw control and pass it the FeatureGroup of editable layers
                  if (drawControl==0) {drawControl = new L.Control.Draw(drawPluginOptions);map.addControl(drawControl);};
-                 var editableLayers = new L.FeatureGroup();
-                 map.addLayer(editableLayers);
-         
+                 //var editableLayers = new L.FeatureGroup();
+                 //map.addLayer(editableLayers);
                  map.on('draw:created', function(e) {
-                  // // clear map, remove all layers
-                  map.eachLayer(function (layer) {
-                  //             //keep the basemap layer
-                  if (layer != osm) {map.removeLayer(layer);layercontrol.removeLayer(layer);};
-                         });
-                  //layercontrol.remove();
-                  layercontrol = L.control.layers(null,null,{collapsed:false});
-                  layercontrol.remove();
-
-                 var type = e.layerType,
-                 layer = e.layer;
-                 editableLayers.addLayer(layer);
-                 var geom = layer.toGeoJSON()['geometry']['coordinates'];
-                 if (type == 'circle') {layer.addTo(map);} 
-                 var lbounds=layer.getBounds().pad(0.1);
-                 //alert(lbounds.getCenter());
-                 //alert(JSON.stringify(geom));
-                 var coordstr=[];
-                 for (i = 0, len = geom[0].length; i < len; i++) {
-                 coordstr[i]= (geom[0][i].toString()).replace(',',' ');} 
-                 //alert(coordstr.join(','));
-                 var geourl='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&maxFeatures=500&outputFormat=text%2Fjavascript&format_options=callback:loadjson';
-                 geourl += '&typeName=' + querylayers;
-                 var cqlfilter = '&cql_filter=Intersects(the_geom,Polygon((';
-                 cqlfilter += coordstr.join(',');
-                 cqlfilter += ')))';
-                 if (type == 'circle'){
-                       cqlfilter = '&cql_filter=DWithin(the_geom,Point(';
-                       cqlfilter += geom[0].toString() + ' '+geom[1].toString()+'),';
-                       var latitude = geom[1];
-                       var radius = 0.90 * layer.getRadius()/(111.32 * 1000 * Math.cos(latitude * (3.1415926 / 180)));
-                       cqlfilter += radius.toString() + ',kilometers)';
+                  var layer = e.layer;
+                  var content = getPopupContent(layer);
+                  if (content !== null) {
+                        layer.bindPopup(content);
+                  }
+                  editableLayers.addLayer(layer);  
+                  //layer.openPopup();
                  }
-                 geourl += cqlfilter;
-                 //alert(cqlfilter);
-                 //alert(geourl);
-                 //get source layer
-                 $.ajax({
-                       url: geourl,
-                       jsonp: "callback",
-                       dataType: "jsonp"
-                 });
-                 //get sink layer
-                 //var sinkurl='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:SCO2T_SALINE_Test&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
-                 var sinkurl='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:SCO2T_v3_1_2_LowCost_SimCCS_10K&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
-                 sinkurl += cqlfilter.replace("the_geom","geometry");
-                 $.ajax({
-                       url: sinkurl,
-                       jsonp: "callback",
-                       dataType: "jsonp"
-                 });
-                 var sinkurl2='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:NATCARB_OG&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer2';
-                 sinkurl2 += cqlfilter;
-                 //$.ajax({
-                 //      url: sinkurl2,
-                 //      jsonp: "callback",
-                 //      dataType: "jsonp"
-                 //});
-                 layer.remove();
-                 //layer.setStyle({'color':'grey','fillOpacity': 0.0});
-                 map.removeControl(drawControl);
-                 drawControl=0;
-                 layercontrol.addTo(map);
-                 layercontrol.expand();
-                 //hide allmap div
-                 document.getElementById("allmap").style.display="none";
-                 document.getElementById("casestudies_menu").style.display="none";     
-                 document.getElementById("workingarea").style.display="block";
-                 // interface for non-login user
-                 if (! userIsAuthenticated) {
-                  document.getElementById("loginuser_tools").style.display="none";
-                  document.getElementById("nologinuser_msg").style.display="block";
-                  //document.getElementById("southeastUS_div").style.display="block";
-                  }
-                  // pull the experiments result
-                  if ( userIsAuthenticated) {
-                  document.getElementById("loginuser_tools").style.display="block";      
-                  document.getElementById("nologinuser_msg").style.display="none";
-                  }
+                 );
+                 map.on(L.Draw.Event.EDITED, function(e) {
+                  var layers = e.layers,
+                  content = null;
+                  layers.eachLayer(function(layer) {
+                        content = getPopupContent(layer);
+                  // if (content !== null) {
+                  //   layer.setPopupContent(content);
+                  //   layer.openPopup();
+                  //       }
+                  });});
+            //      map.on('draw:created', function(e) {
+            //       // // clear map, remove all layers
+            //       map.eachLayer(function (layer) {
+            //       //             //keep the basemap layer
+            //       if (layer != osm) {map.removeLayer(layer);layercontrol.removeLayer(layer);};
+            //              });
+            //       //layercontrol.remove();
+            //       layercontrol = L.control.layers(null,null,{collapsed:false});
+            //       layercontrol.remove();
 
-                 //testing code, add geotiff layer
-                 var cost_image_url="https://simccs.org/geoserver/ows?service=WCS&version=2.0.0&request=GetCoverage&coverageId=SimCCS__cost&format=png";
-                 // &subset=Lat(29.920588,33.381122)&subset=Long(-89.251876,-83.277539)";
-                 cost_image_url += "&subset=Lat(" +lbounds.getSouth() +","+lbounds.getNorth() +")";
-                 cost_image_url += "&subset=Long("+lbounds.getWest() + ","+lbounds.getEast() + ")";
-                 var cost_image_bounds = lbounds;
-                 var cost_surface =L.imageOverlay(cost_image_url,cost_image_bounds).addTo(map);
-                 layercontrol.addOverlay(cost_surface,"Cost");
-            });
-         
-         
+            //      var type = e.layerType,
+            //      layer = e.layer;
+            //      editableLayers.addLayer(layer);
+            //      var geom = layer.toGeoJSON()['geometry']['coordinates'];
+            //      if (type == 'circle') {layer.addTo(map);} 
+            //      var lbounds=layer.getBounds().pad(0.1);
+            //      //alert(lbounds.getCenter());
+            //      //alert(JSON.stringify(geom));
+            //      var coordstr=[];
+            //      for (i = 0, len = geom[0].length; i < len; i++) {
+            //      coordstr[i]= (geom[0][i].toString()).replace(',',' ');} 
+            //      //alert(coordstr.join(','));
+            //      var geourl='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&maxFeatures=500&outputFormat=text%2Fjavascript&format_options=callback:loadjson';
+            //      geourl += '&typeName=' + querylayers;
+            //      var cqlfilter = '&cql_filter=Intersects(the_geom,Polygon((';
+            //      cqlfilter += coordstr.join(',');
+            //      cqlfilter += ')))';
+            //      if (type == 'circle'){
+            //            cqlfilter = '&cql_filter=DWithin(the_geom,Point(';
+            //            cqlfilter += geom[0].toString() + ' '+geom[1].toString()+'),';
+            //            var latitude = geom[1];
+            //            var radius = 0.90 * layer.getRadius()/(111.32 * 1000 * Math.cos(latitude * (3.1415926 / 180)));
+            //            cqlfilter += radius.toString() + ',kilometers)';
+            //      }
+            //      geourl += cqlfilter;
+            //      //alert(cqlfilter);
+            //      //alert(geourl);
+            //      //get source layer
+            //      $.ajax({
+            //            url: geourl,
+            //            jsonp: "callback",
+            //            dataType: "jsonp"
+            //      });
+            //      //get sink layer
+            //      //var sinkurl='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:SCO2T_SALINE_Test&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
+            //      var sinkurl='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:SCO2T_v3_1_2_LowCost_SimCCS_10K&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
+            //      sinkurl += cqlfilter.replace("the_geom","geometry");
+            //      $.ajax({
+            //            url: sinkurl,
+            //            jsonp: "callback",
+            //            dataType: "jsonp"
+            //      });
+            //      var sinkurl2='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:NATCARB_OG&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer2';
+            //      sinkurl2 += cqlfilter;
+            //      //$.ajax({
+            //      //      url: sinkurl2,
+            //      //      jsonp: "callback",
+            //      //      dataType: "jsonp"
+            //      //});
+            //      layer.remove();
+            //      //layer.setStyle({'color':'grey','fillOpacity': 0.0});
+            //      map.removeControl(drawControl);
+            //      drawControl=0;
+            //      layercontrol.addTo(map);
+            //      layercontrol.expand();
+            //      //hide allmap div
+            //      document.getElementById("allmap").style.display="none";
+            //      document.getElementById("casestudies_menu").style.display="none";     
+            //      document.getElementById("workingarea").style.display="block";
+            //      // interface for non-login user
+            //      if (! userIsAuthenticated) {
+            //       document.getElementById("loginuser_tools").style.display="none";
+            //       document.getElementById("nologinuser_msg").style.display="block";
+            //       //document.getElementById("southeastUS_div").style.display="block";
+            //       }
+            //       // pull the experiments result
+            //       if ( userIsAuthenticated) {
+            //       document.getElementById("loginuser_tools").style.display="block";      
+            //       document.getElementById("nologinuser_msg").style.display="none";
+            //       }
+
+            //      //testing code, add geotiff layer
+            //      var cost_image_url="https://simccs.org/geoserver/ows?service=WCS&version=2.0.0&request=GetCoverage&coverageId=SimCCS__cost&format=png";
+            //      // &subset=Lat(29.920588,33.381122)&subset=Long(-89.251876,-83.277539)";
+            //      cost_image_url += "&subset=Lat(" +lbounds.getSouth() +","+lbounds.getNorth() +")";
+            //      cost_image_url += "&subset=Long("+lbounds.getWest() + ","+lbounds.getEast() + ")";
+            //      var cost_image_bounds = lbounds;
+            //      var cost_surface =L.imageOverlay(cost_image_url,cost_image_bounds).addTo(map);
+            //      layercontrol.addOverlay(cost_surface,"Cost");
+            // });
            };
+
+         function user_layer_control(event){
+            var isChecked = event.checked;
+            alert(isChecked);
+         } 
+
          function hideunselected() {
-            sourceLayer.eachLayer(function(layer) {
+            var btn_status = $("#hideunselected_btn").val();
+            //alert(btn_status);
+            if (btn_status == 'hide') {
+                  sourceLayer.eachLayer(function(layer) {
                   var target_id = selection.indexOf(layer);
                   if (target_id <0) {layer.remove();};
-            });
-            sinkLayer.eachLayer(function(layer) {
-                  var target_id = sinkselection.indexOf(layer);
-                  if (target_id <0) {layer.remove();};
-            });
-            sinkLayer2.eachLayer(function(layer) {
-                  var target_id = sinkselection2.indexOf(layer);
-                  if (target_id <0) {layer.remove();};
-            });
+                  });
+                  sinkLayer.eachLayer(function(layer) {
+                        var target_id = sinkselection.indexOf(layer);
+                        if (target_id <0) {layer.remove();};
+                  });
+                  sinkLayer2.eachLayer(function(layer) {
+                        var target_id = sinkselection2.indexOf(layer);
+                        if (target_id <0) {layer.remove();};
+                  });
+                  $("#hideunselected_btn").html("Show unselected data");
+                  $("#hideunselected_btn").val("unhide");}
+            else {
+                  sourceLayer.eachLayer(function(layer) {
+                  var target_id = selection.indexOf(layer);
+                  if (target_id <0) {layer.addTo(map);};
+                  });
+                  sinkLayer.eachLayer(function(layer) {
+                        var target_id = sinkselection.indexOf(layer);
+                        if (target_id <0) {layer.addTo(map);};
+                  });
+                  sinkLayer2.eachLayer(function(layer) {
+                        var target_id = sinkselection2.indexOf(layer);
+                        if (target_id <0) {layer.addTo(map);};
+                  });
+
+                  $("#hideunselected_btn").html("Hide unselected data");
+                  $("#hideunselected_btn").val("hide");
+            }
+
          };
 
          function downloadcsv(text, name, type,hyperid) {
@@ -877,7 +1077,7 @@
             // Facility_N City State Latitude Longitude Industry_T CO2_Emissi
             //ID costFix ($M) fixO&M ($M/y) varO&M ($/tCO2) capMax (MtCO2/y) N/A LON LAT NAME
             if (selection.length == 0 ) {alert('No sources are selected!');return}
-            if (sinkselection.length == 0 ) {alert('No sinks are selected!');return}
+            if (sinkselection.length == 0 && sinkselection2.length == 0) {alert('No sinks are selected!');return}
             var sourcedata = generatesourcedata();
             //alert(sourcedata);
 
@@ -1008,6 +1208,52 @@
                  
                   sinkdata += tempstr + "\n";
             }
+            for (i = 0; i < sinkselection2.length; i++) {
+                  tempstr = "";
+                        // field 0-1: ID
+                        tempstr += sinkselection2[i].feature.properties['New_OG_ID'] + "\t";
+                        tempstr += sinkselection2[i].feature.properties['NATCARB_OG'] + "\t";
+
+                        //2: Capacity "fieldCap__"
+                        tempstr += sinkselection2[i].feature.properties['VOL_LOW'] + "\t";
+                        //3: OpeningCost "costFix___"
+                        tempstr += sinkselection2[i].feature.properties['costFix'] + "\t";
+                        //4: OMCost "fixO_M___M"
+                        tempstr += sinkselection2[i].feature.properties['fixO_M'] + "\t";
+                        //5: WellCapacity "wellCap__M"
+                        tempstr += sinkselection2[i].feature.properties['wellCap'] + "\t";
+                        //6: WellOpeningCost "wellCostFi"
+                        tempstr += sinkselection2[i].feature.properties['wellCostFi'] + "\t";
+                        //7: WellOMCost "wellFixO_M"
+                        tempstr += sinkselection2[i].feature.properties['wellFixO_M'] + "\t";
+                        //8: InjectionCost "varO_M____"
+                        tempstr += sinkselection2[i].feature.properties['Cost_Dolla'] + "\t";
+                        //9: 0
+                        tempstr += '0' + "\t";
+                        //10: Lon "LON"
+                        tempstr += sinkselection2[i].feature.properties['Longitude'] + "\t";
+                        //11: Lat "LAT"
+                        tempstr += sinkselection2[i].feature.properties['Latitude'] + "\t";
+                        //12: 0 
+                        tempstr += '0' + "\t";
+                        //13: 0
+                        tempstr += '0' + "\t";
+                        //14: 0
+                        tempstr += '0' + "\t";
+                        //15: 0
+                        tempstr += '0' + "\t";
+                        //16: NAME "NAME"
+                        tempstr += sinkselection2[i].feature.properties['FIELD_NAME'];
+                  
+
+                  //caculate lon lat
+                  //center_latlon = (sinkselection[i].getBounds()).getCenter();
+                  //tempstr += center_latlon.lng +"\t";
+                  //tempstr += center_latlon.lat +"\t";  
+                 
+                  sinkdata += tempstr + "\n";
+            }
+            
             return sinkdata;
          }
 
@@ -1550,18 +1796,45 @@ $("#dynamicModal").modal('show');
             });
       }
 
-      function sswindowpicker_source() {
- 
+      //user select all sources
+      function user_selectallsource() {
+            //clear selection array first
+            selection = [];
+            sourceLayer.eachLayer(function(layer) {
+                  layer.setStyle({weight:3,fillColor:"orangered",radius:12});
+                  selection.push(layer);
+            });
+      }
+
+      function user_selectallsink(type) {
+            // two types: "og" "saline"
+            //clear selection array first
+            if (type == "saline") {
+            sinkselection = [];
+            sinkLayer.eachLayer(function(layer) {
+                  layer.setStyle({weight:2,color:"white",fillOpacity:0.7});
+                  sinkselection.push(layer);
+            });}
+            if (type == "og") {
+            sinkselection2 = [];
+            sinkLayer2.eachLayer(function(layer) {
+                  layer.setStyle({weight:2,color:"white",fillOpacity:0.7});
+                  sinkselection2.push(layer);
+            });}
+      }
+
+      function sswindowpicker_source(type) {
+            // two types: case_study/user
             var polygon_options = {
             showArea: false,
             shapeOptions: {
                 stroke: true,
-                color: '#6e83f0',
-                weight: 4,
-                opacity: 0.8,
+                color: 'black',
+                weight: 6,
+                opacity: 1,
                 fill: true,
                 fillColor: null, //same as color by default
-                fillOpacity: 0.2,
+                fillOpacity: 0.5,
                 clickable: true
             }
         };
@@ -1573,12 +1846,20 @@ $("#dynamicModal").modal('show');
             var draw_type = e.layerType,draw_layer = e.layer;
             //drawnItems.addLayer(layer);
                   selection = [];
+                  if (type == "case_study") {
                   case_sourceLayer.eachLayer(function(layer) {
                         var contains = turf.inside(layer.toGeoJSON(), draw_layer.toGeoJSON());
                         if (contains){
                               layer.setStyle({weight:3,fillColor:"orangered",radius:12});
                               selection.push(layer);} else {layer.setStyle(geojsonMarkerOptions);}
-                  });
+                  });}
+                  if (type == "user") {
+                  sourceLayer.eachLayer(function(layer) {
+                        var contains = turf.inside(layer.toGeoJSON(), draw_layer.toGeoJSON());
+                        if (contains){
+                              layer.setStyle({weight:3,fillColor:"orangered",radius:12});
+                              selection.push(layer);} else {layer.setStyle(geojsonMarkerOptions);}
+                  });}
             //draw_layer.remove();
             drawnItems.clearLayers(draw_layer);
             map.removeLayer(drawnItems);
@@ -1589,17 +1870,18 @@ $("#dynamicModal").modal('show');
             polygonDrawer.enable();
       }
 
-      function sswindowpicker_sink() {
+      function sswindowpicker_sink(type) {
+            // three types: "og","saline","case_study"
             var polygon_options = {
             showArea: false,
             shapeOptions: {
             stroke: true,
-            color: '#6e83f0',
+            color: 'black',
             weight: 4,
-            opacity: 0.8,
+            opacity: 0.9,
             fill: true,
             fillColor: null, //same as color by default
-            fillOpacity: 0.2,
+            fillOpacity: 0.5,
             clickable: true
             }
             };
@@ -1610,12 +1892,32 @@ $("#dynamicModal").modal('show');
             map.on('draw:created', function (e) {
             var draw_type = e.layerType,draw_layer = e.layer;
             //drawnItems.addLayer(layer);
+            if (type == "case_study") {
                   selection_green = [];
                   case_sinkLayer.eachLayer(function(layer) {
                         var contains = turf.inside(layer.toGeoJSON(), draw_layer.toGeoJSON());
                         if (contains){layer.setStyle({weight:3,fillColor:"LawnGreen",radius:12});
                         selection_green.push(layer);} else {layer.setStyle(geojsonMarkerOptions_green);};
-                  });
+                  });}
+                  if (type == "saline") {
+                  sinkselection = [];
+                  var feat;
+                  sinkLayer.eachLayer(function(layer) {
+                        feat={'type':'Polygon','coordinates':layer.toGeoJSON()['geometry']['coordinates'][0]};
+                        var contains = turf.booleanWithin(feat, draw_layer.toGeoJSON());
+                        if (contains){layer.setStyle({weight:2,color:"white",fillOpacity:0.7});
+                        sinkselection.push(layer);}
+                  });}
+                  if (type == "og") {
+                  sinkselection2 = [];
+                  var feat;
+                  sinkLayer2.eachLayer(function(layer) {
+                        feat={'type':'Polygon','coordinates':layer.toGeoJSON()['geometry']['coordinates'][0]};
+                        var contains = turf.booleanWithin(feat, draw_layer.toGeoJSON());
+                        if (contains){layer.setStyle({weight:2,color:"white",fillOpacity:0.7});
+                        sinkselection2.push(layer);}
+                  });}
+
             //draw_layer.remove();
             drawnItems1.clearLayers(draw_layer);
             map.removeLayer(drawnItems1); 
@@ -1864,7 +2166,36 @@ $("#dynamicModal").modal('show');
                         </div>
                         <div class="card-body" >
                                     Use mouse-click to select source and sink data.<br>
-                                    <button type="button" class="btn btn-primary btn-sm btn-block" onclick="hideunselected()">Hide unselected data</button>
+                                    <div class="user_sources_div">
+                                          <label><input type="radio" id="user_sources" checked /><strong>&nbsp;Sources</strong></label>
+                                          <div class="btn-group btn-group-sm btn-block">
+                                                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="user_selectallsource()" id="case_selectallsource_btn" value="hide">Select all sources</button>
+                                                <button type="button  btn-sm" id="ss_windowpicker_source" title="Select sources by drawing" value="source" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_source("user")>
+                                                      <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
+                                   
+                                    </div>
+                                    <div class="user_sinks_saline_div">
+                                          <label><input type="radio" id="user_sinks_saline" checked /><strong>&nbsp;Saline Sinks</strong></label>
+                                    </div>
+                                    <div class="btn-group btn-group-sm btn-block">
+                                    <button type="button" class="btn btn-primary btn-sm btn-block" onclick="user_selectallsink('saline')" id="case_selectallsink_btn" value="hide">Select all Saline</button>
+                                    <button type="button  btn-sm " id="ss_windowpicker_sink" title="Select sinks by drawing" value="sink" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_sink('saline')>
+                                          <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
+                                    </div>
+                                    <div class="user_sinks_og_div">
+                                          <label><input type="radio" id="user_sinks_og" checked /><strong>&nbsp;Oil/Gas Sinks</strong></label>
+                                    </div>
+                                    <div class="btn-group btn-group-sm btn-block">
+                                    <button type="button" class="btn btn-primary btn-sm btn-block" onclick="user_selectallsink('og')" id="case_selectallsink_btn" value="hide">Select all Oil/Gas</button>
+                                    <button type="button  btn-sm " id="ss_windowpicker_sink" title="Select sinks by drawing" value="sink" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_sink('og')>
+                                          <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
+                                    </div>
+                               </div>
+                                    <div class="user_cost_div">
+                                          <label><input type="radio" id="user_cost" checked /><strong>&nbsp;Cost Surface</strong></label>
+                                    </div>
+                     
+                                    <button type="button" class="btn btn-primary btn-sm btn-block" id="hideunselected_btn" onclick="hideunselected()" value="hide">Hide unselected data</button>
                                     <!-- <button type="button" class="btn btn-primary btn-sm btn-block" onclick="downloaddata()">Download data</button>
                                        -->
                                     <button type="button" class="btn btn-primary btn-sm btn-block" onclick="generateinputfile()">Generate Data Files</button>
@@ -2017,12 +2348,12 @@ $("#dynamicModal").modal('show');
                               
                               <div class="btn-group btn-group-sm btn-block">
                               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_selectallsource()" id="case_selectallsource_btn" value="hide">Select all sources</button>
-                              <button type="button  btn-sm" id="ss_windowpicker_source" title="Select sources by drawing" value="source" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_source()>
+                              <button type="button  btn-sm" id="ss_windowpicker_source" title="Select sources by drawing" value="source" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_source("case_study")>
                                     <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
                         </div>
                               <div class="btn-group btn-group-sm btn-block">
                               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_selectallsink()" id="case_selectallsink_btn" value="hide">Select all sinks</button>
-                              <button type="button  btn-sm " id="ss_windowpicker_sink" title="Select sinks by drawing" value="sink" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_sink()>
+                              <button type="button  btn-sm " id="ss_windowpicker_sink" title="Select sinks by drawing" value="sink" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_sink('case_study')>
                                     <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
                               </div>
                               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_hideunselected()" id="case_hideunselected_btn" value="hide">Hide unselected data</button>
