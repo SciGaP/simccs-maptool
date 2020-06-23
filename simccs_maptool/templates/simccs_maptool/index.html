@@ -421,10 +421,10 @@
          });
          
          var sinkLayer = new L.geoJSON('',{style: function(feature){
-           var co2 = feature.properties['sinkvarom'];
+           var co2 = feature.properties['sinkcapacity'];
            var fillcolor = ''; 
-           if (co2 >=3.0) {fillcolor = '#f50000';} 
-           else if (co2 >=1.0 && co2 < 3) {fillcolor ='#fdff00'}
+           if (co2 <10.0) {fillcolor = '#f50000';} 
+           else if (co2 >=10.0 && co2 < 50.0) {fillcolor ='#fdff00'}
            else {fillcolor = '#00f905'}
            return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.5,pane: "polygonsPane"};
          },
@@ -2189,6 +2189,7 @@
                                     <button type="button  btn-sm " id="ss_windowpicker_sink" title="Select sinks by drawing" value="sink" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_sink('saline')>
                                           <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
                                     </div>
+                                    <div><img src="/static/images/Saline_legend_1.jpg" alt="saline_legend" width="130px" height="100px" style="border:1px solidblack"></div>
                                     <div class="user_sinks_og_div">
                                           <label><input type="radio" id="user_sinks_og" checked /><strong>&nbsp;Oil/Gas Sinks</strong></label>
                                     </div>
@@ -2197,12 +2198,15 @@
                                     <button type="button  btn-sm " id="ss_windowpicker_sink" title="Select sinks by drawing" value="sink" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_sink('og')>
                                           <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
                                     </div>
+                                    <div><img src="/static/images/OG_legend.jpg" alt="saline_legend" width="114px" height="96px" style="border:1px solidblack"> </div>
+                    
                                </div>
                                     <div class="user_cost_div">
                                           <label><input type="radio" id="user_cost" checked /><strong>&nbsp;Cost Surface</strong></label>
                                     </div>
                      
                                     <button type="button" class="btn btn-primary btn-sm btn-block" id="hideunselected_btn" onclick="hideunselected()" value="hide">Hide unselected data</button>
+                                    <button type="button" class="btn btn-primary btn-sm btn-block" id="clearselected_btn" onclick="clearselected()" value="hide">Clear all selections</button>
                                     <!-- <button type="button" class="btn btn-primary btn-sm btn-block" onclick="downloaddata()">Download data</button>
                                        -->
                                     <button type="button" class="btn btn-primary btn-sm btn-block" onclick="generateinputfile()">Generate Data Files</button>
