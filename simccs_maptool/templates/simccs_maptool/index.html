@@ -404,7 +404,7 @@
             layer.on('click', function (e) {
            var target_id = sinkselection.indexOf(e.target)
            if (target_id >=0 ) {e.target.setStyle({weight:1,color:'grey',fillOpacity:0.4});sinkselection.splice(target_id,1);}
-           else {e.target.setStyle({weight:2,color:"white",fillOpacity:0.7});
+           else {e.target.setStyle({weight:2,color:"black",fillOpacity:0.7});
                  sinkselection.push(e.target);}
          })};
          
@@ -414,7 +414,7 @@
          layer.on('click', function (e) {
            var target_id = sinkselection2.indexOf(e.target)
            if (target_id >=0 ) {e.target.setStyle({weight:1,color:'grey',fillOpacity:0.4});sinkselection2.splice(target_id,1);}
-           else {e.target.setStyle({weight:2,color:"white",fillOpacity:0.7});
+           else {e.target.setStyle({weight:2,color:"black",fillOpacity:0.7});
                  sinkselection2.push(e.target);}
          })};
          var user_cost_surface;
@@ -1843,13 +1843,13 @@
             if (type == "saline") {
             sinkselection = [];
             sinkLayer.eachLayer(function(layer) {
-                  layer.setStyle({weight:2,color:"white",fillOpacity:0.7});
+                  layer.setStyle({weight:2,color:"black",fillOpacity:0.7});
                   sinkselection.push(layer);
             });}
             if (type == "og") {
             sinkselection2 = [];
             sinkLayer2.eachLayer(function(layer) {
-                  layer.setStyle({weight:2,color:"white",fillOpacity:0.7});
+                  layer.setStyle({weight:2,color:"black",fillOpacity:0.7});
                   sinkselection2.push(layer);
             });}
       }
@@ -1866,7 +1866,7 @@
             sinkLayer.eachLayer(function(layer) {
                   sinkcost = layer.feature.properties['sinkfixedcost'];
                   if (sinkcost>=fixedcost_0 && sinkcost<=fixedcost_1) {
-                        layer.setStyle({weight:2,color:"white",fillOpacity:0.7});
+                        layer.setStyle({weight:2,color:"black",fillOpacity:0.7});
                         sinkselection.push(layer);
                   }
             });
@@ -1979,7 +1979,7 @@
                   sinkLayer.eachLayer(function(layer) {
                         feat={'type':'Polygon','coordinates':layer.toGeoJSON()['geometry']['coordinates'][0]};
                         var contains = turf.booleanWithin(feat, draw_layer.toGeoJSON());
-                        if (contains){layer.setStyle({weight:2,color:"white",fillOpacity:0.7});
+                        if (contains){layer.setStyle({weight:2,color:"black",fillOpacity:0.7});
                         sinkselection.push(layer);}
                   });}
                   if (type == "og") {
@@ -1988,7 +1988,7 @@
                   sinkLayer2.eachLayer(function(layer) {
                         feat={'type':'Polygon','coordinates':layer.toGeoJSON()['geometry']['coordinates'][0]};
                         var contains = turf.booleanWithin(feat, draw_layer.toGeoJSON());
-                        if (contains){layer.setStyle({weight:2,color:"white",fillOpacity:0.7});
+                        if (contains){layer.setStyle({weight:2,color:"black",fillOpacity:0.7});
                         sinkselection2.push(layer);}
                   });}
 
