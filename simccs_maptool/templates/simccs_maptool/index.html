@@ -1830,6 +1830,31 @@
             });}
       }
 
+      function user_clearselected() {
+            // clear all selected 
+            var r = confirm("Clear all the selected?");
+            // do nothing if cancelled
+            if (r == false) {return;}
+            // clear selected sources
+            var elayer;
+            for (elayer of selection) {
+                  elayer.setStyle(geojsonMarkerOptions);
+            }
+            selection = [];
+            // clear selected sinks
+            for (elayer of sinkselection) {
+                  elayer.setStyle({weight:1,color:'grey',fillOpacity:0.4});
+            }
+            sinkselection = [];
+            // clear selected sinks 2
+            // clear selected sinks
+            for (elayer of sinkselection2) {
+                  elayer.setStyle({weight:1,color:'grey',fillOpacity:0.4});
+            }
+            sinkselection2 = [];
+
+      }
+
       function sswindowpicker_source(type) {
             // two types: case_study/user
             var polygon_options = {
@@ -2206,7 +2231,7 @@
                                     </div>
                      
                                     <button type="button" class="btn btn-primary btn-sm btn-block" id="hideunselected_btn" onclick="hideunselected()" value="hide">Hide unselected data</button>
-                                    <button type="button" class="btn btn-primary btn-sm btn-block" id="clearselected_btn" onclick="clearselected()" value="hide">Clear all selections</button>
+                                    <button type="button" class="btn btn-primary btn-sm btn-block" id="user_clearselected_btn" onclick="user_clearselected()" value="hide">Clear all selections</button>
                                     <!-- <button type="button" class="btn btn-primary btn-sm btn-block" onclick="downloaddata()">Download data</button>
                                        -->
                                     <button type="button" class="btn btn-primary btn-sm btn-block" onclick="generateinputfile()">Generate Data Files</button>
