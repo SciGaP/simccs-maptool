@@ -94,6 +94,17 @@
       }
     });
 
+    $( "#slider-range-user-sinkcost" ).slider({
+      range: true,
+      min: 0.0,
+      max: 20.0,
+      values:[0,20.0],
+      step: 0.5,
+      slide: function( event, ui ) {
+        $( "#amount-user-sinkcost" ).val( ui.values[0].toFixed(1) + " - " + ui.values[1].toFixed(2));
+      }
+    });
+
     $( "#slider-range-sinkcapacity" ).slider({
       range: true,
       min: 0.0,
@@ -455,7 +466,20 @@
                  sinkLayer.addTo(map);
                  //layercontrol.addOverlay(sinkLayer,"Sinks:Saline");
                  //sinkLayer.bringToBack();
-           }
+                 // initialize sider
+                 // slider-range-user-sinkcost
+                 // loop through geojson
+                 var entry;
+                 var cost_array=[]
+                 for (entry of data['features']) {cost_array.push(entry['properties']['sinkfixedcost']);}
+                 var cost_min = Math.min(...cost_array);
+                 var cost_max = Math.max(...cost_array);
+                 // slider min,max,values,step
+                 $('#slider-range-user-sinkcost').slider( "option", "min", cost_min);
+                 $('#slider-range-user-sinkcost').slider( "option", "max", cost_max);
+                 $('#slider-range-user-sinkcost').slider( "option", "values", [cost_min,cost_max]);
+                 $( "#amount-user-sinkcost" ).val( cost_min.toFixed(1) + " - " + cost_max.toFixed(2));
+            }
            
            function loadsinklayer2(data) {
                  sinkLayer2.addData(data);
@@ -2214,7 +2238,14 @@
                                     <button type="button  btn-sm " id="ss_windowpicker_sink" title="Select sinks by drawing" value="sink" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_sink('saline')>
                                           <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
                                     </div>
-                                    <div><img src="/static/images/Saline_legend_1.jpg" alt="saline_legend" width="130px" height="100px" style="border:1px solidblack"></div>
+                                    <div>
+                                          <label>SinkFixedCost: 
+                                                <input type="text" id="amount-user-sinkcost" style="border: 0; font-weight: bold;" size="10"/>
+                                          </label>
+                                          <table style="width:100%"><tr>
+                                               <td width="80%"> <div id="slider-range-user-sinkcost"></div></td><td width="5%"></td><td width="15%"><button type="button" class="btn btn-sm btn-light" onclick=select_saline_bycost()><i class="fas fa-redo"></i></span></button></td>
+                                          </tr>
+                                          </table> </div>           
                                     <div class="user_sinks_og_div">
                                           <label><input type="radio" id="user_sinks_og" checked /><strong>&nbsp;Oil/Gas Sinks</strong></label>
                                     </div>
