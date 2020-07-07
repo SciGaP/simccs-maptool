@@ -1854,6 +1854,24 @@
             });}
       }
 
+      function select_saline_bycost(){
+            var fixedcost_0 = $("#slider-range-user-sinkcost").slider("values", 0);
+            var fixedcost_1 = $("#slider-range-user-sinkcost").slider("values", 1);
+            //clear current selection
+            for (elayer of sinkselection) {
+                  elayer.setStyle({weight:1,color:'grey',fillOpacity:0.4});
+            }
+            sinkselection = [];   
+            var sinkcost;
+            sinkLayer.eachLayer(function(layer) {
+                  sinkcost = layer.feature.properties['sinkfixedcost'];
+                  if (sinkcost>=fixedcost_0 && sinkcost<=fixedcost_1) {
+                        layer.setStyle({weight:2,color:"white",fillOpacity:0.7});
+                        sinkselection.push(layer);
+                  }
+            });
+      }
+
       function user_clearselected() {
             // clear all selected 
             var r = confirm("Clear all the selected?");
