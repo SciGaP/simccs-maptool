@@ -107,6 +107,17 @@
       }
     });
 
+    $( "#slider-range-user-sinkcapacity" ).slider({
+      range: true,
+      min: 0.0,
+      max: 20.0,
+      values:[0,20.0],
+      step: 0.5,
+      slide: function( event, ui ) {
+        $( "#amount-user-sinkcapacity" ).val( ui.values[0].toFixed(1) + " - " + ui.values[1].toFixed(2));
+      }
+    });
+
     $( "#slider-range-sinkcapacity" ).slider({
       range: true,
       min: 0.0,
@@ -488,7 +499,21 @@
                  sinkLayer2.addTo(map);
                  //layercontrol.addOverlay(sinkLayer2,"Sinks:Oil/Gas");
                  //sinkLayer.bringToBack();
+                 // initialize sider
+                 // slider-range-user-sinkcost
+                 // loop through geojson
+                 var entry;
+                 var cost_array=[]
+                 for (entry of data['features']) {cost_array.push(entry['properties']['VOL_LOW']);}
+                 var cost_min = Math.min(...cost_array);
+                 var cost_max = Math.max(...cost_array);
+                 // slider min,max,values,step
+                 $('#slider-range-user-sinkcapacity').slider( "option", "min", cost_min);
+                 $('#slider-range-user-sinkcapacity').slider( "option", "max", cost_max);
+                 $('#slider-range-user-sinkcapacity').slider( "option", "values", [cost_min,cost_max]);
+                 $( "#amount-user-sinkcapacity" ).val( cost_min.toFixed(1) + " - " + cost_max.toFixed(2));
            }
+
            //hard coded need to be rewrite later
            var case_sourceLayer = new L.geoJSON('', {
          pointToLayer: function (feature, latlng) {
@@ -918,7 +943,8 @@
                        color: '#97009c'
                        }
                  },
-                 circle: {color: '#e1e100',shapeOptions: {color: '#97009c'}},
+                 //circle: {color: '#e1e100',shapeOptions: {color: '#97009c'}},
+                 circle: false,
                  rectangle: {color: '#e1e100',shapeOptions: {color: '#97009c'}},
                  // disable toolbar item by setting it to false
                  polyline: false,
@@ -1865,6 +1891,24 @@ $("#dynamicModal").modal('show');
             });
       }
 
+      function select_og_bycapacity(){
+            var fixedcapacity_0 = $("#slider-range-user-sinkcapacity").slider("values", 0);
+            var fixedcapacity_1 = $("#slider-range-user-sinkcapacity").slider("values", 1);
+            //clear current selection
+            for (elayer of sinkselection2) {
+                  elayer.setStyle({weight:1,color:'grey',fillOpacity:0.4});
+            }
+            sinkselection2 = [];   
+            var sinkcapacity;
+            sinkLayer2.eachLayer(function(layer) {
+                  sinkcapacity = layer.feature.properties['VOL_LOW'];
+                  if (sinkcapacity>=fixedcapacity_0 && sinkcapacity<=fixedcapacity_1) {
+                        layer.setStyle({weight:2,color:"black",fillOpacity:0.7});
+                        sinkselection2.push(layer);
+                  }
+            });
+      }
+
       function user_clearselected() {
             // clear all selected 
             var r = confirm("Clear all the selected?");
@@ -2265,8 +2309,15 @@ $("#dynamicModal").modal('show');
                                     <button type="button  btn-sm " id="ss_windowpicker_sink" title="Select sinks by drawing" value="sink" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_sink('og')>
                                           <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
                                     </div>
-                                    <div><img src="/static/images/OG_legend.jpg" alt="saline_legend" width="114px" height="96px" style="border:1px solidblack"> </div>
-                    
+                                    <div>
+                                          <label>SinkCapacity: 
+                                                <input type="text" id="amount-user-sinkcapacity" style="border: 0; font-weight: bold;" size="10"/>
+                                          </label>
+                                          <table style="width:100%"><tr>
+                                               <td width="80%"> <div id="slider-range-user-sinkcapacity"></div></td><td width="5%"></td><td width="15%"><button type="button" class="btn btn-sm btn-light" onclick=select_og_bycapacity()><i class="fas fa-redo"></i></span></button></td>
+                                          </tr>
+                                          </table> </div>           
+
                                </div>
                                     <div class="user_cost_div">
                                           <label><input type="radio" id="user_cost" checked /><strong>&nbsp;Cost Surface</strong></label>
