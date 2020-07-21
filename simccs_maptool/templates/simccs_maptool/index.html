@@ -457,8 +457,8 @@
          var sinkLayer2 = new L.geoJSON('',{style: function(feature){
            var co2 = feature.properties.VOL_LOW;
            var fillcolor = ''; 
-           if (co2 >= 1 && co2 < 5e+06) {fillcolor = '#f50000';} 
-           else if (co2 >=5e+06 && co2 < 5e+07) {fillcolor ='#fdff00'}
+           if (co2 <=2.5) {fillcolor = '#f50000';} 
+           else if (co2 >2.5 && co2 <= 5.0) {fillcolor ='#fdff00'}
            else {fillcolor = '#00f905'}
            return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.5,pane: "polygonsPane"};
          },
