@@ -372,6 +372,38 @@
                   }
             });
  
+            // conitune document ready function
+            $('#user_select_names').on('changed.bs.select', function (e) {
+                  var selected_ids = $(this).val();
+                  var elayer;
+                  // first handle deselect all 
+                  if (selected_ids.length == 0) {
+                    for (elayer of selection) {
+                        elayer.setStyle(geojsonMarkerOptions);
+                        }
+                     selection = [];
+                     return;
+                  }
+                  var source_id;
+                  sourceLayer.eachLayer(function(layer) {
+                        // convert id to string object
+                        source_id = layer.feature.properties['ID'].toString();
+                        // check if layer already in selection
+                        var target_id = selection.indexOf(layer);
+                        if (selected_ids.includes(source_id)) {
+                              // if not selected, add to selection
+                              if (target_id < 0) {layer.setStyle({weight:3,fillColor:"orangered",radius:12});
+                              selection.push(layer);}
+                        } else {
+                              // if deselected, remove it
+                              if (target_id >= 0) {
+                                    layer.setStyle(geojsonMarkerOptions);
+                                    selection.splice(target_id,1);
+                              }
+                        }
+                  });
+
+            });
          });
          
          var geojsonMarkerOptions = {
