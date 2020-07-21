@@ -374,6 +374,38 @@
                   }
             });
  
+            // conitune document ready function
+            $('#user_select_names').on('changed.bs.select', function (e) {
+                  var selected_ids = $(this).val();
+                  var elayer;
+                  // first handle deselect all 
+                  if (selected_ids.length == 0) {
+                    for (elayer of selection) {
+                        elayer.setStyle(geojsonMarkerOptions);
+                        }
+                     selection = [];
+                     return;
+                  }
+                  var source_id;
+                  sourceLayer.eachLayer(function(layer) {
+                        // convert id to string object
+                        source_id = layer.feature.properties['ID'].toString();
+                        // check if layer already in selection
+                        var target_id = selection.indexOf(layer);
+                        if (selected_ids.includes(source_id)) {
+                              // if not selected, add to selection
+                              if (target_id < 0) {layer.setStyle({weight:3,fillColor:"orangered",radius:12});
+                              selection.push(layer);}
+                        } else {
+                              // if deselected, remove it
+                              if (target_id >= 0) {
+                                    layer.setStyle(geojsonMarkerOptions);
+                                    selection.splice(target_id,1);
+                              }
+                        }
+                  });
+
+            });
          });
          
          var geojsonMarkerOptions = {
@@ -459,8 +491,8 @@
          var sinkLayer2 = new L.geoJSON('',{style: function(feature){
            var co2 = feature.properties.VOL_LOW;
            var fillcolor = ''; 
-           if (co2 >= 1 && co2 < 5e+06) {fillcolor = '#f50000';} 
-           else if (co2 >=5e+06 && co2 < 5e+07) {fillcolor ='#fdff00'}
+           if (co2 <=2.5) {fillcolor = '#f50000';} 
+           else if (co2 >2.5 && co2 <= 5.0) {fillcolor ='#fdff00'}
            else {fillcolor = '#00f905'}
            return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.5,pane: "polygonsPane"};
          },
@@ -472,6 +504,19 @@
                  sourceLayer.addData(data);
                  sourceLayer.addTo(map);
                  //layercontrol.addOverlay(sourceLayer,"Sources");
+                 //load names to selector
+                 var entry;
+                 var namelists=[];
+                 var ukey,uvalue;
+                 for (entry of data['features']) {
+                  ukey = entry['properties']['ID'];
+                  uvalue = entry['properties']['Name'].trim();
+                  // pick up first 15 
+                  if (uvalue.length > 20) {uvalue = uvalue.slice(0,20) + "...";}
+                  namelists.push('<option value="'+ ukey +'">'+ uvalue +'</option>');
+                  }
+                  $('#user_select_names').append(namelists.join(''));
+                  $('#user_select_names').selectpicker('refresh');
            }
          
            function loadsinklayer(data) {
@@ -2283,9 +2328,12 @@ $("#dynamicModal").modal('show');
                                                 <button type="button" class="btn btn-primary btn-sm btn-block" onclick="user_selectallsource()" id="case_selectallsource_btn" value="hide">Select all sources</button>
                                                 <button type="button  btn-sm" id="ss_windowpicker_source" title="Select sources by drawing" value="source" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_source("user")>
                                                       <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
-                                   
                                     </div>
-                                    <div class="user_sinks_saline_div">
+                                    <div>
+                                          <select class="selectpicker" id="user_select_names" title="select by names ..." data-live-search="true" multiple data-actions-box="true" data-width="auto">
+                                          </select>
+                                      </div> <br>                                   
+                        <div class="user_sinks_saline_div">
                                           <label><input type="radio" id="user_sinks_saline" checked /><strong>&nbsp;Saline Sinks</strong></label>
                                     </div>
                                     <div class="btn-group btn-group-sm btn-block">
