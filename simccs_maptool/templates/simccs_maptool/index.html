@@ -470,6 +470,19 @@
                  sourceLayer.addData(data);
                  sourceLayer.addTo(map);
                  //layercontrol.addOverlay(sourceLayer,"Sources");
+                 //load names to selector
+                 var entry;
+                 var namelists=[];
+                 var ukey,uvalue;
+                 for (entry of data['features']) {
+                  ukey = entry['properties']['ID'];
+                  uvalue = entry['properties']['Name'].trim();
+                  // pick up first 15 
+                  if (uvalue.length > 20) {uvalue = uvalue.slice(0,20) + "...";}
+                  namelists.push('<option value="'+ ukey +'">'+ uvalue +'</option>');
+                  }
+                  $('#user_select_names').append(namelists.join(''));
+                  $('#user_select_names').selectpicker('refresh');
            }
          
            function loadsinklayer(data) {
@@ -2290,9 +2303,12 @@
                                                 <button type="button" class="btn btn-primary btn-sm btn-block" onclick="user_selectallsource()" id="case_selectallsource_btn" value="hide">Select all sources</button>
                                                 <button type="button  btn-sm" id="ss_windowpicker_source" title="Select sources by drawing" value="source" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_source("user")>
                                                       <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
-                                   
                                     </div>
-                                    <div class="user_sinks_saline_div">
+                                    <div>
+                                          <select class="selectpicker" id="user_select_names" title="select by names ..." data-live-search="true" multiple data-actions-box="true" data-width="auto">
+                                          </select>
+                                      </div> <br>                                   
+                        <div class="user_sinks_saline_div">
                                           <label><input type="radio" id="user_sinks_saline" checked /><strong>&nbsp;Saline Sinks</strong></label>
                                     </div>
                                     <div class="btn-group btn-group-sm btn-block">
