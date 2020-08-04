@@ -447,11 +447,25 @@
          //layer.bindTooltip("<strong>Name: "+feature.properties.Resource_N+"<br>"+"Min Total Sink Cost: "+feature.properties['Min_Total_'].toString()+"<strong>");
          layer.bindTooltip("<strong>Saline Sink: <br>Name: "+feature.properties['name']+"<br>"+"Sink Capacity: "+feature.properties['sinkcapacity'].toString()+"<br>"+"Sink Fixed Cost: "+feature.properties['sinkfixedcost'].toString()+"<strong>");
             layer.on('click', function (e) {
-           var target_id = sinkselection.indexOf(e.target)
-           if (target_id >=0 ) {e.target.setStyle({weight:1,color:'grey',fillOpacity:0.4});sinkselection.splice(target_id,1);}
-           else {e.target.setStyle({weight:2,color:"black",fillOpacity:0.7});
-                 sinkselection.push(e.target);}
-         })};
+                  var latlon,feat,pt;
+                  latlon = e.target.getBounds().getCenter();
+                  pt = turf.point([latlon.lng,latlon.lat]);
+                  var elist = [];
+                  var icounter = 0;
+                  sinkLayer.eachLayer(function(elayer) {      
+                        // getcenter
+                        feat={'type':'Polygon','coordinates':elayer.toGeoJSON()['geometry']['coordinates'][0]};
+                        var contains = turf.booleanPointInPolygon(pt,feat);
+                        icounter += 1;
+                        if (contains) {elist.push(elayer);}
+                  })
+                  alert("Total chacked: "+ icounter.toString() + "\nNo. of sinks at this location: " + elist.length.toString());
+      //      var target_id = sinkselection.indexOf(e.target);
+      //      if (target_id >=0 ) {e.target.setStyle({weight:1,color:'grey',fillOpacity:0.4});sinkselection.splice(target_id,1);}
+      //      else {e.target.setStyle({weight:2,color:"black",fillOpacity:0.7});
+      //            sinkselection.push(e.target);}
+         }
+         )};
          
          function sinkOnEachFeature2(feature, layer) {
          //bind click
