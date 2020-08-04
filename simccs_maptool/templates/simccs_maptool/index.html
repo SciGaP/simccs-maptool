@@ -853,7 +853,7 @@
             $.getJSON("/maptool/get-data",{geom:geom_str,method:'data',layer:'sink_og'})
             .done(function(data){loadsinklayer2(data)});
 
-            var lbounds=layer.getBounds().pad(0.1);
+            var lbounds=layer.getBounds().pad(0.2);
             var cost_image_url="https://simccs.org/geoserver/ows?service=WCS&version=2.0.0&request=GetCoverage&coverageId=SimCCS__cost&format=png";
             // &subset=Lat(29.920588,33.381122)&subset=Long(-89.251876,-83.277539)";
             cost_image_url += "&subset=Lat(" +lbounds.getSouth() +","+lbounds.getNorth() +")";
