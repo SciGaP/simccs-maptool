@@ -445,7 +445,7 @@
          //bind click
          //layer.bindTooltip("<strong>CO2_Low(t):"+feature.properties.CO2_Low__t.toString()+"<strong>");
          //layer.bindTooltip("<strong>Name: "+feature.properties.Resource_N+"<br>"+"Min Total Sink Cost: "+feature.properties['Min_Total_'].toString()+"<strong>");
-         layer.bindTooltip("<strong>Name: "+feature.properties['name']+"<br>"+"Sink Capacity: "+feature.properties['sinkcapacity'].toString()+"<br>"+"Sink Fixed Cost: "+feature.properties['sinkfixedcost'].toString()+"<strong>");
+         layer.bindTooltip("<strong>Saline Sink: <br>Name: "+feature.properties['name']+"<br>"+"Sink Capacity: "+feature.properties['sinkcapacity'].toString()+"<br>"+"Sink Fixed Cost: "+feature.properties['sinkfixedcost'].toString()+"<strong>");
             layer.on('click', function (e) {
            var target_id = sinkselection.indexOf(e.target)
            if (target_id >=0 ) {e.target.setStyle({weight:1,color:'grey',fillOpacity:0.4});sinkselection.splice(target_id,1);}
@@ -455,7 +455,7 @@
          
          function sinkOnEachFeature2(feature, layer) {
          //bind click
-         layer.bindTooltip("<strong>CO2_Low(t):"+feature.properties.VOL_LOW.toString()+"<strong>");
+         layer.bindTooltip("<strong>Oil/Gas Sink: <br>Name: "+ feature.properties.FIELD_NAME + "<br>CO2_Low(t):"+feature.properties.VOL_LOW.toString()+"<strong>");
          layer.on('click', function (e) {
            var target_id = sinkselection2.indexOf(e.target)
            if (target_id >=0 ) {e.target.setStyle({weight:1,color:'grey',fillOpacity:0.4});sinkselection2.splice(target_id,1);}
@@ -465,7 +465,7 @@
          var user_cost_surface;
          var sourceLayer = new L.geoJSON('', {
          pointToLayer: function (feature, latlng) {
-           var content_str="<strong>"+feature.properties.Type+"<br>"+feature.properties.Name +'<br>Total CO2: '+feature.properties['Total_CO2_']+"</strong>";
+           var content_str="<strong>Source: <br>"+feature.properties.Type+"<br>"+feature.properties.Name +'<br>Total CO2: '+feature.properties['Total_CO2_']+"</strong>";
            //var mypopup = L.popup().setContent(content_str);
            var mymarker = L.circleMarker(latlng, geojsonMarkerOptions);
            //mymarker.bindPopup(mypopup);
