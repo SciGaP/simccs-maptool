@@ -10,6 +10,7 @@ setuptools.setup(
         'cython',
         'pyjnius',
         'pyshp',
+        "airavata-django-portal-sdk @ git+https://github.com/machristie/airavata-django-portal-sdk.git@master#egg=airavata-django-portal-sdk",
     ],
     entry_points="""
 [airavata.djangoapp]

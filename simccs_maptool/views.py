@@ -10,13 +10,22 @@ from contextlib import ContextDecorator
 from threading import BoundedSemaphore
 
 import shapefile
+from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.generic import TemplateView
-
-from . import django_airavata_sdk, simccs_helper
 from simccs_maptool import datasets
+
+from . import simccs_helper
+
+# TODO: temporary code to allow working in develop and master branch of
+# airavata-django-portal
+if apps.is_installed("airavata_django_portal_sdk"):
+    from airavata_django_portal_sdk import user_storage
+else:
+    from . import django_airavata_sdk as user_storage
+
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 DATASETS_BASEPATH = os.path.join(BASEDIR, "simccs", "Datasets")
@@ -94,12 +103,12 @@ def generate_mps(request):
                 #         datasets_basepath, dataset_dirname, "scenario1"
                 #     )
                 # ) as candidate_network_file,
-                sources_dp = django_airavata_sdk.save_input_file(request, sources_file)
-                sinks_dp = django_airavata_sdk.save_input_file(request, sinks_file)
-                # candidate_network_dp = django_airavata_sdk.save_input_file(
+                sources_dp = user_storage.save_input_file(request, sources_file)
+                sinks_dp = user_storage.save_input_file(request, sinks_file)
+                # candidate_network_dp = user_storage.save_input_file(
                 #     request, candidate_network_file
                 # )
-                mps_dp = django_airavata_sdk.save_input_file(request, mps_file)
+                mps_dp = user_storage.save_input_file(request, mps_file)
             return JsonResponse(
                 {
                     "sources": sources_dp.productUri,
@@ -257,7 +266,7 @@ def _get_experiment_file(request, experiment, name, input_file=False):
             if exp_output.name == name:
                 data_product_uri = exp_output.value
     if data_product_uri:
-        return django_airavata_sdk.open_file(request, data_product_uri)
+        return user_storage.open_file(request, data_product_uri)
     else:
         return None
 
