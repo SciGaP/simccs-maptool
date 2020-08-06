@@ -27,6 +27,7 @@ TMP_INPUT_FILE_UPLOAD_DIR = "tmp"
 
 def save_input_file(request, file, name=None, content_type=None):
     """Save input file in staging area for input file uploads."""
+    logger.warning("simccs_maptool.django_airavata_sdk is deprecated")
     username = request.user.username
     file_name = name if name is not None else os.path.basename(file.name)
     full_path = datastore_save(username, TMP_INPUT_FILE_UPLOAD_DIR, file)
@@ -38,6 +39,7 @@ def save_input_file(request, file, name=None, content_type=None):
 
 def open_file(request, data_product_uri):
     "Return file object for replica if it exists in user storage."
+    logger.warning("simccs_maptool.django_airavata_sdk is deprecated")
     data_product = request.airavata_client.getDataProduct(
         request.authz_token, data_product_uri
     )
