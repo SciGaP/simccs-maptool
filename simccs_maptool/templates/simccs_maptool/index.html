@@ -541,21 +541,25 @@
                   sinkuserselection.push(e.target);} }
             if (elist.length > 1 ){
                   var popupstr = "";
-                  popupstr += "<strong>Sinks (User Upload): <br>"+ e.target.feature.properties.Name + "</strong><br>";
+                  //popupstr += "<strong>Sinks (User Upload): <br>"+ e.target.feature.properties.Name + "</strong><br>";
+                  popupstr += "<strong>Sinks (User Upload): <br>";
                   // generate a selection table
                   popupstr += '<table class="table table-sm">';
-                  popupstr += '<thead><tr><th scope="col">#</th><th scope="col">FID</th><th scope="col">Capacity</th><th scope="col">Cost</th></tr></thead>';
+                  popupstr += '<thead><tr><th scope="col">#</th><th scope="col">Name</th><th scope="col">Capacity</th><th scope="col">Cost</th><th scope="col">Depth</th></tr></thead>';
                   popupstr += '<tbody>';
                   for (let entry of elist) {
                         popupstr += "<tr>";
                         popupstr += "<td>"+'<input type="checkbox">'+"</td>";
-                        popupstr += "<td>"+entry.feature.properties['TARGET_FID']+"</td>";
+                        //popupstr += "<td>"+entry.feature.properties['TARGET_FID']+"</td>";
+                        popupstr += "<td>"+entry.feature.properties['Name']+"</td>";
                         popupstr += "<td>"+entry.feature.properties['Storage_capacity__MtCO2_']+"</td>";
                         popupstr += "<td>"+entry.feature.properties['Total_unit_cost____tCO2_']+"</td>";
+                        popupstr += "<td>"+entry.feature.properties['Depth__m_']+"</td>";
                         popupstr += "</tr>"
                   }
                   popupstr += '</tboday></table>';
                   popupstr +='<button type="button" class="btn btn-primary btn-sm" >Select ALL</button>';
+                  popupstr +='<button type="button" class="btn btn-primary btn-sm" >Apply</button>';
                   e.target.bindPopup(popupstr).openPopup();
             }
          })};
