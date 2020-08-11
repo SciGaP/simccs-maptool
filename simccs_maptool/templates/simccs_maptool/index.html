@@ -521,12 +521,40 @@
          // test stacked sink user layer 
          function sinkuserOnEachFeature(feature, layer) {
          //bind click
-         layer.bindTooltip("<strong>User Stacked Sinks: <br>Name: "+ feature.properties.Name + "<br>Capacity(Mt):"+feature.properties["Storage_capacity__MtCO2_"].toString()+"<strong>");
+         layer.bindTooltip("<strong>Sinks (User Upload): <br>Name: "+ feature.properties.Name + "<br>Capacity(Mt):"+feature.properties["Storage_capacity__MtCO2_"].toString()+"<br>Cost: "+feature.properties["Total_unit_cost____tCO2_"]+"<strong>");
          layer.on('click', function (e) {
-           var target_id = sinkuserselection.indexOf(e.target)
-           if (target_id >=0 ) {e.target.setStyle({weight:1,color:'grey',fillOpacity:0.4});sinkuserselection.splice(target_id,1);}
-           else {e.target.setStyle({weight:2,color:"black",fillOpacity:0.7});
-                 sinkuserselection.push(e.target);}
+            var latlon,feat,pt;
+            latlon = e.target.getBounds().getCenter();
+            pt = turf.point([latlon.lng,latlon.lat]);
+            var elist = [];
+            sinkuserLayer.eachLayer(function(elayer) {      
+                  // getcenter
+                  feat={'type':'Polygon','coordinates':elayer.toGeoJSON()['geometry']['coordinates'][0]};
+                  var contains = turf.booleanPointInPolygon(pt,feat);
+                  if (contains) {elist.push(elayer);}
+            })
+            //alert("No. of sinks at this location: " + elist.length.toString());
+            if (elist.length == 1) {                
+                  var target_id = sinkuserselection.indexOf(e.target)
+                  if (target_id >=0 ) {e.target.setStyle({weight:1,color:'grey',fillOpacity:0.4});sinkuserselection.splice(target_id,1);}
+                  else {e.target.setStyle({weight:2,color:"black",fillOpacity:0.7});
+                  sinkuserselection.push(e.target);} }
+            if (elist.length > 1 ){
+                  var popupstr = "";
+                  popupstr += "<strong>Sinks (User Upload): <br>"+ e.target.feature.properties.Name + "</strong><br>";
+                  // generate a selection table
+                  popupstr += '<table class="table table-sm">';
+                  popupstr += '<thead><tr><th scope="col">#</th><th scope="col">ID</th><th scope="col">Capacity</th><th scope="col">Cost</th></tr></thead>';
+                  popupstr += '<tbody>';
+                  for (entry in elist) {
+                        popupstr += "<tr>";
+                        popupstr += "<td>"+'<input type="checkbox">'+"</td>";
+                        popupstr += "</tr>"
+                  }
+                  popupstr += '</tboday></table>';
+                  popupstr +='<button type="button" class="btn btn-primary btn-sm" >Select ALL</button>';
+                  e.target.bindPopup(popupstr).openPopup();
+            }
          })};
 
          var sinkuserLayer = new L.geoJSON('',{style: function(feature){
