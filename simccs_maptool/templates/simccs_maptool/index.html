@@ -432,6 +432,8 @@
          var selection_green=[];
          var sinkselection=[];
          var sinkselection2=[];
+         var sinkuserselection=[];
+
          function sourceOnEachFeature(feature, layer) {
          //bind click
          layer.on('click', function (e) {
@@ -513,8 +515,26 @@
          
          onEachFeature: sinkOnEachFeature2
          })
+ 
+         // test stacked sink user layer 
+         function sinkuserOnEachFeature(feature, layer) {
+         //bind click
+         layer.bindTooltip("<strong>User Stacked Sinks: <br>Name: "+ feature.properties.Name + "<br>Capacity(Mt):"+feature.properties["Storage_capacity__MtCO2_"].toString()+"<strong>");
+         layer.on('click', function (e) {
+           var target_id = sinkuserselection.indexOf(e.target)
+           if (target_id >=0 ) {e.target.setStyle({weight:1,color:'grey',fillOpacity:0.4});sinkuserselection.splice(target_id,1);}
+           else {e.target.setStyle({weight:2,color:"black",fillOpacity:0.7});
+                 sinkuserselection.push(e.target);}
+         })};
 
-           function loadjson(data) {
+         var sinkuserLayer = new L.geoJSON('',{style: function(feature){
+           return {'color':'grey','weight':1,'fillColor':'blue','fillOpacity': 0.5,pane: "polygonsPane"};
+         },
+         
+         onEachFeature: sinkuserOnEachFeature
+         })
+
+         function loadjson(data) {
                  sourceLayer.addData(data);
                  sourceLayer.addTo(map);
                  //layercontrol.addOverlay(sourceLayer,"Sources");
@@ -571,6 +591,11 @@
                  $('#slider-range-user-sinkcapacity').slider( "option", "max", cost_max);
                  $('#slider-range-user-sinkcapacity').slider( "option", "values", [cost_min,cost_max]);
                  $( "#amount-user-sinkcapacity" ).val( cost_min.toFixed(1) + " - " + cost_max.toFixed(2));
+           }
+           
+           function loadsinkuserlayer(data) {
+                  sinkuserLayer.addData(data);
+                  sinkuserLayer.addTo(map);
            }
 
            //hard coded need to be rewrite later
@@ -866,6 +891,7 @@
             .done(function(data){loadsinklayer(data)});
             $.getJSON("/maptool/get-data",{geom:geom_str,method:'data',layer:'sink_og'})
             .done(function(data){loadsinklayer2(data)});
+            $.getJSON('/static/UserData/sinksstack_test.geojson').done(function(data){loadsinkuserlayer(data)});
 
             var lbounds=layer.getBounds().pad(0.2);
             var cost_image_url="https://simccs.org/geoserver/ows?service=WCS&version=2.0.0&request=GetCoverage&coverageId=SimCCS__cost&format=png";
