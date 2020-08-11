@@ -221,6 +221,7 @@
                              case "user_sources": map.removeLayer(sourceLayer); break;
                              case "user_sinks_saline": map.removeLayer(sinkLayer); break;
                              case "user_sinks_og": map.removeLayer(sinkLayer2); break;
+                             case "user_sinks_user": map.removeLayer(sinkuserLayer); break;
                              case "user_cost": map.removeLayer(user_cost_surface); break;
          
                          }
@@ -322,6 +323,7 @@
                              case "user_sources": map.addLayer(sourceLayer);break;
                              case "user_sinks_saline": map.addLayer(sinkLayer);break;
                              case "user_sinks_og": map.addLayer(sinkLayer2);break;
+                             case "user_sinks_user": map.addLayer(sinkuserLayer); break;
                              case "user_cost": map.addLayer(user_cost_surface); break;
                              default:alert(radio_button_id + " layer is not found");
                          }
@@ -2407,10 +2409,12 @@ $("#dynamicModal").modal('show');
                                           </table> </div>           
 
                                </div>
-                                    <div class="user_cost_div">
+                               <div class="user_sinks_user_div">
+                                    <label><input type="radio" id="user_sinks_user" checked /><strong>&nbsp;Sinks (User Upload)</strong></label>
+                              </div>
+                               <div class="user_cost_div">
                                           <label><input type="radio" id="user_cost" checked /><strong>&nbsp;Cost Surface</strong></label>
                                     </div>
-                     
                                     <button type="button" class="btn btn-primary btn-sm btn-block" id="hideunselected_btn" onclick="hideunselected()" value="hide">Hide unselected data</button>
                                     <button type="button" class="btn btn-primary btn-sm btn-block" id="user_clearselected_btn" onclick="user_clearselected()" value="hide">Clear all selections</button>
                                     <!-- <button type="button" class="btn btn-primary btn-sm btn-block" onclick="downloaddata()">Download data</button>
