@@ -10,7 +10,7 @@
    ```
    git clone https://github.com/SciGaP/simccs-maptool.git
    cd simccs-maptool
-   python setup.py develop
+   pip install -e .
    ```
 
 3. Start (or restart) the Django Portal server.
