@@ -50,6 +50,9 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.9/dist/js/bootstrap-select.min.js"></script>
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
 <script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+<!-- leaflet label plugin -->
+<link rel="stylesheet" href="http://leaflet.github.io/Leaflet.label/leaflet.label.css" />
+<script src="http://leaflet.github.io/Leaflet.label/leaflet.label.js"></script>
 
 <script>
          var Maptool = window.Maptool || {};
@@ -540,6 +543,9 @@
                   else {e.target.setStyle({weight:2,color:"black",fillOpacity:0.7});
                   sinkuserselection.push(e.target);} }
             if (elist.length > 1 ){
+                  // test if there is popup
+                  var popup = e.target.getPopup();
+                  if (popup !== undefined) {e.target.openPopup(); return;}
                   var popupstr = "";
                   //popupstr += "<strong>Sinks (User Upload): <br>"+ e.target.feature.properties.Name + "</strong><br>";
                   popupstr += "<strong>Sinks (User Upload): <br>";
@@ -549,7 +555,7 @@
                   popupstr += '<tbody>';
                   for (let entry of elist) {
                         popupstr += "<tr>";
-                        popupstr += "<td>"+'<input type="checkbox">'+"</td>";
+                        popupstr += "<td>"+'<input type="checkbox" id=usersink_'+ entry.feature.properties['OBJECTID'].toString()+'>'+"</td>";
                         //popupstr += "<td>"+entry.feature.properties['TARGET_FID']+"</td>";
                         popupstr += "<td>"+entry.feature.properties['Name']+"</td>";
                         popupstr += "<td>"+entry.feature.properties['Storage_capacity__MtCO2_']+"</td>";
@@ -558,11 +564,43 @@
                         popupstr += "</tr>"
                   }
                   popupstr += '</tboday></table>';
-                  popupstr +='<button type="button" class="btn btn-primary btn-sm" >Select ALL</button>';
-                  popupstr +='<button type="button" class="btn btn-primary btn-sm" >Apply</button>';
+                  var bnid = "usersink_select_" + e.target.feature.properties["OBJECTID"];
+                  popupstr +='<button id="' + bnid + '" type="button" class="btn btn-primary btn-sm" >Select ALL</button>';
+                  popupstr +='<button id="apply_' + bnid + '" type="button" class="btn btn-primary btn-sm" >Apply</button>';
                   e.target.bindPopup(popupstr).openPopup();
+                  $( "#"+bnid ).bind( "click", function() {
+                        user_sink_selectall(elist);
+                  });
+                  $( "#apply_"+bnid ).bind( "click", function() {
+                        user_sink_apply(e,elist);
+                  });
             }
          })};
+
+         function user_sink_apply(e,elist) {
+               var check_count = 0;
+            for (let entry of elist) {
+                     var checkbox_id = 'usersink_' + entry.feature.properties['OBJECTID'].toString();
+                     if (document.getElementById(checkbox_id).checked) {check_count+=1};
+               }
+               e.target.closePopup();
+
+               var myIcon = L.divIcon({className: 'my-div-icon', 
+                  iconSize: new L.Point(80, 30), 
+                  html: '<center><h4 style="color:yellow">'+check_count.toString()+"/"+elist.length.toString() +'</h4></center>'
+               });
+               var m= L.marker(e.target.getBounds().getCenter(), {interactive:false,icon: myIcon}).addTo(map);
+         }
+
+         function user_sink_selectall(elist) {
+               //alert("selectall");
+               // checkbox
+               //usersink_ + entry.feature.properties['OBJECTID']
+               for (let entry of elist) {
+                     var checkbox_id = 'usersink_' + entry.feature.properties['OBJECTID'].toString();
+                     document.getElementById(checkbox_id).checked = true;
+               }
+         }
 
          var sinkuserLayer = new L.geoJSON('',{style: function(feature){
            return {'color':'grey','weight':1,'fillColor':'blue','fillOpacity': 0.5,pane: "polygonsPane"};
