@@ -437,7 +437,8 @@
          var selection_green=[];
          var sinkselection=[];
          var sinkselection2=[];
-         var sinkuserselection=[];
+         var sinkuserselection = [];
+         var sinksuerselection_id = [];
 
          function sourceOnEachFeature(feature, layer) {
          //bind click
@@ -545,7 +546,9 @@
             if (elist.length > 1 ){
                   // test if there is popup
                   var popup = e.target.getPopup();
-                  if (popup !== undefined) {e.target.openPopup(); return;}
+                  var bnid = "usersink_select_" + e.target.feature.properties["OBJECTID"];
+                  //if (popup !== undefined) {e.target.openPopup();return;}
+                  if (popup !== undefined) {e.target.unbindPopup();}
                   var popupstr = "";
                   //popupstr += "<strong>Sinks (User Upload): <br>"+ e.target.feature.properties.Name + "</strong><br>";
                   popupstr += "<strong>Sinks (User Upload): <br>";
@@ -553,9 +556,16 @@
                   popupstr += '<table class="table table-sm">';
                   popupstr += '<thead><tr><th scope="col">#</th><th scope="col">Name</th><th scope="col">Capacity</th><th scope="col">Cost</th><th scope="col">Depth</th></tr></thead>';
                   popupstr += '<tbody>';
+                  var id_selected;
                   for (let entry of elist) {
                         popupstr += "<tr>";
-                        popupstr += "<td>"+'<input type="checkbox" id=usersink_'+ entry.feature.properties['OBJECTID'].toString()+'>'+"</td>";
+                        id_selected = sinksuerselection_id.indexOf(entry.feature.properties['OBJECTID'].toString());
+                        if (id_selected >=0 ) {
+                              popupstr += "<td>"+'<input type="checkbox" id=usersink_'+ entry.feature.properties['OBJECTID'].toString()+' checked>'+"</td>";
+                        } 
+                        else {
+                              popupstr += "<td>"+'<input type="checkbox" id=usersink_'+ entry.feature.properties['OBJECTID'].toString()+'>'+"</td>";
+                        }
                         //popupstr += "<td>"+entry.feature.properties['TARGET_FID']+"</td>";
                         popupstr += "<td>"+entry.feature.properties['Name']+"</td>";
                         popupstr += "<td>"+entry.feature.properties['Storage_capacity__MtCO2_']+"</td>";
@@ -568,7 +578,7 @@
                   popupstr +='<button id="' + bnid + '" type="button" class="btn btn-primary btn-sm" >Select ALL</button>';
                   popupstr +='<button id="apply_' + bnid + '" type="button" class="btn btn-primary btn-sm" >Apply</button>';
                   e.target.bindPopup(popupstr).openPopup();
-                  $( "#"+bnid ).bind( "click", function() {
+                  $( "#"+bnid ).on( "click", function() {
                         user_sink_selectall(elist);
                   });
                   $( "#apply_"+bnid ).bind( "click", function() {
@@ -580,8 +590,16 @@
          function user_sink_apply(e,elist) {
                var check_count = 0;
             for (let entry of elist) {
-                     var checkbox_id = 'usersink_' + entry.feature.properties['OBJECTID'].toString();
-                     if (document.getElementById(checkbox_id).checked) {check_count+=1};
+                     var objectid = entry.feature.properties['OBJECTID'].toString();
+                     var checkbox_id = 'usersink_' + objectid;
+                     // check if id is selected
+                     var id_selected = sinksuerselection_id.indexOf(objectid);
+                     if (document.getElementById(checkbox_id).checked) {
+                           check_count+=1;
+                           if (id_selected < 0) {sinksuerselection_id.push(objectid);}
+                           } else {
+                              if (id_selected >= 0) {sinksuerselection_id.splice(id_selected,1);}
+                           }
                }
                e.target.closePopup();
 
@@ -589,7 +607,7 @@
                   iconSize: new L.Point(80, 30), 
                   html: '<center><h4 style="color:yellow">'+check_count.toString()+"/"+elist.length.toString() +'</h4></center>'
                });
-               var m= L.marker(e.target.getBounds().getCenter(), {interactive:false,icon: myIcon}).addTo(map);
+               var m = L.marker(e.target.getBounds().getCenter(), {interactive:false,icon: myIcon}).addTo(map);
          }
 
          function user_sink_selectall(elist) {
