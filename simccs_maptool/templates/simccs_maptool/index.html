@@ -539,10 +539,10 @@
             })
             //alert("No. of sinks at this location: " + elist.length.toString());
             if (elist.length == 1) {                
-                  var target_id = sinkuserselection.indexOf(e.target)
-                  if (target_id >=0 ) {e.target.setStyle({weight:1,color:'grey',fillOpacity:0.4});sinkuserselection.splice(target_id,1);}
+                  var target_id = sinksuerselection_id.indexOf(e.target.feature.properties['OBJECTID'].toString());
+                  if (target_id >=0 ) {e.target.setStyle({weight:1,color:'grey',fillOpacity:0.4});sinksuerselection_id.splice(target_id,1);}
                   else {e.target.setStyle({weight:2,color:"black",fillOpacity:0.7});
-                  sinkuserselection.push(e.target);} }
+                  sinksuerselection_id.push(e.target.feature.properties['OBJECTID'].toString());} }
             if (elist.length > 1 ){
                   // test if there is popup
                   var popup = e.target.getPopup();
@@ -1305,7 +1305,7 @@
             // Facility_N City State Latitude Longitude Industry_T CO2_Emissi
             //ID costFix ($M) fixO&M ($M/y) varO&M ($/tCO2) capMax (MtCO2/y) N/A LON LAT NAME
             if (selection.length == 0 ) {alert('No sources are selected!');return}
-            if (sinkselection.length == 0 && sinkselection2.length == 0) {alert('No sinks are selected!');return}
+            if (sinkselection.length == 0 && sinkselection2.length == 0 && sinksuerselection_id.length == 0) {alert('No sinks are selected!');return}
             var sourcedata = generatesourcedata();
             //alert(sourcedata);
 
@@ -1480,6 +1480,10 @@
                   //tempstr += center_latlon.lat +"\t";  
                  
                   sinkdata += tempstr + "\n";
+            }
+            // load stacked data
+            for (i = 0; i < sinksuerselection_id.length; i++) {
+                  
             }
             
             return sinkdata;
