@@ -1461,6 +1461,7 @@
                   Maptool.cachedCandidateNetwork = data["CandidateNetwork"];
                   Maptool.cachedCandidateNetworkSourceIds = sourceIds;
                   Maptool.cachedCandidateNetworkSinkIds = sinkIds;
+                  document.dispatchEvent(new CustomEvent("candidate-network-loaded", {detail: data}));
                   return data;
             }).catch(display_error_modal);
          }
@@ -2510,7 +2511,7 @@
                         </div>
                         <div class="card-body" >
                               <div id="loginuser_tools">
-                                    <button type="button" id="bn_generatecandidatenetwork" class="btn btn-primary btn-sm btn-block" onclick="generatecandidatenetwork()">Generate Candidate Network</button>
+                                    <button type="button" id="bn_generatecandidatenetwork" class="btn btn-primary btn-sm btn-block" onclick="generatecandidatenetwork()" disabled>Generate Candidate Network</button>
                                     <hr/>
                                     <strong>Model Parameters</strong><br>
                                     <table>
@@ -2518,7 +2519,7 @@
                                                 <tr><td>Project Period (yrs)</td><td><input id="Project_Period" name="Project_Period" type="text" size=8 value="10" required></td></tr>
                                                 <tr><td>Capture Target (MT/y)</td><td><input id="Capture_Target" name="Capture_Target" type="text" size=8 value="5" required></td></tr>
                                     </table><br>
-                                    <button type="button" id="bn_generatemps" class="btn btn-primary btn-sm btn-block" onclick="generatempsfile()">Generate MPS file</button>
+                                    <button type="button" id="bn_generatemps" class="btn btn-primary btn-sm btn-block" onclick="generatempsfile()" disabled>Generate MPS file</button>
                               </div>
                               <div id="nologinuser_msg" style="display: none;">Gateway user account required. <a href='/auth/login?next=/maptool/'>Login</a>&nbsp;to create SimCCS model scenarios.</div>
                               </div>
@@ -2657,7 +2658,7 @@
                               <div id="case_downloadsource_div" style="display: none;"><a href="" id="case_sources_input">Download Source.txt</a></div>
                               <div id="case_downloadsink_div" style="display: none;"><a href="" id="case_sinks_input">Download Sinks.txt</a></div>
                               <hr/>
-                              <button type="button" id="bn_case_generatecandidatenetwork" class="btn btn-primary btn-sm btn-block" onclick="case_generatecandidatenetwork()">Generate Candidate Network</button>
+                              <button type="button" id="bn_case_generatecandidatenetwork" class="btn btn-primary btn-sm btn-block" onclick="case_generatecandidatenetwork()" disabled>Generate Candidate Network</button>
                               <hr/>
                               <strong>Model Parameters</strong><br>
                               <table>
@@ -2665,7 +2666,7 @@
                                           <tr><td>Project Period (yrs)</td><td><input id="case_Project_Period" name="case_Project_Period" type="text" size=8 value=10 required></td></tr>
                                           <tr><td>Capture Target (MT/y)</td><td><input id="case_Capture_Target" name="caase_Capture_Target" type="text" size=8 value=5 required></td></tr>
                               </table><br>
-                              <button type="button" id="bn_case_generatemps" class="btn btn-primary btn-sm btn-block" onclick="case_generatempsfile()">Generate MPS file</button>
+                              <button type="button" id="bn_case_generatemps" class="btn btn-primary btn-sm btn-block" onclick="case_generatempsfile()" disabled>Generate MPS file</button>
       
                         </div>
 
