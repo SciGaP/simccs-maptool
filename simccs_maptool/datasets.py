@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 def get_dataset_dir(dataset_id):
 
-    dataset_dirname = _get_dataset_dirname(dataset_id)
+    dataset_dirname = _get_dataset_summary(dataset_id)["dataset-dirname"]
     if "DATASETS_DIR" in getattr(settings, "MAPTOOL_SETTINGS", {}):
         datasets_basepath = settings.MAPTOOL_SETTINGS["DATASETS_DIR"]
         dataset_dir = os.path.join(datasets_basepath, dataset_dirname)
@@ -36,7 +36,13 @@ def get_dataset_dir(dataset_id):
     )
 
 
-def _get_dataset_dirname(dataset):
+def get_dataset_candidate_network(dataset_id):
+    """Relative path of candidate network within the dataset directory."""
+    summary = _get_dataset_summary(dataset_id)
+    return summary.get("dataset-candidate-network", None)
+
+
+def _get_dataset_summary(dataset):
     # Check for case studies specific datasets
     for summary_json_path in glob.glob(
         os.path.join(CASE_STUDIES_DIR, "*", "summary.json")
@@ -44,7 +50,7 @@ def _get_dataset_dirname(dataset):
         with open(summary_json_path, encoding="utf-8") as f:
             summary_json = json.load(f)
             if summary_json["dataset-id"] == dataset:
-                return summary_json["dataset-dirname"]
+                return summary_json
     # Check for global datasets
     for summary_json_path in glob.glob(
         os.path.join(DATASETS_METADATA_DIR, "*", "summary.json")
@@ -52,5 +58,5 @@ def _get_dataset_dirname(dataset):
         with open(summary_json_path, encoding="utf-8") as f:
             summary_json = json.load(f)
             if summary_json["dataset-id"] == dataset:
-                return summary_json["dataset-dirname"]
+                return summary_json
     raise Exception("Unrecognized dataset: {}".format(dataset))

@@ -2,6 +2,7 @@
 	"title": "Ordos Basin 2014",
 	"dataset-id": "OrdosBasin_2014_10",
 	"dataset-dirname": "10_2014_OrdosBasin",
+	"dataset-candidate-network": "Scenarios/scenario1/Network/CandidateNetwork/CandidateNetwork.txt",
 	"summary": "A case study from Ordos Basin, China",
 	"publication": "https://www.sciencedirect.com/science/article/pii/S1876610214021079?via%3Dihub",
 	"editor": {

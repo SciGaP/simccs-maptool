@@ -2,6 +2,7 @@
 	"title": "Illinois Basin 2015",
 	"dataset-id": "IllinoisBasin_2015_11",
 	"dataset-dirname": "11_2015_IllinoisBasin",
+	"dataset-candidate-network": "Scenarios/scenario1/Network/CandidateNetwork/CandidateNetwork.txt",
 	"summary": "A case study from Illinois Basin",
 	"publication": "https://www.sciencedirect.com/science/article/pii/S1876610217319902",
 	"editor": {

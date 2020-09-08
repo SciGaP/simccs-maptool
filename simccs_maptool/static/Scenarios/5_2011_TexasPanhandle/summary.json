@@ -2,6 +2,7 @@
 	"title": "Texas Panhandle 2011",
 	"dataset-id": "TexasPanhandle_2011_5",
 	"dataset-dirname": "5_2011_TexasPanhandle",
+	"dataset-candidate-network": "Scenarios/scenario1/Network/CandidateNetwork/CandidateNetwork.txt",
 	"summary": "A case study from Texas Panhandle",
 	"publication": "https://www.sciencedirect.com/science/article/pii/S1364815212001296?via%3Dihub",
 	"editor": {

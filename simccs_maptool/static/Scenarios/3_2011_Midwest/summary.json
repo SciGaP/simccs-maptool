@@ -2,6 +2,7 @@
 	"title": "Midwest 2011",
 	"dataset-id": "Midwest_2011_3",
 	"dataset-dirname": "Midwest_2011_3",
+	"dataset-candidate-network": "Scenarios/scenario1/Network/CandidateNetwork/CandidateNetwork.txt",
 	"summary": "A case study from Midwest",
 	"publication": "https://www.sciencedirect.com/science/article/pii/S1364815212001296?via%3Dihub",
 	"editor": {

@@ -76,14 +76,30 @@ def generate_mps(request):
     sources = request.POST["sources"]
     sinks = request.POST["sinks"]
     dataset_id = request.POST["dataset"]
+    candidate_network = request.POST.get("candidateNetwork", None)
 
     with tempfile.TemporaryDirectory() as datasets_basepath:
         dataset_dir = datasets.get_dataset_dir(dataset_id)
         try:
+            # If no candidate network provided, check if there is a candidate
+            # network for the entire dataset that can be used instead
+            if candidate_network is None:
+                dataset_candidate_network = datasets.get_dataset_candidate_network(
+                    dataset_id
+                )
+                if dataset_candidate_network is not None:
+                    with open(
+                        os.path.join(dataset_dir, dataset_candidate_network)
+                    ) as candidate_network_file:
+                        candidate_network = candidate_network_file.read()
+
             # Create the scenario directory
-            # TODO: add the candidatenetwork file too
             scenario_dir = simccs_helper.create_scenario_dir(
-                datasets_basepath, dataset_dir, sources=sources, sinks=sinks
+                datasets_basepath,
+                dataset_dir,
+                sources=sources,
+                sinks=sinks,
+                candidate_network=candidate_network,
             )
             simccs_helper.write_mps_file(
                 scenario_dir,

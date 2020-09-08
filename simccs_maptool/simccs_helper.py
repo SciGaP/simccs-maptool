@@ -18,7 +18,14 @@ def register_cost_surface_data_cache(dataset_dir):
 
 
 def create_scenario_dir(
-    basepath, dataset_dir, sources, sinks, mps=None, solution=None, scenario="scenario1"
+    basepath,
+    dataset_dir,
+    sources,
+    sinks,
+    candidate_network=None,
+    mps=None,
+    solution=None,
+    scenario="scenario1",
 ):
     """Create scenario directory structure populated with inputs.
 
@@ -46,6 +53,11 @@ def create_scenario_dir(
 2	0.0162	0.4932	0.0009	0.1511
 """,
     )
+    if candidate_network:
+        _write_scenario_file(
+            get_candidate_network_file(scenario_dir),
+            candidate_network,
+        )
     if mps:
         _write_scenario_file(os.path.join(scenario_dir, "MIP", "cap.mps"), mps)
     if solution:
@@ -56,7 +68,7 @@ def create_scenario_dir(
 def _write_scenario_file(file_path, file_contents):
     file_dirname = os.path.dirname(file_path)
     if not os.path.exists(file_dirname):
-        os.mkdir(file_dirname)
+        os.makedirs(file_dirname)
     with open(file_path, mode="wb") as scenario_file:
         src_file = file_contents
         if isinstance(src_file, str):

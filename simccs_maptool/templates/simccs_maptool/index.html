@@ -41,6 +41,7 @@
 <script src="{% static 'js/L.TileLayer.BetterWMS.js' %}" ></script>
 <script src="{% static 'js/leafletMap.js' %}" ></script>
 <script src="{% static 'js/casestudies.js' %}" ></script>
+<script src="{% static 'js/util.js' %}" ></script>
 <script src="{% static 'django_airavata_api/dist/airavata-api.js' %}"></script>
 <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
 
@@ -699,12 +700,14 @@
             if (selection_green.length == 0 ) {alert('No sinks are selected!');return}
             var sourcedata = case_generatesourcedata();
             var sinkdata=case_generatesinkdata();
+            var sourceIds = case_getSourceIds();
+            var sinkIds = case_getSinkIds();
             var current_dataset_id = get_current_dataset_id();
             var formData = new FormData();
             formData.set('sources', sourcedata);
             formData.set('sinks', sinkdata);
             formData.set('dataset', current_dataset_id);
-            AiravataAPI.utils.FetchUtils.post("/maptool/candidate-network/", formData).then(function( data ) {
+            return AiravataAPI.utils.FetchUtils.post("/maptool/candidate-network/", formData).then(function( data ) {
                   // Note: 'data' includes Sinks and Sources but since those are
                   // already displayed I'm opting to only display the Network
                   candidateNetworkLayer.clearLayers();
@@ -716,7 +719,20 @@
                         layercontrol.addOverlay(candidateNetworkLayer, "Candidate Network");
                         candidateNetworkLayerAddedToControl = true;
                   }
+                  // Cache the candidate network
+                  Maptool.cachedCandidateNetwork = data["CandidateNetwork"];
+                  Maptool.cachedCandidateNetworkSourceIds = sourceIds;
+                  Maptool.cachedCandidateNetworkSinkIds = sinkIds;
+                  return data;
             }).catch(display_error_modal);
+      }
+
+      function case_getSourceIds() {
+            return new Set(selection.map(src => src.feature.properties.ID));
+      }
+
+      function case_getSinkIds() {
+            return new Set(selection_green.map(snk => snk.feature.properties.field_1));
       }
 
       function display_error_modal(error, message) {
@@ -765,7 +781,13 @@
             formData.set('sources', sourcedata);
             formData.set('sinks', sinkdata);
             formData.set('dataset', current_dataset_id);
-            AiravataAPI.utils.FetchUtils.post("/maptool/mps/", formData).then(function( data ) {
+            // Use the cachedCandidateNetwork if the selected sources and sinks are the same
+            if (Maptool.cachedCandidateNetwork
+                        && setsAreEqual(case_getSourceIds(), Maptool.cachedCandidateNetworkSourceIds) 
+                        && setsAreEqual(case_getSinkIds(), Maptool.cachedCandidateNetworkSinkIds)) {
+                  formData.set('candidateNetwork', Maptool.cachedCandidateNetwork);
+            }
+            return AiravataAPI.utils.FetchUtils.post("/maptool/mps/", formData).then(function( data ) {
                   var m_html =`<div class="modal fade in" tabindex="-1" role="dialog">
 <div class="modal-dialog" role="document">
 <div class="modal-content">
@@ -1356,10 +1378,12 @@
          var candidateNetworkLayerAddedToControl = false;
          // ajax interface to generate candidate-network
          function generatecandidatenetwork() {
-            if (selection.length == 0 ) {alert('No sources are selected!');return}
-            if (sinkselection.length == 0 ) {alert('No sinks are selected!');return}
+            if (selection.length === 0 ) {alert('No sources are selected!');return}
+            if (sinkselection.length === 0 && sinkselection2.length === 0 ) {alert('No sinks are selected!');return}
             var sourcedata = generatesourcedata();
             var sinkdata=generatesinkdata();
+            var sourceIds = getSourceIds();
+            var sinkIds = getSinkIds();
             var formData = new FormData();
             formData.set('sources', sourcedata);
             formData.set('sinks', sinkdata);
@@ -1376,7 +1400,19 @@
                         layercontrol.addOverlay(candidateNetworkLayer, "Candidate Network");
                         candidateNetworkLayerAddedToControl = true;
                   }
+                  // Cache the candidate network
+                  Maptool.cachedCandidateNetwork = data["CandidateNetwork"];
+                  Maptool.cachedCandidateNetworkSourceIds = sourceIds;
+                  Maptool.cachedCandidateNetworkSinkIds = sinkIds;
             }).catch(display_error_modal);
+         }
+
+         function getSourceIds() {
+            return new Set(selection.map(src => src.feature.properties.ID));
+         }
+
+         function getSinkIds() {
+            return new Set(sinkselection.map(snk => "salink-" + snk.feature.properties.objectid).concat(sinkselection2.map(snk => "oilgas-" + snk.feature.properties.New_OG_ID)));
          }
 
          // ajax interface to generate MPS file
