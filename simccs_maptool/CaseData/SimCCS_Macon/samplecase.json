@@ -1,0 +1,37 @@
+{
+	"CaseID": "Test001",
+	"Title": "SimCCS_Macon",
+	"Description": "A testing case for Illinois Basin",
+	"Datasets": [{
+			"DataID": "source001",
+			"Name": "SimCCS_MaconSources",
+			"Description": "SimCCS_MaconSources",
+			"Type": "source"
+		},
+		{
+			"DataID": "sink001",
+			"Name": "SCO2T_Arkosic_Macon_10K",
+			"Description": "SCO2T_Arkosic_Macon_10K",
+			"Type": "sink"
+		}
+	],
+	"Maptool": {
+		"Sources": ["source001"],
+        "Sinks": ["sink001"],
+        "CostSurfaces": [],
+		"Data": [{
+				"DataID": "source001",
+				"URL": "",
+				"Style": "",
+				"BBOX": ""
+			},
+			{
+				"DataID": "sink001",
+				"URL": "",
+				"Style": "TotalUnitCost",
+				"BBOX": ""
+			}
+		],
+		"BBOX": [-89.91, 38.10, -87.70, 40.90]
+	}
+}

@@ -8,13 +8,16 @@ import os
 import tempfile
 from contextlib import ContextDecorator
 from threading import BoundedSemaphore
+from urllib.parse import urlencode
 
 import shapefile
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.urls import reverse
 from django.views.generic import TemplateView
+
 from simccs_maptool import datasets
 
 from . import simccs_helper
@@ -450,3 +453,56 @@ def _get_dataset_dirname(dataset):
             if summary_json["dataset-id"] == dataset:
                 return summary_json["dataset-dirname"]
     raise Exception("Unrecognized dataset: {}".format(dataset))
+
+
+@login_required
+def get_case(request, case_id):
+    # In this initial implementation the case data is hard coded but it is
+    # really loaded from data stored in the user's storage
+    case_data_dir = os.path.join(BASEDIR, "CaseData", "SimCCS_Macon")
+    with open(os.path.join(case_data_dir, "samplecase.json")) as samplecase, open(
+        os.path.join(case_data_dir, "SimCCS_MaconSources.geojson")
+    ) as sources, open(
+        os.path.join(case_data_dir, "SCO2T_Arkosic_Macon_10K.geojson")
+    ) as sinks:
+
+        # Create directory in user storage to hold the geojson files
+        user_storage_dir = os.path.join("CaseData", "SimCCS_Macon")
+        if not user_storage.dir_exists(request, user_storage_dir):
+            user_storage.create_user_dir(request, user_storage_dir)
+        sources_geosjon_path = os.path.join(
+            user_storage_dir, "SimCCS_MaconSources.geojson"
+        )
+        if not user_storage.user_file_exists(request, sources_geosjon_path):
+            sources_dp = user_storage.save(
+                request, user_storage_dir, sources, content_type="application/json"
+            )
+            sources_dp_uri = sources_dp.productUri
+        else:
+            sources_dp_uri = user_storage.get_file(request, sources_geosjon_path)[
+                "data-product-uri"
+            ]
+        sinks_geojson_path = os.path.join(
+            user_storage_dir, "SCO2T_Arkosic_Macon_10K.geojson"
+        )
+        if not user_storage.user_file_exists(request, sinks_geojson_path):
+            sinks_dp = user_storage.save(
+                request, user_storage_dir, sinks, content_type="application/json"
+            )
+            sinks_dp_uri = sinks_dp.productUri
+        else:
+            sinks_dp_uri = user_storage.get_file(request, sinks_geojson_path)[
+                "data-product-uri"
+            ]
+        samplecase_data = json.load(samplecase)
+        samplecase_data["Maptool"]["Data"][0]["URL"] = (
+            reverse("django_airavata_api:download_file")
+            + "?"
+            + urlencode({"data-product-uri": sources_dp_uri})
+        )
+        samplecase_data["Maptool"]["Data"][1]["URL"] = (
+            reverse("django_airavata_api:download_file")
+            + "?"
+            + urlencode({"data-product-uri": sinks_dp_uri})
+        )
+        return JsonResponse(samplecase_data)

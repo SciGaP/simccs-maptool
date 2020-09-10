@@ -25,5 +25,6 @@ urlpatterns = [
     url(r"^mps/$", views.generate_mps, name="generate-mps"),
     url(r"^experiment-result/(?P<experiment_id>[^/]+)$", views.experiment_result),
     url(r"^solution-summary/(?P<experiment_id>[^/]+)$", views.solution_summary),
+    url(r"^case/(?P<case_id>[^/]+)$", views.get_case),
     url(r"^get-data", geoserver.get_data),
 ]
