@@ -49,6 +49,26 @@ function getColor(d) {
             d > 0.0  ? '#00f905' :
                         '#FFEDA0';
 }
+function createLegend(fieldname)
+{
+    var div = L.DomUtil.create('div', 'info legend'),
+    grades = [0, 5, 10],
+    labels = [],
+    from, to;
+
+    for (var i = 0; i < grades.length; i++) {
+    from = grades[i];
+    to = grades[i + 1];
+
+    labels.push(
+        '<i style="background:' + getColor(from + 1) + '"></i> ' +
+        from + (to ? '&nbsp;&ndash;&nbsp;' + to : '+'));}
+
+    div.innerHTML = fieldname + "<br>";
+    div.innerHTML += labels.join('<br>');
+    return div;
+}
+
 // turn on/off layer
 function handleclick(id){
     if (map.hasLayer(maplayers[id])) {
@@ -100,6 +120,12 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
     document.getElementById("layercontrol").innerHTML+=radiostr;
     newLayer.addTo(map);
     maplayers[datadesc['dataid']] = newLayer;
+    if (datastyle !== "") {       // generate legend
+            var legend = createLegend(datastyle);
+            console.log(legend);
+            document.getElementById("layercontrol").appendChild(legend);   } 
+    
+    
 }
 
 // load cost surface
