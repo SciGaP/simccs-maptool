@@ -1,0 +1,166 @@
+
+{% extends "base.html" %}
+{% load static %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/leaflet.css' %}" />
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+
+<style type="text/css">
+      #map{
+      /*margin-left: 20px;*/
+      /*margin-top: 60px;*/
+      /*margin-top: 60px;*/
+      width:100%;
+      height:100% ;
+      }
+      .main-content {
+            max-width: initial;
+      }
+      .container-fluid, .main-row {
+            height: 100%;
+      }
+      .card {
+            margin-bottom: 0px;
+      }
+      /* Allow vertical scrolling of sidebar if not enough room on screen */
+      .main-row > .col-md-3 {
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+      }
+</style>
+{% endblock css %}
+
+{% block scripts %}
+<script src="{% static 'js/leaflet.js' %}"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/leaflet-sidebar.min.css' %}" />
+<script src="{% static 'js/leaflet-sidebar.min.js' %}"></script>
+<script src="{% static 'js/build.js' %}" ></script>
+<script src="{% static 'js/util.js' %}" ></script>
+<script src="{% static 'django_airavata_api/dist/airavata-api.js' %}"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.9/dist/css/bootstrap-select.min.css">
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.9/dist/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
+<script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+
+
+<script>
+         //var Maptool = window.Maptool || {};
+         //Maptool.FeatureFlag = Maptool.FeatureFlag || {};
+         // TODO: replace with global user session object
+         var userIsAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+         
+         $(document).ready(function() {
+            // set up data
+            set_casedata();
+            sidebar.open("home");
+ 
+            }); // end of document ready 
+
+var casejson;
+var maplayers = {};
+
+async function set_casedata() {
+      var urlprefix = "/static/Data/Build/";
+      casejson = await getdata(urlprefix + '123test.json');
+      document.getElementById("case_name").textContent=casejson["Title"];
+      document.getElementById("case_description").textContent=casejson["Description"]; 
+      // move map to bounding box
+      var bbox = casejson["Maptool"]["BBOX"];
+      map.fitBounds([[bbox[1],bbox[0]],[bbox[3],bbox[2]]]);
+      // reformat data as big array
+      var datasets = {};
+      for (entry of casejson['Datasets'])
+      {
+            datasets[entry['DataID']]={'dataid':entry['DataID'],'name': entry['Name'], 'description':entry['Description'],'type':entry['Type']};
+      }
+      
+      var dataurl, datastyle, datameta;
+      for (entry of casejson['Maptool']['Data']) {
+            datameta = datasets[entry["DataID"]];
+            dataurl = urlprefix + entry["URL"];
+            datastyle = entry['Style'];
+            addcasedata(datameta,dataurl,datastyle);
+
+      }
+      
+}
+
+// create a new experiment
+var experimentid = 0;
+
+function create_experiment() {
+      if (experimentid >= 5 ) {alert("Maximum number of experiments reached!");return;};
+            sidebar.addPanel({
+                id:   'experiment' + experimentid++,
+                tab:  '<i class="fa fa-cog" aria-hidden="true"></i>',
+                title: 'Experiment ' + experimentid,
+                pane: '<h4>Data</h4>',
+            });
+}
+  
+     
+</script>
+{% endblock scripts %}
+
+{% block content %}
+
+<div id="sidebar" class="leaflet-sidebar collapsed">
+
+      <!-- nav tabs -->
+        <div class="leaflet-sidebar-tabs">
+            <!-- top aligned tabs -->
+            <ul role="tablist">
+                <li><a href="#home" role="tab"><i class="fas fa-tools"></i></a></li>
+            </ul>
+
+            <!-- bottom aligned tabs -->
+            <ul role="tablist">
+                  <li><a href="#profile" role="tab"><i class="fa fa-user"></i></a></li>
+                <li><a href="#settings" role="tab"><i class="fas fa-toolbox"></i></a></li>
+            </ul>
+        </div>
+
+        <!-- panel content -->
+        <div class="leaflet-sidebar-content">
+            <div class="leaflet-sidebar-pane" id="home">
+                <h1 class="leaflet-sidebar-header">
+                    Build: <span id="case_name"></span>
+                    <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
+                </h1>
+                <div><span  style="font-size: 150%" id="case_description"></span></div>
+                <div id="layercontrol" class="form-check" style="font-size: 150%"></div>
+                <br>
+                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="create_experiment()"><strong>Create Experiment</strong></button>  
+            </div>
+
+            <div class="leaflet-sidebar-pane" id="profile">
+                  <h1 class="leaflet-sidebar-header">Profile<div class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></div></h1>
+            </div>
+ 
+            <div class="leaflet-sidebar-pane" id="settings">
+                <h1 class="leaflet-sidebar-header">Settings<span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+                <br>
+                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="save_workspace()"><strong>Save Current Workspace</strong></button>  
+
+            </div>
+        </div>
+    </div>
+
+  <div class="main-content-wrapper">
+    <main class="main-content">
+      <div class="container-fluid">
+                  <div id="map"></div>
+      </div>
+
+    </main>
+  </div>
+
+
+{% endblock content %}
