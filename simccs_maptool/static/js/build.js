@@ -42,6 +42,13 @@ var geojsonMarkerOptions = {
     pane: "pointsPane"
 };
 
+// function getcolor
+function getColor(d) {
+    return d > 10.0 ? '#f50000' :
+            d > 5.0  ? '#fdff00' :
+            d > 0.0  ? '#00f905' :
+                        '#FFEDA0';
+}
 // turn on/off layer
 function handleclick(id){
     if (map.hasLayer(maplayers[id])) {
@@ -76,7 +83,12 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
         });
     } else if (datadesc['type'] == 'sink') {
         // load sink data
-        newLayer = new L.geoJSON(data);
+        newLayer = new L.geoJSON(data, {style: function(feature){
+            var color_value = feature.properties[datastyle];
+            var fillcolor = getColor(color_value); 
+            return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.5,pane: "polygonsPane"};
+          }}
+          );
     }
     else {
         newLayer = new L.geoJSON(data);
