@@ -54,13 +54,23 @@ function handleclick(id){
 }
 
 // load data by url
-async function addcasedata(datadesc,dataurl,datasytle) {
+async function addcasedata(datadesc,dataurl,datastyle) {
     var data = await getdata(dataurl);
     var newLayer;
+    var popup_fields;
     if (datadesc['type'] == 'source') {
+        if (datastyle == "") {
+            popup_fields = ["Name","CapCO2","TotalUnitCost"];
+        }
         newLayer = new L.geoJSON(data,{
             pointToLayer: function (feature, latlng) {
+            var content_str="<strong>Source: <br>"
+            for (entry of popup_fields) {
+                content_str += entry + ": " + feature.properties[entry] + "<br>";
+            }
+            content_str += "</strong>";
             var mymarker = L.circleMarker(latlng, geojsonMarkerOptions);
+            mymarker.bindTooltip(content_str);
             return mymarker;       
           }
         });
@@ -73,7 +83,7 @@ async function addcasedata(datadesc,dataurl,datasytle) {
     }
 
     var radiostr='<input class="form-check-input"  type="radio" id="'+datadesc['dataid']+'" checked="checked" onclick=handleclick(this.id)>';
-    radiostr += '<label class="form-check-label" for="'+datadesc['dataid']+'">'+datadesc['type'].toUpperCase()+":"+datadesc['name']+'</label><br>';
+    radiostr += '<label class="form-check-label" for="'+datadesc['dataid']+'">'+ datadesc['type'].charAt(0).toUpperCase() + datadesc['type'].slice(1)+":"+datadesc['name']+'</label><br>';
     
     document.getElementById("layercontrol").innerHTML+=radiostr;
     newLayer.addTo(map);
