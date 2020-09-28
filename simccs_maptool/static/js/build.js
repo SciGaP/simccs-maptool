@@ -31,6 +31,7 @@ async function getdata(url) {
     return data;
 } 
 
+// default point option
 var geojsonMarkerOptions = {
     radius: 8,
     fillColor: "red",
@@ -52,6 +53,7 @@ function handleclick(id){
     }
 }
 
+// load data by url
 async function addcasedata(datadesc,dataurl,datasytle) {
     var data = await getdata(dataurl);
     var newLayer;
@@ -62,7 +64,11 @@ async function addcasedata(datadesc,dataurl,datasytle) {
             return mymarker;       
           }
         });
-    } else {
+    } else if (datadesc['type'] == 'sink') {
+        // load sink data
+        newLayer = new L.geoJSON(data);
+    }
+    else {
         newLayer = new L.geoJSON(data);
     }
 
@@ -72,4 +78,20 @@ async function addcasedata(datadesc,dataurl,datasytle) {
     document.getElementById("layercontrol").innerHTML+=radiostr;
     newLayer.addTo(map);
     maplayers[datadesc['dataid']] = newLayer;
+}
+
+// load cost surface
+function addcostsurface(bbox) {
+    //load default national cost surface
+    var cost_image_url="https://simccs.org/geoserver/ows?service=WCS&version=2.0.0&request=GetCoverage&coverageId=SimCCS__cost&format=png";
+    // &subset=Lat(29.920588,33.381122)&subset=Long(-89.251876,-83.277539)";
+    //"BBOX": [-89.91, 38.1, -87.7, 40.9]}}
+    cost_image_url += "&subset=Lat(" +(bbox[1]-0.2) +","+(bbox[3]+0.2) +")";
+    cost_image_url += "&subset=Long("+(bbox[0]-0.2) + ","+(bbox[2]+0.2) + ")";
+    var cost_image_bounds = [[bbox[1]-0.2,bbox[0]-0.2],[bbox[3]+0.2,bbox[2]+0.2]];
+    var costsurface = L.imageOverlay(cost_image_url,cost_image_bounds).addTo(map);
+    var radiostr='<input class="form-check-input"  type="radio" id="costsurface" checked="checked" onclick=handleclick(this.id)>';
+    radiostr += '<label class="form-check-label" for="costsurface">Cost Surface</label><br>';
+    document.getElementById("layercontrol").innerHTML+=radiostr;
+    maplayers['costsurface'] = costsurface;
 }

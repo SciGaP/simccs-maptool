@@ -81,15 +81,16 @@ async function set_casedata() {
             datasets[entry['DataID']]={'dataid':entry['DataID'],'name': entry['Name'], 'description':entry['Description'],'type':entry['Type']};
       }
       
+      //load source/sink
       var dataurl, datastyle, datameta;
       for (entry of casejson['Maptool']['Data']) {
             datameta = datasets[entry["DataID"]];
             dataurl = urlprefix + entry["URL"];
             datastyle = entry['Style'];
             addcasedata(datameta,dataurl,datastyle);
-
       }
-      
+      // load cost surface
+      addcostsurface(bbox);
 }
 
 // create a new experiment
