@@ -87,7 +87,8 @@ async function set_casedata() {
             datameta = datasets[entry["DataID"]];
             dataurl = urlprefix + entry["URL"];
             datastyle = entry['Style'];
-            addcasedata(datameta,dataurl,datastyle);
+            popupfields = entry['Popup'];
+            addcasedata(datameta,dataurl,datastyle,popupfields);
       }
       // load cost surface
       addcostsurface(bbox);

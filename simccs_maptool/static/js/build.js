@@ -54,14 +54,14 @@ function handleclick(id){
 }
 
 // load data by url
-async function addcasedata(datadesc,dataurl,datastyle) {
+async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
     var data = await getdata(dataurl);
     var newLayer;
-    var popup_fields;
+    if (popup_fields == "") {
+        popup_fields = ["Name"];
+    }
+
     if (datadesc['type'] == 'source') {
-        if (datastyle == "") {
-            popup_fields = ["Name","CapCO2","TotalUnitCost"];
-        }
         newLayer = new L.geoJSON(data,{
             pointToLayer: function (feature, latlng) {
             var content_str="<strong>Source: <br>"
