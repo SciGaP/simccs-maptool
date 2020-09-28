@@ -69,6 +69,17 @@ function createLegend(fieldname)
     return div;
 }
 
+function onEachFeatureClosure(popup_fields) {
+    return function onEachFeature(feature, layer) {
+        var content_str="<strong>Sink: <br>"
+        for (entry of popup_fields) {
+            content_str += entry + ": " + feature.properties[entry] + "<br>";
+        }
+        content_str += "</strong>";
+        layer.bindTooltip(content_str);
+    }
+}
+
 // turn on/off layer
 function handleclick(id){
     if (map.hasLayer(maplayers[id])) {
@@ -107,8 +118,9 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
             var color_value = feature.properties[datastyle];
             var fillcolor = getColor(color_value); 
             return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.5,pane: "polygonsPane"};
-          }}
-          );
+          },
+          onEachFeature: onEachFeatureClosure(popup_fields),
+        });
     }
     else {
         newLayer = new L.geoJSON(data);
@@ -122,10 +134,9 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
     maplayers[datadesc['dataid']] = newLayer;
     if (datastyle !== "") {       // generate legend
             var legend = createLegend(datastyle);
-            console.log(legend);
-            document.getElementById("layercontrol").appendChild(legend);   } 
-    
-    
+            document.getElementById("layercontrol").appendChild(legend);   
+        } 
+       
 }
 
 // load cost surface
