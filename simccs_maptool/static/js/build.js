@@ -176,3 +176,24 @@ function addcostsurface(bbox) {
     document.getElementById("layercontrol").innerHTML+=radiostr;
     maplayers['costsurface'] = costsurface;
 }
+
+// clear the selected
+function clear_selection() {
+    // clear all selected 
+    var r = confirm("Clear all the selected?");
+    // do nothing if cancelled
+    if (r == false) {return;}
+    // clear selected sources
+    var elayer;
+    for (elayer of sourceselection) {
+          elayer.setStyle(geojsonMarkerOptions);
+    }
+    sourceselection = [];
+    //document.dispatchEvent(new Event("source-selection-change"));
+    // clear selected sinks
+    for (elayer of sinkselection) {
+          elayer.setStyle({weight:1,color:'grey',fillOpacity:0.4});
+    }
+    sinkselection = [];
+    //document.dispatchEvent(new Event("sink-selection-change"));
+}
