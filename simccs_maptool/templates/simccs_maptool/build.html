@@ -132,11 +132,24 @@ for (i = 0; i < sourceselection.length; i++) {
 return sourcedata;
 }
 
+function download(filename, text) {
+    var element = document.createElement('a');
+    //element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    var file = new Blob([text], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.setAttribute('download', filename);
+    element.text = "Download Sources.txt";
+    element.style.display = 'block';
+    return element;
+}
+
 function displayselecteddata(panelid) {
       var div = document.createElement("div");
       var sourcetxt = generatesourcedata();
       div.innerHTML +="<Strong>Sources selected: " + sourceselection.length + "</Strong>";
       div.innerHTML += "<p>" + sourcetxt + "</p>";
+      var downloadlink = download("source.txt",sourcetxt);
+      div.appendChild(downloadlink);
       return div;
 }
 
