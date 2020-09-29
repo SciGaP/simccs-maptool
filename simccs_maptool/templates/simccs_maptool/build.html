@@ -111,14 +111,53 @@ async function set_casedata() {
 // create a new experiment
 var experimentid = 0;
 
+function generatesourcedata() {
+
+var sourcedata = "ID\tcostFix ($M)\tfixO&M ($M/y)\tvarO&M ($/tCO2)\tcapMax (MtCO2/y)\tN/A\tLON\tLAT\tNAME\n";
+var cols =["ID","costFix","fixOM","varOM","capMax","N/A","X","Y","Name"];
+var col_dict = {"ID":"UniqueID","costFix":"TotalUnitCost","fixOM":"FixedOM","varOM":"VarOM","capMax":"CapCO2","N/A":"","X":"X","Y":"Y","Name":"Name"};
+var tempstr = "";
+for (i = 0; i < sourceselection.length; i++) {
+      tempstr = "";
+      //tempstr += (i+1).toString()+"\t";
+      for ( key of cols) {
+            if (key == "N/A") {
+            tempstr += "1"+"\t";
+            } else {
+                  tempstr += sourceselection[i].feature.properties[col_dict[key]]+"\t"; 
+            } 
+      }
+      sourcedata += tempstr + "\n";
+} 
+return sourcedata;
+}
+
+function displayselecteddata(panelid) {
+      var div = document.createElement("div");
+      var sourcetxt = generatesourcedata();
+      div.innerHTML +="<Strong>Sources selected: " + sourceselection.length + "</Strong>";
+      div.innerHTML += "<p>" + sourcetxt + "</p>";
+      return div;
+}
+
+
 function create_experiment() {
       if (experimentid >= 5 ) {alert("Maximum number of experiments reached!");return;};
-            sidebar.addPanel({
-                id:   'experiment' + experimentid++,
-                tab:  '<i class="fa fa-cog" aria-hidden="true"></i>',
-                title: 'Experiment ' + experimentid,
-                pane: '<h4>Data</h4>',
-            });
+      
+      // check if the source/sink are selected
+      if (sourceselection.length == 0 ) {alert('No sources are selected!');return}
+      if (sinkselection.length == 0 ) {alert('No sinks are selected!');return}
+      var panelid = 'experiment' + experimentid++;
+      var panediv = displayselecteddata(panelid);
+      sidebar.addPanel({
+            id:   panelid,
+            tab:  '<i class="fa fa-cog" aria-hidden="true"></i>',
+            title: 'Experiment ' + experimentid,
+            pane: panediv.innerHTML,
+      });
+      // simple show the data
+      sidebar.open(panelid);
+      
 }
   
      
