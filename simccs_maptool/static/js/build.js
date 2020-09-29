@@ -19,6 +19,7 @@ map.createPane("pointsPane");
  // create the sidebar instance and add it to the map
  var sidebar = L.control.sidebar({ autopan: true, container: 'sidebar' }).addTo(map);
  
+ 
  // Defining async function 
 async function getdata(url) { 
     
@@ -69,6 +70,18 @@ function createLegend(fieldname)
     return div;
 }
 
+// for source
+function sourceOnEachFeature(feature, layer) {
+    //bind click
+    layer.on('click', function (e) {
+      var target_id = sourceselection.indexOf(e.target)
+      if (target_id >=0 ) {e.target.setStyle(geojsonMarkerOptions);sourceselection.splice(target_id,1);}
+      else {e.target.setStyle({weight:3,fillColor:"orangered",radius:12});
+            sourceselection.push(e.target);}
+      //document.dispatchEvent(new Event("source-selection-change"));
+    })};
+
+// for sinks
 function onEachFeatureClosure(popup_fields) {
     return function onEachFeature(feature, layer) {
         var content_str="<strong>Sink: <br>"
@@ -77,6 +90,13 @@ function onEachFeatureClosure(popup_fields) {
         }
         content_str += "</strong>";
         layer.bindTooltip(content_str);
+        layer.on('click', function (e) {
+            var target_id = sinkselection.indexOf(e.target)
+            if (target_id >=0 ) {e.target.setStyle({weight:1,color:'grey',fillOpacity:0.4});sinkselection.splice(target_id,1);}
+            else {e.target.setStyle({weight:2,color:"black",fillOpacity:0.7});
+                  sinkselection.push(e.target);}
+            document.dispatchEvent(new Event("sink-selection-change"));
+        })
     }
 }
 
@@ -110,8 +130,10 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
             var mymarker = L.circleMarker(latlng, geojsonMarkerOptions);
             mymarker.bindTooltip(content_str);
             return mymarker;       
-          }
+          },
+          onEachFeature: sourceOnEachFeature,
         });
+
     } else if (datadesc['type'] == 'sink') {
         // load sink data
         newLayer = new L.geoJSON(data, {style: function(feature){

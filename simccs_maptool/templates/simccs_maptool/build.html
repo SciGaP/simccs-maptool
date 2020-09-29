@@ -77,6 +77,8 @@
 
 var casejson;
 var maplayers = {};
+var sourceselection = [];
+var sinkselection = [];
 
 async function set_casedata() {
       var urlprefix = "/static/Data/Build/";
@@ -151,7 +153,7 @@ function create_experiment() {
                 <div><span  style="font-size: 150%" id="case_description"></span></div>
                 <div id="layercontrol" class="form-check" style="font-size: 150%"></div>
                 <br>
-                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="create_experiment()"><strong>Create Experiment</strong></button>  
+                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="create_experiment()"><strong>Create Experiment with the Selected</strong></button>  
             </div>
 
             <div class="leaflet-sidebar-pane" id="profile">
