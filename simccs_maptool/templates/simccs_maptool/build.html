@@ -111,34 +111,58 @@ async function set_casedata() {
 // create a new experiment
 var experimentid = 0;
 
+// generate source data from sourceslection
 function generatesourcedata() {
-
-var sourcedata = "ID\tcostFix ($M)\tfixO&M ($M/y)\tvarO&M ($/tCO2)\tcapMax (MtCO2/y)\tN/A\tLON\tLAT\tNAME\n";
-var cols =["ID","costFix","fixOM","varOM","capMax","N/A","X","Y","Name"];
-var col_dict = {"ID":"UniqueID","costFix":"TotalUnitCost","fixOM":"FixedOM","varOM":"VarOM","capMax":"CapCO2","N/A":"","X":"X","Y":"Y","Name":"Name"};
-var tempstr = "";
-for (i = 0; i < sourceselection.length; i++) {
-      tempstr = "";
-      //tempstr += (i+1).toString()+"\t";
-      for ( key of cols) {
-            if (key == "N/A") {
-            tempstr += "1"+"\t";
-            } else {
-                  tempstr += sourceselection[i].feature.properties[col_dict[key]]+"\t"; 
-            } 
-      }
-      sourcedata += tempstr + "\n";
-} 
-return sourcedata;
+      var sourcedata = "ID\tcostFix ($M)\tfixO&M ($M/y)\tvarO&M ($/tCO2)\tcapMax (MtCO2/y)\tN/A\tLON\tLAT\tNAME\n";
+      var cols =["ID","costFix","fixOM","varOM","capMax","N/A","X","Y","Name"];
+      var col_dict = {"ID":"UniqueID","costFix":"TotalUnitCost","fixOM":"FixedOM","varOM":"VarOM","capMax":"CapCO2","N/A":"","X":"X","Y":"Y","Name":"Name"};
+      var tempstr = "";
+      for (i = 0; i < sourceselection.length; i++) {
+            tempstr = "";
+            //tempstr += (i+1).toString()+"\t";
+            for ( key of cols) {
+                  if (key == "N/A") {
+                  tempstr += "1"+"\t";
+                  } else {
+                        tempstr += sourceselection[i].feature.properties[col_dict[key]]+"\t"; 
+                  } 
+            }
+            sourcedata += tempstr + "\n";
+      } 
+      return sourcedata;
 }
 
-function download(filename, text) {
+// generate sink data from sinkselection
+function generatesinkdata () {
+      var header_array = ["ID", "Sink_ID", "fieldCap(MtCO2)", "costFix($M)", "fixO&M($M/yr)", "wellCap(MtCO2/yr)", "wellCostFix($M)", "wellFixO&M($M/yr)", "varO&M($/tCO2)", "N/A", "LON", "LAT", "N/A", "N/A", "N/A", "N/A", "Name"];
+      var sinkdata=header_array.join('\t') + "\n";
+      var cols =["ID","Sink_ID", "fieldCap", "costFix", "fixOM", "wellCap", "wellCostFix", "wellFixOM", "varOM", "N/A", "LON", "LAT", "N/A", "N/A", "N/A", "N/A", "Name"];
+      var col_dict = {"ID":0,"Sink_ID":"UniqueID","fieldCap":"StorageCap", "costFix":"TotalUnitCost","fixOM":"SiteOM","wellCap":"InjCap","wellCostFix":"WellRate","wellFixOM":"InjectionOM","varOM":"InjVarOM","N/A":"","LON":"X","LAT":"Y","Name":"Name"};
+      var tempstr = "";
+      for (i = 0; i < sinkselection.length; i++) {
+            tempstr = "";
+            for ( key of cols) {
+                  if (key == "N/A") {
+                        tempstr += "0"+"\t";
+                  } else if (key == "ID") {
+                        tempstr += (i+1).toString() + "\t";
+                  } else {
+                        tempstr += sinkselection[i].feature.properties[col_dict[key]]+"\t"; 
+                  } 
+            }
+            sinkdata += tempstr + "\n";
+      } 
+      return sinkdata;
+
+}
+
+function createdownloadlink(filename, data, text) {
     var element = document.createElement('a');
     //element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    var file = new Blob([text], {type: 'text/plain'});
+    var file = new Blob([data], {type: 'text/plain'});
     element.href = URL.createObjectURL(file);
     element.setAttribute('download', filename);
-    element.text = "Download Sources.txt";
+    element.text = text;
     element.style.display = 'block';
     return element;
 }
@@ -147,9 +171,15 @@ function displayselecteddata(panelid) {
       var div = document.createElement("div");
       var sourcetxt = generatesourcedata();
       div.innerHTML +="<Strong>Sources selected: " + sourceselection.length + "</Strong>";
-      div.innerHTML += "<p>" + sourcetxt + "</p>";
-      var downloadlink = download("source.txt",sourcetxt);
+      var downloadlink = createdownloadlink("source.txt",sourcetxt,"Download Sources.txt");
       div.appendChild(downloadlink);
+      div.innerHTML += "<p>" + sourcetxt + "</p>";
+      var sinktxt = generatesinkdata();
+      div.innerHTML +="<Strong>Sink selected: " + sinkselection.length + "</Strong>";
+      downloadlink = createdownloadlink("sink.txt",sinktxt,"Download Sinks.txt");
+      div.appendChild(downloadlink);
+      div.innerHTML += "<p>" + sinktxt + "</p>";
+      
       return div;
 }
 

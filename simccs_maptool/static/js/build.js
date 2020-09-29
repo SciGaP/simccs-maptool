@@ -19,19 +19,6 @@ map.createPane("pointsPane");
  // create the sidebar instance and add it to the map
  var sidebar = L.control.sidebar({ autopan: true, container: 'sidebar' }).addTo(map);
  
- 
- // Defining async function 
-async function getdata(url) { 
-    
-    // Storing response 
-    const response = await fetch(url); 
-    
-    // Storing data in form of JSON 
-    var data = await response.json(); 
-    //console.log(data);
-    return data;
-} 
-
 // default point option
 var geojsonMarkerOptions = {
     radius: 8,
@@ -50,6 +37,8 @@ function getColor(d) {
             d > 0.0  ? '#00f905' :
                         '#FFEDA0';
 }
+
+// create a legend for coloring field
 function createLegend(fieldname)
 {
     var div = L.DomUtil.create('div', 'info legend'),
@@ -110,6 +99,18 @@ function handleclick(id){
         $("#"+id).prop('checked', true);
     }
 }
+
+ // Defining async function 
+ async function getdata(url) { 
+    
+    // Storing response 
+    const response = await fetch(url); 
+    
+    // Storing data in form of JSON 
+    var data = await response.json(); 
+    //console.log(data);
+    return data;
+} 
 
 // load data by url
 async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
