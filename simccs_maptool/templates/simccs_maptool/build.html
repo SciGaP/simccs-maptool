@@ -72,6 +72,13 @@
             // set up data
             set_casedata();
             sidebar.open("home");
+
+            //bind slector event
+            $(document).on("changed.bs.select",".selectpicker",function() {
+            //$('.selectpicker').on('changed.bs.select', function (e,clickedIndex, newValue, oldValue) {
+                  //console.log(this.id);
+                  console.log($(this).val());
+            });
  
             }); // end of document ready 
 

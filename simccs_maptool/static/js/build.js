@@ -156,8 +156,9 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
     // add selector
     if (datadesc['type'] == 'source') {
         var selector = '<select class="selectpicker" id="selector_' + datadesc['dataid'] +'" title="select by names ..." data-live-search="true" multiple data-actions-box="true" data-width="auto">';
+        var ukey, uvalue;
         for (entry of data['features']) {
-            ukey = entry['properties']['ID'];
+            ukey = entry['properties']['UniqueID'];
             uvalue = entry['properties']['Name'].trim();
             // pick up first 15 
             if (uvalue.length > 20) {uvalue = uvalue.slice(0,20) + "...";}
@@ -165,6 +166,7 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
             }
         selector += "</select>";
         document.getElementById("layercontrol").innerHTML+="<div>" + selector + "</div>"; 
+        console.log("selector added");
     }
 
     newLayer.addTo(map);
