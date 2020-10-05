@@ -153,6 +153,20 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
     radiostr += '<label class="form-check-label" for="'+datadesc['dataid']+'">'+ datadesc['type'].charAt(0).toUpperCase() + datadesc['type'].slice(1)+":"+datadesc['name']+'</label><br>';
     
     document.getElementById("layercontrol").innerHTML+=radiostr;
+    // add selector
+    if (datadesc['type'] == 'source') {
+        var selector = '<select class="selectpicker" id="selector_' + datadesc['dataid'] +'" title="select by names ..." data-live-search="true" multiple data-actions-box="true" data-width="auto">';
+        for (entry of data['features']) {
+            ukey = entry['properties']['ID'];
+            uvalue = entry['properties']['Name'].trim();
+            // pick up first 15 
+            if (uvalue.length > 20) {uvalue = uvalue.slice(0,20) + "...";}
+            selector += '<option value="'+ ukey +'">'+ uvalue +'</option>';
+            }
+        selector += "</select>";
+        document.getElementById("layercontrol").innerHTML+="<div>" + selector + "</div>"; 
+    }
+
     newLayer.addTo(map);
     maplayers[datadesc['dataid']] = newLayer;
     if (datastyle !== "") {       // generate legend
