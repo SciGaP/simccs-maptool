@@ -134,7 +134,7 @@ function generatesourcedata() {
 
 // generate sink data from sinkselection
 function generatesinkdata () {
-      var header_array = ["ID", "Sink_ID", "fieldCap(MtCO2)", "costFix($M)", "fixO&M($M/yr)", "wellCap(MtCO2/yr)", "wellCostFix($M)", "wellFixO&M($M/yr)", "varO&M($/tCO2)", "N/A", "LON", "LAT", "N/A", "N/A", "N/A", "N/A", "Name"];
+      var header_array = ["ID", "Sink_ID", "fieldCap (MtCO2)", "costFix ($M)", "fixO&M ($M/yr)", "wellCap (MtCO2/yr)", "wellCostFix ($M)", "wellFixO&M ($M/yr)", "varO&M ($/tCO2)", "N/A", "LON", "LAT", "N/A", "N/A", "N/A", "N/A", "Name"];
       var sinkdata=header_array.join('\t') + "\n";
       var cols =["ID","Sink_ID", "fieldCap", "costFix", "fixOM", "wellCap", "wellCostFix", "wellFixOM", "varOM", "N/A", "LON", "LAT", "N/A", "N/A", "N/A", "N/A", "Name"];
       var col_dict = {"ID":0,"Sink_ID":"UniqueID","fieldCap":"StorageCap", "costFix":"TotalUnitCost","fixOM":"SiteOM","wellCap":"InjCap","wellCostFix":"WellRate","wellFixOM":"InjectionOM","varOM":"InjVarOM","N/A":"","LON":"X","LAT":"Y","Name":"Name"};
@@ -167,18 +167,38 @@ function createdownloadlink(filename, data, text) {
     return element;
 }
 
+function arrayToTable(textblob) {
+    var tableData = textblob.split("\n");
+    var table = $('<table class="table table-condensed table-bordered"></table>');
+    $(tableData).each(function (i, rowData) {
+        var row = $('<tr></tr>');
+        var rowData_a = rowData.split("\t");
+        if (rowData_a.length > 1) {
+        $(rowData_a).each(function (j, cellData) {
+            row.append($('<td>'+cellData+'</td>'));
+        });
+        table.append(row); }
+    });
+    return table[0].outerHTML;
+}
+
 function displayselecteddata(panelid) {
       var div = document.createElement("div");
       var sourcetxt = generatesourcedata();
       div.innerHTML +="<Strong>Sources selected: " + sourceselection.length + "</Strong>";
       var downloadlink = createdownloadlink("source.txt",sourcetxt,"Download Sources.txt");
       div.appendChild(downloadlink);
-      div.innerHTML += "<p>" + sourcetxt + "</p>";
+      div.innerHTML += "<br>";
+      //div.innerHTML += "<p>" + sourcetxt + "</p>";
+      div.innerHTML += '<div style="overflow: auto;height: 200px; width: 95%">'+arrayToTable(sourcetxt)+"</div>";
       var sinktxt = generatesinkdata();
+      div.innerHTML += "<br>";
       div.innerHTML +="<Strong>Sink selected: " + sinkselection.length + "</Strong>";
       downloadlink = createdownloadlink("sink.txt",sinktxt,"Download Sinks.txt");
       div.appendChild(downloadlink);
-      div.innerHTML += "<p>" + sinktxt + "</p>";
+      div.innerHTML += "<br>";
+      //div.innerHTML += "<p>" + sinktxt + "</p>";
+      div.innerHTML += '<div style="overflow: auto;height: 200px; width: 95%">'+arrayToTable(sinktxt)+"</div>";
       
       return div;
 }
