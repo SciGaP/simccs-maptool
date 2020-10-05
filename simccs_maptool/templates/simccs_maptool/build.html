@@ -108,8 +108,8 @@ async function set_casedata() {
       addcostsurface(bbox);
 }
 
-// create a new experiment
-var experimentid = 0;
+// create a new scenario
+var scenarioid = 0;
 
 // generate source data from sourceslection
 function generatesourcedata() {
@@ -184,18 +184,18 @@ function displayselecteddata(panelid) {
 }
 
 
-function create_experiment() {
-      if (experimentid >= 5 ) {alert("Maximum number of experiments reached!");return;};
+function create_scenario() {
+      if (scenarioid >= 5 ) {alert("Maximum number of scenarios reached!");return;};
       
       // check if the source/sink are selected
       if (sourceselection.length == 0 ) {alert('No sources are selected!');return}
       if (sinkselection.length == 0 ) {alert('No sinks are selected!');return}
-      var panelid = 'experiment' + experimentid++;
+      var panelid = 'scenario' + scenarioid++;
       var panediv = displayselecteddata(panelid);
       sidebar.addPanel({
             id:   panelid,
             tab:  '<i class="fa fa-cog" aria-hidden="true"></i>',
-            title: 'Experiment ' + experimentid,
+            title: 'Scenario ' + scenarioid,
             pane: panediv.innerHTML,
       });
       // simple show the data
@@ -235,7 +235,7 @@ function create_experiment() {
                 <div><span  style="font-size: 150%" id="case_description"></span></div>
                 <div id="layercontrol" class="form-check" style="font-size: 150%"></div>
                 <br>
-                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="create_experiment()"><strong>Create Experiment with the Selected</strong></button>  
+                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="create_scenario()"><strong>Create Scenario with the Selected</strong></button>  
                 <button type="button" class="btn btn-primary btn-sm btn-block" onclick="clear_selection()"><strong>Clear the Selections</strong></button>  
             </div>
 
