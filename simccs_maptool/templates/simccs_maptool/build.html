@@ -76,8 +76,9 @@
             //bind slector event
             $(document).on("changed.bs.select",".selectpicker",function() {
             //$('.selectpicker').on('changed.bs.select', function (e,clickedIndex, newValue, oldValue) {
-                  //console.log(this.id);
-                  console.log($(this).val());
+                  var dataid = (this.id).split("_")[1];
+                  var selected_ids = $(this).val();
+                  source_selectbynames(dataid,selected_ids);
             });
  
             }); // end of document ready 

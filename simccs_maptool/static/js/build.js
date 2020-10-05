@@ -214,3 +214,36 @@ function clear_selection() {
     sinkselection = [];
     //document.dispatchEvent(new Event("sink-selection-change"));
 }
+
+// source selector 
+function source_selectbynames(dataid,selected_ids) {
+    var elayer;
+    // first handle deselect all 
+    if (selected_ids.length == 0) {
+      for (elayer of sourceselection) {
+          elayer.setStyle(geojsonMarkerOptions);
+          }
+       sourceselection = [];
+       return;
+    }
+    var source_id;
+    var sourceLayer = maplayers[dataid];
+    sourceLayer.eachLayer(function(layer) {
+          // convert id to string object
+          source_id = layer.feature.properties['UniqueID'].toString();
+          // check if layer already in selection
+          var target_id = sourceselection.indexOf(layer);
+          if (selected_ids.includes(source_id)) {
+                // if not selected, add to selection
+                if (target_id < 0) {layer.setStyle({weight:3,fillColor:"orangered",radius:12});
+                sourceselection.push(layer);}
+          } else {
+                // if deselected, remove it
+                if (target_id >= 0) {
+                      layer.setStyle(geojsonMarkerOptions);
+                      sourceselection.splice(target_id,1);
+                }
+          }
+    });
+
+}
