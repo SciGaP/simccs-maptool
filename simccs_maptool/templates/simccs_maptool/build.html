@@ -109,7 +109,7 @@ async function set_casedata() {
 }
 
 // create a new scenario
-var scenarioid = 0;
+var scenarioid = 1;
 
 // generate source data from sourceslection
 function generatesourcedata() {
@@ -185,19 +185,24 @@ function displayselecteddata(panelid) {
 
 
 function create_scenario() {
-      if (scenarioid >= 5 ) {alert("Maximum number of scenarios reached!");return;};
+      if (scenarioid > 5 ) {alert("Maximum number of scenarios reached!");return;};
       
       // check if the source/sink are selected
       if (sourceselection.length == 0 ) {alert('No sources are selected!');return}
       if (sinkselection.length == 0 ) {alert('No sinks are selected!');return}
-      var panelid = 'scenario' + scenarioid++;
+      var panelid = 'scenario' + scenarioid;
       var panediv = displayselecteddata(panelid);
+      var title = 'Scenario ' + scenarioid;
+      // get the name of scenario
+      var sname = prompt("Please name the secenario", title);
+      if (sname != null) { title = sname;} else {return;}
       sidebar.addPanel({
             id:   panelid,
             tab:  '<i class="fa fa-cog" aria-hidden="true"></i>',
-            title: 'Scenario ' + scenarioid,
+            title: title,
             pane: panediv.innerHTML,
       });
+      scenarioid += 1;
       // simple show the data
       sidebar.open(panelid);
       
