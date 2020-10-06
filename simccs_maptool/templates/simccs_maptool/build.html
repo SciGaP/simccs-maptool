@@ -208,6 +208,23 @@ function displayselecteddata(panelid) {
       //div.innerHTML += "<p>" + sinktxt + "</p>";
       div.innerHTML += '<div style="overflow: auto;height: 200px; width: 95%">'+arrayToTable(sinktxt)+"</div>";
       
+      // grab model parameters
+      mp_list = ["Capital_Recovery_Rate","Project_Period","Capture_Target"]; 
+      var p_value;
+      var mp_div = document.getElementById('model_parameters').outerHTML;
+      var tb_new = "";
+      var tb_entry;
+      for (const entry of mp_list) {
+            //get the value
+            p_value = $('#'+entry).val();
+            tb_entry = '<tr><td>Capital Recovery Rate</td><td><input id="Capital_Recovery_Rate" name="Capital_Recovery_Rate" type="text" size=8 value='+  p_value +' required></td></tr>';
+            tb_entry = tb_entry.replace(new RegExp(entry, 'g'), entry +"_"+ panelid);
+            tb_new += tb_entry;
+      }
+      mp_div= mp_div.replace(/<table>[\s\S]*?<\/table>/, '<table>' + tb_new + '<\/table>');
+      console.log(mp_div);
+      div.innerHTML += mp_div;
+
       return div;
 }
 
