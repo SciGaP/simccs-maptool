@@ -208,15 +208,17 @@ function displayselecteddata(panelid) {
       //div.innerHTML += "<p>" + sourcetxt + "</p>";
       var table_id = "source_table_" + panelid;
       div.innerHTML+='<a href="#" onclick=toggle_table_visibility("' + table_id + '")>Show/hide source data</a>';
+      div.innerHTML += "<br>";
       div.innerHTML += '<div id='+ table_id +' style="overflow: auto;height: 200px; width: 95%; display: none" >'+arrayToTable(sourcetxt)+"</div>";
       var sinktxt = generatesinkdata();
-      div.innerHTML += "<br><br>";
+      div.innerHTML += "<br>";
       div.innerHTML +="<Strong>Sink selected: " + sinkselection.length + "</Strong>";
       downloadlink = createdownloadlink("sink.txt",sinktxt,"Download Sinks.txt");
       div.appendChild(downloadlink);
       //div.innerHTML += "<p>" + sinktxt + "</p>";
       table_id = "sink_table_" + panelid;
-      div.innerHTML+='<a href="#" onclick=toggle_table_visibility("' + table_id + '")>Show/hide source data</a>';
+      div.innerHTML+='<a href="#" onclick=toggle_table_visibility("' + table_id + '")>Show/hide sink data</a>';
+      div.innerHTML += "<br>";
       div.innerHTML += '<div id='+ table_id +' style="overflow: auto;height: 200px; width: 95%; display: none">'+arrayToTable(sinktxt)+"</div>";
       div.innerHTML += "<br><br>";
       
