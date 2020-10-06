@@ -190,23 +190,35 @@ function arrayToTable(textblob) {
     return table[0].outerHTML;
 }
 
+function toggle_table_visibility(tableid) {
+      var e = document.getElementById(tableid);
+       if(e.style.display == 'block')
+          e.style.display = 'none';
+       else
+          e.style.display = 'block';
+    }
+
 function displayselecteddata(panelid) {
       var div = document.createElement("div");
       var sourcetxt = generatesourcedata();
       div.innerHTML +="<Strong>Sources selected: " + sourceselection.length + "</Strong>";
       var downloadlink = createdownloadlink("source.txt",sourcetxt,"Download Sources.txt");
       div.appendChild(downloadlink);
-      div.innerHTML += "<br>";
+      //div.innerHTML += "<br>";
       //div.innerHTML += "<p>" + sourcetxt + "</p>";
-      div.innerHTML += '<div style="overflow: auto;height: 200px; width: 95%">'+arrayToTable(sourcetxt)+"</div>";
+      var table_id = "source_table_" + panelid;
+      div.innerHTML+='<a href="#" onclick=toggle_table_visibility("' + table_id + '")>Show/hide source data</a>';
+      div.innerHTML += '<div id='+ table_id +' style="overflow: auto;height: 200px; width: 95%; display: none" >'+arrayToTable(sourcetxt)+"</div>";
       var sinktxt = generatesinkdata();
-      div.innerHTML += "<br>";
+      div.innerHTML += "<br><br>";
       div.innerHTML +="<Strong>Sink selected: " + sinkselection.length + "</Strong>";
       downloadlink = createdownloadlink("sink.txt",sinktxt,"Download Sinks.txt");
       div.appendChild(downloadlink);
-      div.innerHTML += "<br>";
       //div.innerHTML += "<p>" + sinktxt + "</p>";
-      div.innerHTML += '<div style="overflow: auto;height: 200px; width: 95%">'+arrayToTable(sinktxt)+"</div>";
+      table_id = "sink_table_" + panelid;
+      div.innerHTML+='<a href="#" onclick=toggle_table_visibility("' + table_id + '")>Show/hide source data</a>';
+      div.innerHTML += '<div id='+ table_id +' style="overflow: auto;height: 200px; width: 95%; display: none">'+arrayToTable(sinktxt)+"</div>";
+      div.innerHTML += "<br><br>";
       
       // grab model parameters
       mp_list = ["Capital_Recovery_Rate","Project_Period","Capture_Target"]; 
@@ -222,7 +234,6 @@ function displayselecteddata(panelid) {
             tb_new += tb_entry;
       }
       mp_div= mp_div.replace(/<table>[\s\S]*?<\/table>/, '<table>' + tb_new + '<\/table>');
-      console.log(mp_div);
       div.innerHTML += mp_div;
 
       return div;
@@ -288,7 +299,7 @@ function create_scenario() {
                 <!-- model parameters-->
                 <div class="card border-info">
                 <div class="card-body">
-                <div id="model_parameters" style="font-size: 150%">
+                <div id="model_parameters" style="font-size: 125%">
                 <strong>Model Parameters</strong><br>
                 <table>
                             <tr><td>Capital Recovery Rate</td><td><input id="Capital_Recovery_Rate" name="Capital_Recovery_Rate" type="text" size=8 value="0.1" required></td></tr>
