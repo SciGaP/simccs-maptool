@@ -220,12 +220,13 @@ function displayselecteddata(panelid) {
       div.innerHTML+='<a href="#" onclick=toggle_table_visibility("' + table_id + '")>Show/hide sink data</a>';
       div.innerHTML += "<br>";
       div.innerHTML += '<div id='+ table_id +' style="overflow: auto;height: 200px; width: 95%; display: none">'+arrayToTable(sinktxt)+"</div>";
-      div.innerHTML += "<br><br>";
+      div.innerHTML += "<br>";
       
       // grab model parameters
       mp_list = ["Capital_Recovery_Rate","Project_Period","Capture_Target"]; 
       var p_value;
       var mp_div = document.getElementById('model_parameters').outerHTML;
+      mp_div = mp_div.replace("125%","100%");
       var tb_new = "";
       var tb_entry;
       for (const entry of mp_list) {
@@ -237,6 +238,8 @@ function displayselecteddata(panelid) {
       }
       mp_div= mp_div.replace(/<table>[\s\S]*?<\/table>/, '<table>' + tb_new + '<\/table>');
       div.innerHTML += mp_div;
+      div.innerHTML += "<br>";
+      div.innerHTML += '<button type="button" class="btn btn-primary btn-sm btn-block" onclick="create_experment()"><strong>Create a New Experiment</strong></button>';
 
       return div;
 }
@@ -258,7 +261,7 @@ function create_scenario() {
             id:   panelid,
             tab:  '<i class="fa fa-cog" aria-hidden="true"></i>',
             title: title,
-            pane: panediv.innerHTML,
+            pane: '<div style="font-size: 125%">' + panediv.innerHTML +"</div>",
       });
       scenarioid += 1;
       // simple show the data
