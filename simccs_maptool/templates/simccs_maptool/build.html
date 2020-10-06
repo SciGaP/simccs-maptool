@@ -268,6 +268,21 @@ function create_scenario() {
                 <div><span  style="font-size: 150%" id="case_description"></span></div>
                 <div id="layercontrol" class="form-check" style="font-size: 150%"></div>
                 <br>
+                <!-- model parameters-->
+                <div class="card border-info">
+                <div class="card-body">
+                <div id="model_parameters" style="font-size: 150%">
+                <strong>Model Parameters</strong><br>
+                <table>
+                            <tr><td>Capital Recovery Rate</td><td><input id="Capital_Recovery_Rate" name="Capital_Recovery_Rate" type="text" size=8 value="0.1" required></td></tr>
+                            <tr><td>Project Period (yrs)</td><td><input id="Project_Period" name="Project_Period" type="text" size=8 value="10" required></td></tr>
+                            <tr><td>Capture Target (MT/y)</td><td><input id="Capture_Target" name="Capture_Target" type="text" size=8 value="5" required></td></tr>
+                </table>
+                </div>
+                </div>
+            </div>
+                <!-- end of model parameters-->
+
                 <button type="button" class="btn btn-primary btn-sm btn-block" onclick="create_scenario()"><strong>Create Scenario with the Selected</strong></button>  
                 <button type="button" class="btn btn-primary btn-sm btn-block" onclick="clear_selection()"><strong>Clear the Selections</strong></button>  
             </div>
