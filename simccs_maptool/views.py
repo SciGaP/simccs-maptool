@@ -292,7 +292,9 @@ def _get_experiment_file(request, experiment, name, input_file=False):
             if exp_output.name == name:
                 data_product_uri = exp_output.value
     if data_product_uri:
-        return user_storage.open_file(request, data_product_uri)
+        data_product = request.airavata_client.getDataProduct(
+            request.authz_token, data_product_uri)
+        return user_storage.open_file(request, data_product)
     else:
         return None
 
