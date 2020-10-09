@@ -26,6 +26,8 @@ specified in Django Portal's `settings_local.py` file.
 - `MAPTOOL_SETTINGS` - this is a dictionary of Map Tool specific settings:
   - `CPLEX_APPLICATION_ID` - The Airavata application module id of the Cplex
     application to launch.
+  - `CPLEX_HOSTNAME` - The hostname of the compute resource on which to
+    launch Cplex.
   - `DATASETS_DIR` - Directory of datasets and their basedata (cost network).
   - `JAVA_OPTIONS` - JVM command line options. Defaults to `-Xmx4g`. May be a
     list or tuple to pass multiple options.

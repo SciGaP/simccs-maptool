@@ -61,6 +61,9 @@ class HomeView(TemplateView):
         context["cplex_application_id"] = getattr(settings, "MAPTOOL_SETTINGS", {}).get(
             "CPLEX_APPLICATION_ID", "Cplex_a7eaf483-ab92-4441-baeb-2f302ccb2919"
         )
+        context["cplex_hostname"] = getattr(settings, "MAPTOOL_SETTINGS", {}).get(
+            "CPLEX_HOSTNAME", "karst.uits.iu.edu"
+        )
         return context
 
 

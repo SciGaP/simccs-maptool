@@ -894,7 +894,7 @@
 
       function case_submitexperiment() {
             var cplex_application_id = "{{ cplex_application_id }}";
-            var hostname = "karst.uits.iu.edu";
+            var hostname = "{{ cplex_hostname }}";
             const services = AiravataAPI.services;
             // Load the application interface for the application module with id cplex_application_id
             const loadAppInterface = services.ApplicationModuleService.getApplicationInterface({
