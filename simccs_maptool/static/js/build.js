@@ -263,7 +263,7 @@ function removedynlayers() {
                   dynmaplayers[key].setStyle({weight:1,color:'grey',fillOpacity:0.4});
                   break;
                 default:
-                  breakl
+                  break;
               } 
             map.removeLayer(dynmaplayers[key]);}
     }
