@@ -134,7 +134,7 @@ function generatesourcedata(selections) {
                   if (key == "N/A") {
                   tempstr += "1"+"\t";
                   } else {
-                        if (selections[i].feature.properties[col_dict[key]] == "-") {tempstr += " \t";}
+                        if (selections[i].feature.properties[col_dict[key]] == "-") {tempstr += "0\t";}
                         else {tempstr += selections[i].feature.properties[col_dict[key]]+"\t";} 
                   } 
             }
