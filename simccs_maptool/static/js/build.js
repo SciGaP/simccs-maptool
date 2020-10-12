@@ -256,10 +256,13 @@ function hideunselected(source_selection, sink_selection) {
     }
     var source_selection_layer = L.layerGroup(source_selection);
     var sink_selection_layer = L.layerGroup(sink_selection);
+    for (var key in dynmaplayers){ 
+        if (map.hasLayer(dynmaplayers[key])) { map.removeLayer(dynmaplayers[key]);}
+    }
     source_selection_layer.addTo(map);
     sink_selection_layer.addTo(map);
-    maplayers['source_selection_layer'] = source_selection_layer;
-    maplayers['sink_selection_layer'] = sink_selection_layer;
+    dynmaplayers['source_selection_layer'] = source_selection_layer;
+    dynmaplayers['sink_selection_layer'] = sink_selection_layer;
 }
 
 // refreshmap by panel
@@ -267,6 +270,16 @@ function refreshmap(p_id) {
     if (p_id.includes('scenario')) {
         console.log(sourceselection_panel);
         hideunselected(sourceselection_panel[p_id],sinkselection_panel[p_id]);
+    }
+    if (p_id.includes('home')) {
+        // remove dynlayers
+        for (var key in dynmaplayers){ 
+            if (map.hasLayer(dynmaplayers[key])) { map.removeLayer(dynmaplayers[key]);}
+        }
+        // add layers backs
+        for (var key in maplayers){ 
+            if (!map.hasLayer(maplayers[key])) { maplayers[key].addTo(map);}
+        }       
     }
 
 }
