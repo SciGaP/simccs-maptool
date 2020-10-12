@@ -166,7 +166,7 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
             }
         selector += "</select>";
         document.getElementById("layercontrol").innerHTML+="<div>" + selector + "</div>"; 
-        console.log("selector added");
+        //console.log("selector added");
     }
 
     newLayer.addTo(map);
@@ -311,7 +311,6 @@ function refreshmap(p_id) {
 }
 
 // generate candidate network
-var candidateNetworkLayer = L.geoJSON(null, {style:{color:"blue",opacity:0.5,weight:4}});
 function generatecandidatenetwork(panelid) {
     
     var source_selection = sourceselection_panel[panelid];
@@ -327,14 +326,16 @@ function generatecandidatenetwork(panelid) {
     return AiravataAPI.utils.FetchUtils.post("/maptool/candidate-network/", formData).then(function( data ) {
         // Note: 'data' includes Sinks and Sources but since those are
         // already displayed I'm opting to only display the Network
+        var candidateNetworkLayer = L.geoJSON(null, {style:{color:"blue",opacity:0.5,weight:4}});
         candidateNetworkLayer.clearLayers();
         candidateNetworkLayer.addData(data["Network"]);
         if (!map.hasLayer(candidateNetworkLayer)) {
               candidateNetworkLayer.addTo(map);
-              dynmaplayers['candidate_network_layer'] = candidateNetworkLayer;
         }
         // save candidateNetworkLayer
+        dynmaplayers['candidate_network_layer'] = candidateNetworkLayer;
         candidatenetwork_panel[panelid] = candidateNetworkLayer;
+        console.log(candidatenetwork_panel);
         // Cache the candidate network
         //Maptool.cachedCandidateNetwork = data["CandidateNetwork"];
         //Maptool.cachedCandidateNetworkSourceIds = sourceIds;
