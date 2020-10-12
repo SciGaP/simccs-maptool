@@ -81,8 +81,15 @@
                   source_selectbynames(dataid,selected_ids);
             });
  
+            sidebar.on('content', function(e) {
+                  // e.id contains the id of the opened panel
+                  // update map based on opened panel
+                  console.log(e.id);
+            })
+            
             }); // end of document ready 
 
+// gloabl variables
 var casejson;
 var maplayers = {}; // record layers displayed on map, layername:layerdata
 var sourceselection = []; // current source selection
@@ -276,7 +283,8 @@ function create_scenario() {
       scenarioid += 1;
       // simple show the data
       sidebar.open(panelid);
-      
+      // hide unselected
+      hideunselected(sourceselection,sinkselection);
 }
   
      

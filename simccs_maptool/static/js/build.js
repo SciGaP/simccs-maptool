@@ -248,6 +248,15 @@ function source_selectbynames(dataid,selected_ids) {
 
 }
 
+// hideunselected 
+function hideunselected(source_selection, sink_selection) {
+
+    for (var key in maplayers){ 
+        if (map.hasLayer(maplayers[key])) { map.removeLayer(maplayers[key]);}
+    }
+    for (entry of source_selection) {entry.addTo(map);}
+    for (entry of sink_selection) {entry.addTo(map);}
+}
 
 // generate candidate network
 var candidateNetworkLayer = L.geoJSON(null, {style:{color:"blue",opacity:0.5,weight:4}});
@@ -288,7 +297,7 @@ function getSourceIds(selections) {
     return new Set(selections.map(snk => "saline-" + snk.feature.properties.UniqueID));
  }
 
- function display_error_modal(error, message) {
+function display_error_modal(error, message) {
 
     message = typeof message !== 'undefined' ? message : error.message;
     var m_html =`<div class="modal fade in" tabindex="-1" role="dialog">
