@@ -84,9 +84,11 @@
             }); // end of document ready 
 
 var casejson;
-var maplayers = {};
-var sourceselection = [];
-var sinkselection = [];
+var maplayers = {}; // record layers displayed on map, layername:layerdata
+var sourceselection = []; // current source selection
+var sinkselection = []; // current sink selection
+var sourceselection_panel = {}; // panelid:data
+var sinkselection_panel = {}; // panelid:data
 
 async function set_casedata() {
       var urlprefix = "/static/Data/Build/";
@@ -120,19 +122,19 @@ async function set_casedata() {
 var scenarioid = 1;
 
 // generate source data from sourceslection
-function generatesourcedata() {
+function generatesourcedata(selections) {
       var sourcedata = "ID\tcostFix ($M)\tfixO&M ($M/y)\tvarO&M ($/tCO2)\tcapMax (MtCO2/y)\tN/A\tLON\tLAT\tNAME\n";
       var cols =["ID","costFix","fixOM","varOM","capMax","N/A","X","Y","Name"];
       var col_dict = {"ID":"UniqueID","costFix":"TotalUnitCost","fixOM":"FixedOM","varOM":"VarOM","capMax":"CapCO2","N/A":"","X":"X","Y":"Y","Name":"Name"};
       var tempstr = "";
-      for (i = 0; i < sourceselection.length; i++) {
+      for (i = 0; i < selections.length; i++) {
             tempstr = "";
             //tempstr += (i+1).toString()+"\t";
             for ( key of cols) {
                   if (key == "N/A") {
                   tempstr += "1"+"\t";
                   } else {
-                        tempstr += sourceselection[i].feature.properties[col_dict[key]]+"\t"; 
+                        tempstr += selections[i].feature.properties[col_dict[key]]+"\t"; 
                   } 
             }
             sourcedata += tempstr + "\n";
@@ -141,13 +143,13 @@ function generatesourcedata() {
 }
 
 // generate sink data from sinkselection
-function generatesinkdata () {
+function generatesinkdata (selections) {
       var header_array = ["ID", "Sink_ID", "fieldCap (MtCO2)", "costFix ($M)", "fixO&M ($M/yr)", "wellCap (MtCO2/yr)", "wellCostFix ($M)", "wellFixO&M ($M/yr)", "varO&M ($/tCO2)", "N/A", "LON", "LAT", "N/A", "N/A", "N/A", "N/A", "Name"];
       var sinkdata=header_array.join('\t') + "\n";
       var cols =["ID","Sink_ID", "fieldCap", "costFix", "fixOM", "wellCap", "wellCostFix", "wellFixOM", "varOM", "N/A", "LON", "LAT", "N/A", "N/A", "N/A", "N/A", "Name"];
       var col_dict = {"ID":0,"Sink_ID":"UniqueID","fieldCap":"StorageCap", "costFix":"TotalUnitCost","fixOM":"SiteOM","wellCap":"InjCap","wellCostFix":"WellRate","wellFixOM":"InjectionOM","varOM":"InjVarOM","N/A":"","LON":"X","LAT":"Y","Name":"Name"};
       var tempstr = "";
-      for (i = 0; i < sinkselection.length; i++) {
+      for (i = 0; i < selections.length; i++) {
             tempstr = "";
             for ( key of cols) {
                   if (key == "N/A") {
@@ -155,7 +157,7 @@ function generatesinkdata () {
                   } else if (key == "ID") {
                         tempstr += (i+1).toString() + "\t";
                   } else {
-                        tempstr += sinkselection[i].feature.properties[col_dict[key]]+"\t"; 
+                        tempstr += selections[i].feature.properties[col_dict[key]]+"\t"; 
                   } 
             }
             sinkdata += tempstr + "\n";
@@ -199,8 +201,12 @@ function toggle_table_visibility(tableid) {
     }
 
 function displayselecteddata(panelid) {
+      // record data first
+      sourceselection_panel[panelid] = sourceselection;
+      sinkselection_panel[panelid] = sinkselection;
+
       var div = document.createElement("div");
-      var sourcetxt = generatesourcedata();
+      var sourcetxt = generatesourcedata(sourceselection);
       div.innerHTML +="<Strong>Sources selected: " + sourceselection.length + "</Strong>";
       var downloadlink = createdownloadlink("source.txt",sourcetxt,"Download Sources.txt");
       div.appendChild(downloadlink);
@@ -210,7 +216,7 @@ function displayselecteddata(panelid) {
       div.innerHTML+='<a href="#" onclick=toggle_table_visibility("' + table_id + '")>Show/hide source data</a>';
       div.innerHTML += "<br>";
       div.innerHTML += '<div id='+ table_id +' style="overflow: auto;height: 200px; width: 95%; display: none" >'+arrayToTable(sourcetxt)+"</div>";
-      var sinktxt = generatesinkdata();
+      var sinktxt = generatesinkdata(sinkselection);
       div.innerHTML += "<br>";
       div.innerHTML +="<Strong>Sink selected: " + sinkselection.length + "</Strong>";
       downloadlink = createdownloadlink("sink.txt",sinktxt,"Download Sinks.txt");
@@ -222,6 +228,7 @@ function displayselecteddata(panelid) {
       div.innerHTML += '<div id='+ table_id +' style="overflow: auto;height: 200px; width: 95%; display: none">'+arrayToTable(sinktxt)+"</div>";
       div.innerHTML += "<br>";
       
+
       // grab model parameters
       mp_list = ["Capital_Recovery_Rate","Project_Period","Capture_Target"]; 
       var p_value;
@@ -240,6 +247,7 @@ function displayselecteddata(panelid) {
       div.innerHTML += mp_div;
       div.innerHTML += "<br>";
       div.innerHTML += '<button type="button" class="btn btn-primary btn-sm btn-block" onclick="create_experment()"><strong>Create a New Experiment</strong></button>';
+      div.innerHTML += '<button type="button" id="bn_generatecandidatenetwork" class="btn btn-primary btn-sm btn-block" onclick=generatecandidatenetwork("'+ panelid +'")>Generate Candidate Network</button>';
 
       return div;
 }

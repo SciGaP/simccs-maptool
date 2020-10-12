@@ -247,3 +247,43 @@ function source_selectbynames(dataid,selected_ids) {
     });
 
 }
+
+
+// generate candidate network
+var candidateNetworkLayer = L.geoJSON(null, {style:{color:"blue",opacity:0.5,weight:4}});
+function generatecandidatenetwork(panelid) {
+    
+    var source_selection = sourceselection_panel[panelid];
+    var sink_selection = sinkselection_panel[panelid];
+    var sourcedata = generatesourcedata(source_selection);
+    var sinkdata=generatesinkdata(sink_selection);
+    var sourceIds = getSourceIds(source_selection);
+    var sinkIds = getSinkIds(sink_selection);
+    var formData = new FormData();
+    formData.set('sources', sourcedata);
+    formData.set('sinks', sinkdata);
+    formData.set('dataset', "Lower48US");
+    return AiravataAPI.utils.FetchUtils.post("/maptool/candidate-network/", formData).then(function( data ) {
+        // Note: 'data' includes Sinks and Sources but since those are
+        // already displayed I'm opting to only display the Network
+        candidateNetworkLayer.clearLayers();
+        candidateNetworkLayer.addData(data["Network"]);
+        if (!map.hasLayer(candidateNetworkLayer)) {
+              candidateNetworkLayer.addTo(map);
+        }
+        // Cache the candidate network
+        Maptool.cachedCandidateNetwork = data["CandidateNetwork"];
+        Maptool.cachedCandidateNetworkSourceIds = sourceIds;
+        Maptool.cachedCandidateNetworkSinkIds = sinkIds;
+        document.dispatchEvent(new CustomEvent("candidate-network-loaded", {detail: data}));
+        return data;
+  }).catch(display_error_modal);
+}
+
+function getSourceIds(selections) {
+    return new Set(selections.map(src => src.feature.properties.UniqueID));
+ }
+
+ function getSinkIds(selections) {
+    return new Set(selections.map(snk => "saline-" + snk.feature.properties.UniqueID));
+ }
