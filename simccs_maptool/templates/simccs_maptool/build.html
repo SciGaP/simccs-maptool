@@ -134,7 +134,8 @@ function generatesourcedata(selections) {
                   if (key == "N/A") {
                   tempstr += "1"+"\t";
                   } else {
-                        tempstr += selections[i].feature.properties[col_dict[key]]+"\t"; 
+                        if (selections[i].feature.properties[col_dict[key]] == "-") {tempstr += " \t";}
+                        else {tempstr += selections[i].feature.properties[col_dict[key]]+"\t";} 
                   } 
             }
             sourcedata += tempstr + "\n";
@@ -157,7 +158,8 @@ function generatesinkdata (selections) {
                   } else if (key == "ID") {
                         tempstr += (i+1).toString() + "\t";
                   } else {
-                        tempstr += selections[i].feature.properties[col_dict[key]]+"\t"; 
+                        if (selections[i].feature.properties[col_dict[key]] == "-") {tempstr += " \t";}
+                        else {tempstr += selections[i].feature.properties[col_dict[key]]+"\t";}
                   } 
             }
             sinkdata += tempstr + "\n";
