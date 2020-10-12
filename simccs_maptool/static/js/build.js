@@ -269,7 +269,7 @@ function removedynlayers() {
     }
 }
 
-function hideunselected(source_selection, sink_selection) {
+function hideunselected(source_selection, sink_selection,network='') {
 
     for (var key in maplayers) { 
         if (map.hasLayer(maplayers[key])) { map.removeLayer(maplayers[key]);}
@@ -283,14 +283,20 @@ function hideunselected(source_selection, sink_selection) {
     sink_selection_layer.addTo(map);
     dynmaplayers['source_selection_layer'] = source_selection_layer;
     dynmaplayers['sink_selection_layer'] = sink_selection_layer;
-    source_selection_layer = null;
+    // candidate_network_layer
+    if (! network=='') {
+        network.addTo(map);
+        dynmaplayers['candidate_network_layer'] = network;
+    }
 }
 
 // refreshmap by panel
 function refreshmap(p_id) {
     if (p_id.includes('scenario')) {
-        console.log(sourceselection_panel);
-        hideunselected(sourceselection_panel[p_id],sinkselection_panel[p_id]);
+        //console.log(sourceselection_panel);
+        if (candidatenetwork_panel.hasOwnProperty(p_id)) {
+            hideunselected(sourceselection_panel[p_id],sinkselection_panel[p_id],network=candidatenetwork_panel[p_id]); }
+        else {hideunselected(sourceselection_panel[p_id],sinkselection_panel[p_id]); }
     }
     if (p_id.includes('home')) {
         // remove dynlayers
@@ -325,7 +331,10 @@ function generatecandidatenetwork(panelid) {
         candidateNetworkLayer.addData(data["Network"]);
         if (!map.hasLayer(candidateNetworkLayer)) {
               candidateNetworkLayer.addTo(map);
+              dynmaplayers['candidate_network_layer'] = candidateNetworkLayer;
         }
+        // save candidateNetworkLayer
+        candidatenetwork_panel[panelid] = candidateNetworkLayer;
         // Cache the candidate network
         Maptool.cachedCandidateNetwork = data["CandidateNetwork"];
         Maptool.cachedCandidateNetworkSourceIds = sourceIds;
