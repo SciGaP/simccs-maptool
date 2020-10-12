@@ -195,11 +195,13 @@ function addcostsurface(bbox) {
 }
 
 // clear the selected
-function clear_selection() {
+function clear_selection(needconfirm=true) {
     // clear all selected 
-    var r = confirm("Clear all the selected?");
-    // do nothing if cancelled
-    if (r == false) {return;}
+    var r;
+    if (needconfirm) { 
+        r = confirm("Clear all the selected?");
+        // do nothing if cancelled
+        if (r == false) {return;} }
     // clear selected sources
     var elayer;
     for (elayer of sourceselection) {
@@ -249,20 +251,39 @@ function source_selectbynames(dataid,selected_ids) {
 }
 
 // hideunselected 
+// rmeove dyn layers, reset styles
+function removedynlayers() {
+    for (var key in dynmaplayers) { 
+        if (map.hasLayer(dynmaplayers[key])) { 
+            switch (key) {
+                case "source_selection_layer":
+                  dynmaplayers[key].setStyle(geojsonMarkerOptions);
+                  break;
+                case "sink_selection_layer":
+                  dynmaplayers[key].setStyle({weight:1,color:'grey',fillOpacity:0.4});
+                  break;
+                default:
+                  breakl
+              } 
+            map.removeLayer(dynmaplayers[key]);}
+    }
+}
+
 function hideunselected(source_selection, sink_selection) {
 
-    for (var key in maplayers){ 
+    for (var key in maplayers) { 
         if (map.hasLayer(maplayers[key])) { map.removeLayer(maplayers[key]);}
     }
-    var source_selection_layer = L.layerGroup(source_selection);
-    var sink_selection_layer = L.layerGroup(sink_selection);
-    for (var key in dynmaplayers){ 
-        if (map.hasLayer(dynmaplayers[key])) { map.removeLayer(dynmaplayers[key]);}
-    }
+    removedynlayers();
+    var source_selection_layer = L.featureGroup(source_selection);
+    source_selection_layer.setStyle({weight:3,fillColor:"orangered",radius:12});
+    var sink_selection_layer = L.featureGroup(sink_selection);
+    sink_selection_layer.setStyle({weight:2,color:"black",fillOpacity:0.7});
     source_selection_layer.addTo(map);
     sink_selection_layer.addTo(map);
     dynmaplayers['source_selection_layer'] = source_selection_layer;
     dynmaplayers['sink_selection_layer'] = sink_selection_layer;
+    source_selection_layer = null;
 }
 
 // refreshmap by panel
@@ -273,13 +294,12 @@ function refreshmap(p_id) {
     }
     if (p_id.includes('home')) {
         // remove dynlayers
-        for (var key in dynmaplayers){ 
-            if (map.hasLayer(dynmaplayers[key])) { map.removeLayer(dynmaplayers[key]);}
-        }
+        removedynlayers();
         // add layers backs
         for (var key in maplayers){ 
             if (!map.hasLayer(maplayers[key])) { maplayers[key].addTo(map);}
-        }       
+        } 
+        clear_selection(needconfirm=false);      
     }
 
 }
