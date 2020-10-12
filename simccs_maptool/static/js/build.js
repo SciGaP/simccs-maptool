@@ -336,9 +336,9 @@ function generatecandidatenetwork(panelid) {
         // save candidateNetworkLayer
         candidatenetwork_panel[panelid] = candidateNetworkLayer;
         // Cache the candidate network
-        Maptool.cachedCandidateNetwork = data["CandidateNetwork"];
-        Maptool.cachedCandidateNetworkSourceIds = sourceIds;
-        Maptool.cachedCandidateNetworkSinkIds = sinkIds;
+        //Maptool.cachedCandidateNetwork = data["CandidateNetwork"];
+        //Maptool.cachedCandidateNetworkSourceIds = sourceIds;
+        //Maptool.cachedCandidateNetworkSinkIds = sinkIds;
         document.dispatchEvent(new CustomEvent("candidate-network-loaded", {detail: data}));
         return data;
   }).catch(display_error_modal);
