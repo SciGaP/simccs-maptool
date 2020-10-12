@@ -85,6 +85,9 @@
                   // e.id contains the id of the opened panel
                   // update map based on opened panel
                   console.log(e.id);
+                        // hide unselected
+                  refreshmap(e.id);
+
             })
             
             }); // end of document ready 
@@ -210,9 +213,6 @@ function toggle_table_visibility(tableid) {
     }
 
 function displayselecteddata(panelid) {
-      // record data first
-      sourceselection_panel[panelid] = sourceselection;
-      sinkselection_panel[panelid] = sinkselection;
 
       var div = document.createElement("div");
       var sourcetxt = generatesourcedata(sourceselection);
@@ -271,6 +271,10 @@ function create_scenario() {
       var panelid = 'scenario' + scenarioid;
       var panediv = displayselecteddata(panelid);
       var title = 'Scenario ' + scenarioid;
+      // record data first
+      sourceselection_panel[panelid] = sourceselection.concat();
+      sinkselection_panel[panelid] = sinkselection.concat();
+
       // get the name of scenario
       var sname = prompt("Please name the secenario", title);
       if (sname != null) { title = sname;} else {return;}
@@ -283,8 +287,7 @@ function create_scenario() {
       scenarioid += 1;
       // simple show the data
       sidebar.open(panelid);
-      // hide unselected
-      hideunselected(sourceselection,sinkselection);
+
 }
   
      

@@ -254,8 +254,21 @@ function hideunselected(source_selection, sink_selection) {
     for (var key in maplayers){ 
         if (map.hasLayer(maplayers[key])) { map.removeLayer(maplayers[key]);}
     }
-    for (entry of source_selection) {entry.addTo(map);}
-    for (entry of sink_selection) {entry.addTo(map);}
+    var source_selection_layer = L.layerGroup(source_selection);
+    var sink_selection_layer = L.layerGroup(sink_selection);
+    source_selection_layer.addTo(map);
+    sink_selection_layer.addTo(map);
+    maplayers['source_selection_layer'] = source_selection_layer;
+    maplayers['sink_selection_layer'] = sink_selection_layer;
+}
+
+// refreshmap by panel
+function refreshmap(p_id) {
+    if (p_id.includes('scenario')) {
+        console.log(sourceselection_panel);
+        hideunselected(sourceselection_panel[p_id],sinkselection_panel[p_id]);
+    }
+
 }
 
 // generate candidate network
