@@ -158,7 +158,7 @@ function generatesinkdata (selections) {
                   } else if (key == "ID") {
                         tempstr += (i+1).toString() + "\t";
                   } else {
-                        if (selections[i].feature.properties[col_dict[key]] == "-") {tempstr += " \t";}
+                        if (selections[i].feature.properties[col_dict[key]] == "-") {tempstr += "0\t";}
                         else {tempstr += selections[i].feature.properties[col_dict[key]]+"\t";}
                   } 
             }
