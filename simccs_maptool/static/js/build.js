@@ -287,3 +287,32 @@ function getSourceIds(selections) {
  function getSinkIds(selections) {
     return new Set(selections.map(snk => "saline-" + snk.feature.properties.UniqueID));
  }
+
+ function display_error_modal(error, message) {
+
+    message = typeof message !== 'undefined' ? message : error.message;
+    var m_html =`<div class="modal fade in" tabindex="-1" role="dialog">
+<div class="modal-dialog" role="document">
+<div class="modal-content">
+<div class="modal-header">
+<h5 class="modal-title">Error</h5>
+<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+  <span aria-hidden="true">&times;</span>
+</button>
+</div>
+<div class="modal-body">
+<p class="error-message"></p>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+</div>
+</div>
+</div>
+</div>`;
+    $(m_html)
+          .appendTo('body')
+          .modal('show')
+          .on('hidden.bs.modal', (e) => $(e.target).remove())
+          .find(".error-message")
+          .text(message);
+}
