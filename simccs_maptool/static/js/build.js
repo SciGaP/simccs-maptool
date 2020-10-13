@@ -335,6 +335,8 @@ function generatecandidatenetwork(panelid) {
         // save candidateNetworkLayer
         dynmaplayers['candidate_network_layer'] = candidateNetworkLayer;
         candidatenetwork_panel[panelid] = candidateNetworkLayer;
+        candidatenetwork_cached[panelid] = data["CandidateNetwork"];
+        
         //console.log(candidatenetwork_panel);
         // Cache the candidate network
         //Maptool.cachedCandidateNetwork = data["CandidateNetwork"];
@@ -361,10 +363,60 @@ function generatempsfile(panelid) {
     var sourcedata = generatesourcedata(source_selection);
     var sinkdata=generatesinkdata(sink_selection);
     // get the model para
-    var crf = $("#Capital_Recovery_Rate").val();
-    var numYears = $("#Project_Period").val();
-    var capacityTarget = $("#Capture_Target").val();
+    var crf = $("#Capital_Recovery_Rate_" + panelid).val();
+    var numYears = $("#Project_Period_" + panelid).val();
+    var capacityTarget = $("#Capture_Target_" + panelid).val();
+    // generate formdata
+    var formData = new FormData();
+    var current_dataset_id = "Lower48US";
+    formData.set('crf', crf ? crf : 0.1);
+    formData.set('numYears', numYears ? numYears : 10);
+    formData.set('capacityTarget', capacityTarget ? capacityTarget : 5);
+    formData.set('sources', sourcedata);
+    formData.set('sinks', sinkdata);
+    formData.set('dataset', current_dataset_id);
 
+    // check if needs run candidate network _cached
+    // Use the cachedCandidateNetwork if the selected sources and sinks are the same
+    var candidateNetworkRequest = null;
+    if (candidatenetwork_cached.hasOwnProperty(panelid)) {
+          candidateNetworkRequest = Promise.resolve(candidatenetwork_cached[panelid]);
+    } else {
+          candidateNetworkRequest = generatecandidatenetwork(panelid).then(data => data["CandidateNetwork"]);
+    }
+    candidateNetworkRequest.then((candidateNetwork) => {
+
+          formData.set('candidateNetwork', candidateNetwork);
+          return AiravataAPI.utils.FetchUtils.post("/maptool/mps/", formData).then(function( data ) {
+                m_html =`<div class="modal fade in" id="dynamicModal" tabindex="-1" role="dialog">
+<div class="modal-dialog" role="document">
+<div class="modal-content">
+    <div class="modal-header">
+    <h5 class="modal-title">Generate MPS file</h5>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+    </button>
+    </div>
+    <div class="modal-body">
+    <p><strong class="text-break">MPS file</strong> was generated successfully.</p>
+    </div>
+    <div class="modal-footer">
+    <button type="button" class="btn btn-primary">
+          <a href="/workspace/applications/{{ cplex_application_id }}/create_experiment?Sources=sources_input_file&Sinks=sinks_input_file&Cplex-input-file=user_input_file&Dataset-id=${current_dataset_id}" style="color:inherit">Create Experiment</a></button>
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    </div>
+</div>
+</div>
+</div>`;
+    m_html = m_html.replace("user_input_file", data["mps"]);
+    m_html = m_html.replace("sources_input_file", data["sources"]);
+    m_html = m_html.replace("sinks_input_file", data["sinks"]);
+$('body').append(m_html);
+$("#dynamicModal").modal();
+$("#dynamicModal").modal('show');
+
+          }).catch(display_error_modal);
+    });
 }
 
 function display_error_modal(error, message) {
