@@ -355,6 +355,15 @@ function getSourceIds(selections) {
 
 //generate MPS file
 function generatempsfile(panelid) {
+    // get the data from panelid
+    var source_selection = sourceselection_panel[panelid];
+    var sink_selection = sinkselection_panel[panelid];
+    var sourcedata = generatesourcedata(source_selection);
+    var sinkdata=generatesinkdata(sink_selection);
+    // get the model para
+    var crf = $("#Capital_Recovery_Rate").val();
+    var numYears = $("#Project_Period").val();
+    var capacityTarget = $("#Capture_Target").val();
 
 }
 

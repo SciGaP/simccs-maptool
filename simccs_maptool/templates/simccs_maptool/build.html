@@ -242,7 +242,7 @@ function displayselecteddata(panelid) {
 
       // grab model parameters
       mp_list = ["Capital_Recovery_Rate","Project_Period","Capture_Target"]; 
-      var p_value;
+      var p_value,entry_newid;
       var mp_div = document.getElementById('model_parameters').outerHTML;
       mp_div = mp_div.replace("125%","100%");
       var tb_new = "";
@@ -250,8 +250,9 @@ function displayselecteddata(panelid) {
       for (const entry of mp_list) {
             //get the value
             p_value = $('#'+entry).val();
-            tb_entry = '<tr><td>Capital Recovery Rate</td><td><input id="Capital_Recovery_Rate" name="Capital_Recovery_Rate" type="text" size=8 value='+  p_value +' required></td></tr>';
-            tb_entry = tb_entry.replace(new RegExp(entry, 'g'), entry +"_"+ panelid);
+            entry_newid = entry + "_" + panelid;
+            tb_entry = '<tr><td>'+entry+'</td><td><input id="'+entry_newid+ '" name="'+entry_newid+'" type="text" size=8 value='+  p_value +' required></td></tr>';
+            //tb_entry = tb_entry.replace(new RegExp(entry, 'g'), entry +"_"+ panelid);
             tb_new += tb_entry;
       }
       mp_div= mp_div.replace(/<table>[\s\S]*?<\/table>/, '<table>' + tb_new + '<\/table>');
