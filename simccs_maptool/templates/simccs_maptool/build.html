@@ -257,9 +257,11 @@ function displayselecteddata(panelid) {
       mp_div= mp_div.replace(/<table>[\s\S]*?<\/table>/, '<table>' + tb_new + '<\/table>');
       div.innerHTML += mp_div;
       div.innerHTML += "<br>";
-      div.innerHTML += '<button type="button" class="btn btn-primary btn-sm btn-block" onclick="create_experment()"><strong>Create a New Experiment</strong></button>';
       div.innerHTML += '<button type="button" id="bn_generatecandidatenetwork" class="btn btn-primary btn-sm btn-block" onclick=generatecandidatenetwork("'+ panelid +'")>Generate Candidate Network</button>';
-
+      div.innerHTML += '<button type="button" id="bn_generatemps" class="btn btn-primary btn-sm btn-block" onclick=generatempsfile("'+ panelid + '")>Generate MPS file</button>';
+      div.innerHTML += "<br>";
+      div.innerHTML += '<button type="button" class="btn btn-primary btn-sm btn-block" onclick="create_experment()"><strong>Create a New Experiment</strong></button>';
+ 
       return div;
 }
 

@@ -335,7 +335,7 @@ function generatecandidatenetwork(panelid) {
         // save candidateNetworkLayer
         dynmaplayers['candidate_network_layer'] = candidateNetworkLayer;
         candidatenetwork_panel[panelid] = candidateNetworkLayer;
-        console.log(candidatenetwork_panel);
+        //console.log(candidatenetwork_panel);
         // Cache the candidate network
         //Maptool.cachedCandidateNetwork = data["CandidateNetwork"];
         //Maptool.cachedCandidateNetworkSourceIds = sourceIds;
@@ -352,6 +352,11 @@ function getSourceIds(selections) {
  function getSinkIds(selections) {
     return new Set(selections.map(snk => "saline-" + snk.feature.properties.UniqueID));
  }
+
+//generate MPS file
+function generatempsfile(panelid) {
+
+}
 
 function display_error_modal(error, message) {
 
