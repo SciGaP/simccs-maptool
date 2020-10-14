@@ -42,6 +42,14 @@ MAPTOOL_SETTINGS = {
 }
 ```
 
+## Creating DB migrations
+
+```
+export DJANGO_SETTINGS_MODULE=tests.test_settings
+export PYTHONPATH=$PWD
+django-admin makemigrations simccs_maptool
+```
+
 ## Pyjnius - simccs.jar notes
 
 ### Installing dependencies
