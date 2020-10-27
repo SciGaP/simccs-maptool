@@ -70,6 +70,7 @@ class HomeView(TemplateView):
 class HelpView(TemplateView):
     template_name = "simccs_maptool/help.html"
 
+
 class BuildView(TemplateView):
     template_name = "simccs_maptool/build.html"
 
