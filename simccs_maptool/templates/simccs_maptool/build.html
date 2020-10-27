@@ -360,7 +360,7 @@ $('body').append(m_html);
 $("#dynamicModal").modal();
 
 cplexInputValues_panel[panelid] = {"Sources": data["sources"], "Sinks": data["sinks"],"Cplex-input-file": data["mps"], "Dataset-id": current_dataset_id};
-
+console.log(showmodal);
  if (showmodal) {
       $("#dynamicModal").modal('show'); 
  } else { return; }
