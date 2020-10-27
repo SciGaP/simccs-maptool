@@ -102,7 +102,8 @@ var sourceselection_panel = {}; // panelid:data
 var sinkselection_panel = {}; // panelid:data
 var candidatenetwork_panel = {}; // panelid: network layer
 var candidatenetwork_cached = {} // panelid: network data 
-var mpsfile_cached = {} // panelid: mpsfile
+var cplexInputValues_panel = {} // panelid: "Sources": data.sources, "Sinks": data.sinks,"Cplex-input-file": data.mps, "Dataset-id": current_dataset_id
+var current_dataset_id = "Lower48US";
 
 async function set_casedata() {
       var urlprefix = "/static/Data/Build/";
@@ -311,7 +312,7 @@ function generatempsfile(panelid) {
     var capacityTarget = $("#Capture_Target_" + panelid).val();
     // generate formdata
     var formData = new FormData();
-    var current_dataset_id = "Lower48US";
+    //var current_dataset_id = "Lower48US";
     formData.set('crf', crf ? crf : 0.1);
     formData.set('numYears', numYears ? numYears : 10);
     formData.set('capacityTarget', capacityTarget ? capacityTarget : 5);
@@ -356,7 +357,9 @@ function generatempsfile(panelid) {
     m_html = m_html.replace("sinks_input_file", data["sinks"]);
 $('body').append(m_html);
 $("#dynamicModal").modal();
-console.log(data);
+
+cplexInputValues_panel[panelid] = {"Sources": data["sources"], "Sinks": data["sinks"],"Cplex-input-file": data["mps"], "Dataset-id": current_dataset_id};
+
 $("#dynamicModal").modal('show');
 
           }).catch(display_error_modal);
@@ -439,8 +442,8 @@ function case_submitexperiment(panelid) {
                   experiment.userConfigurationData.computationalResourceScheduling.queueName = defaultQueue.queueName;
                   // Copy input values from Maptool.cplexInputValues to experimentInputs
                   for (let input of experiment.experimentInputs) {
-                        if (input.name in Maptool.cplexInputValues) {
-                              input.value = Maptool.cplexInputValues[input.name];
+                        if (input.name in cplexInputValues[panelid]) {
+                              input.value = cplexInputValues[panelid][input.name];
                         }
                   }
 
