@@ -442,8 +442,8 @@ function case_submitexperiment(panelid) {
                   experiment.userConfigurationData.computationalResourceScheduling.queueName = defaultQueue.queueName;
                   // Copy input values from Maptool.cplexInputValues to experimentInputs
                   for (let input of experiment.experimentInputs) {
-                        if (input.name in cplexInputValues[panelid]) {
-                              input.value = cplexInputValues[panelid][input.name];
+                        if (input.name in cplexInputValues_panel[panelid]) {
+                              input.value = cplexInputValues_panel[panelid][input.name];
                         }
                   }
 
