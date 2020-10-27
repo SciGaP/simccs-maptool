@@ -301,7 +301,7 @@ function create_scenario() {
 
 
 //generate MPS file
-function generatempsfile(panelid) {
+function generatempsfile(panelid,showmodal=true) {
     // get the data from panelid
     var source_selection = sourceselection_panel[panelid];
     var sink_selection = sinkselection_panel[panelid];
@@ -361,7 +361,9 @@ $("#dynamicModal").modal();
 
 cplexInputValues_panel[panelid] = {"Sources": data["sources"], "Sinks": data["sinks"],"Cplex-input-file": data["mps"], "Dataset-id": current_dataset_id};
 
-$("#dynamicModal").modal('show');
+ if (showmodal) {
+      $("#dynamicModal").modal('show'); 
+ } else { return; }
 
           }).catch(display_error_modal);
     });
@@ -369,7 +371,10 @@ $("#dynamicModal").modal('show');
 
 function case_submitexperiment(panelid) {
       //debug info
-      console.log(panelid);
+      //console.log(panelid);
+      if (!cplexInputValues_panel.hasOwnProperty(panelid)) {
+          generatempsfile(panelid,showmodal=false);
+      }
 
             var cplex_application_id = "{{ cplex_application_id }}";
             var hostname = "{{ cplex_hostname }}";
