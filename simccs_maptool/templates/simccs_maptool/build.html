@@ -263,7 +263,7 @@ function displayselecteddata(panelid) {
       div.innerHTML += '<button type="button" id="bn_generatecandidatenetwork_'+ panelid +'" class="btn btn-primary btn-sm btn-block" onclick=generatecandidatenetwork("'+ panelid +'")>Generate Candidate Network</button>';
       div.innerHTML += '<button type="button" id="bn_generatemps_' + panelid + '" class="btn btn-primary btn-sm btn-block" onclick=generatempsfile("'+ panelid + '")>Generate MPS file</button>';
       div.innerHTML += "<br>";
-      div.innerHTML += '<button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_submitexperiment("'+ panelid +'")><strong>Create a New Experiment</strong></button>';
+      div.innerHTML += '<button type="button" class="btn btn-primary btn-sm btn-block" onclick=case_submitexperiment("'+ panelid +'")><strong>Create a New Experiment</strong></button>';
  
       return div;
 }
