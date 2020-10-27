@@ -356,6 +356,7 @@ function generatempsfile(panelid) {
     m_html = m_html.replace("sinks_input_file", data["sinks"]);
 $('body').append(m_html);
 $("#dynamicModal").modal();
+console.log(data);
 $("#dynamicModal").modal('show');
 
           }).catch(display_error_modal);
