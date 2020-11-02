@@ -1,0 +1,547 @@
+
+{% extends "base.html" %}
+{% load static %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/leaflet.css' %}" />
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+
+<style type="text/css">
+      #map{
+      /*margin-left: 20px;*/
+      /*margin-top: 60px;*/
+      /*margin-top: 60px;*/
+      width:100%;
+      height:100% ;
+      }
+      .main-content {
+            max-width: initial;
+      }
+      .container-fluid, .main-row {
+            height: 100%;
+      }
+      .card {
+            margin-bottom: 0px;
+      }
+      /* Allow vertical scrolling of sidebar if not enough room on screen */
+      .main-row > .col-md-3 {
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+      }
+      .legend {
+            line-height: 18px;
+            color: #555;
+      }
+      .legend i {
+      width: 18px;
+      height: 18px;
+      float: left;
+      margin-right: 8px;
+      opacity: 0.7;
+      }
+
+</style>
+{% endblock css %}
+
+{% block scripts %}
+<script src="{% static 'js/leaflet.js' %}"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/leaflet-sidebar.min.css' %}" />
+<script src="{% static 'js/leaflet-sidebar.min.js' %}"></script>
+<script src="{% static 'js/build.js' %}" ></script>
+<script src="{% static 'js/util.js' %}" ></script>
+<script src="{% static 'django_airavata_api/dist/airavata-api.js' %}"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
+<script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+
+
+<script>
+         //var Maptool = window.Maptool || {};
+         //Maptool.FeatureFlag = Maptool.FeatureFlag || {};
+         // TODO: replace with global user session object
+         var userIsAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+         
+         $(document).ready(function() {
+            // set up data
+            set_casedata();
+            sidebar.open("home");
+
+            //bind slector event
+            $(document).on("changed.bs.select",".selectpicker",function() {
+            //$('.selectpicker').on('changed.bs.select', function (e,clickedIndex, newValue, oldValue) {
+                  var dataid = (this.id).split("_")[1];
+                  var selected_ids = $(this).val();
+                  source_selectbynames(dataid,selected_ids);
+            });
+ 
+            sidebar.on('content', function(e) {
+                  // e.id contains the id of the opened panel
+                  // update map based on opened panel
+                  console.log(e.id);
+                        // hide unselected
+                  refreshmap(e.id);
+
+            })
+            
+            }); // end of document ready 
+
+// gloabl variables
+var casejson;
+var maplayers = {}; // record layers displayed on map, layername:layerdata
+var dynmaplayers = {}; // record dynamic layers from earch panel
+var sourceselection = []; // current source selection
+var sinkselection = []; // current sink selection
+var sourceselection_panel = {}; // panelid:data
+var sinkselection_panel = {}; // panelid:data
+var candidatenetwork_panel = {}; // panelid: network layer
+var candidatenetwork_cached = {} // panelid: network data 
+var cplexInputValues_panel = {} // panelid: "Sources": data.sources, "Sinks": data.sinks,"Cplex-input-file": data.mps, "Dataset-id": current_dataset_id
+var current_dataset_id = "Lower48US";
+
+async function set_casedata() {
+      var urlprefix = "/static/Data/Build/";
+      casejson = await getdata(urlprefix + '123test.json');
+      document.getElementById("case_name").textContent=casejson["Title"];
+      document.getElementById("case_description").textContent=casejson["Description"]; 
+      // move map to bounding box
+      var bbox = casejson["Maptool"]["BBOX"];
+      map.fitBounds([[bbox[1],bbox[0]],[bbox[3],bbox[2]]]);
+      // reformat data as big array
+      var datasets = {};
+      for (entry of casejson['Datasets'])
+      {
+            datasets[entry['DataID']]={'dataid':entry['DataID'],'name': entry['Name'], 'description':entry['Description'],'type':entry['Type']};
+      }
+      
+      //load source/sink
+      var dataurl, datastyle, datameta;
+      for (entry of casejson['Maptool']['Data']) {
+            datameta = datasets[entry["DataID"]];
+            dataurl = urlprefix + entry["URL"];
+            datastyle = entry['Style'];
+            popupfields = entry['Popup'];
+            addcasedata(datameta,dataurl,datastyle,popupfields);
+      }
+      // load cost surface
+      addcostsurface(bbox);
+}
+
+// create a new scenario
+var scenarioid = 1;
+
+// generate source data from sourceslection
+function generatesourcedata(selections) {
+      var sourcedata = "ID\tcostFix ($M)\tfixO&M ($M/y)\tvarO&M ($/tCO2)\tcapMax (MtCO2/y)\tN/A\tLON\tLAT\tNAME\n";
+      var cols =["ID","costFix","fixOM","varOM","capMax","N/A","X","Y","Name"];
+      var col_dict = {"ID":"UniqueID","costFix":"TotalUnitCost","fixOM":"FixedOM","varOM":"VarOM","capMax":"CapCO2","N/A":"","X":"X","Y":"Y","Name":"Name"};
+      var tempstr = "";
+      for (i = 0; i < selections.length; i++) {
+            tempstr = "";
+            //tempstr += (i+1).toString()+"\t";
+            for ( key of cols) {
+                  if (key == "N/A") {
+                  tempstr += "1"+"\t";
+                  } else {
+                        if (selections[i].feature.properties[col_dict[key]] == "-") {tempstr += "0\t";}
+                        else {tempstr += selections[i].feature.properties[col_dict[key]]+"\t";} 
+                  } 
+            }
+            sourcedata += tempstr + "\n";
+      } 
+      return sourcedata;
+}
+
+// generate sink data from sinkselection
+function generatesinkdata (selections) {
+      var header_array = ["ID", "Sink_ID", "fieldCap (MtCO2)", "costFix ($M)", "fixO&M ($M/yr)", "wellCap (MtCO2/yr)", "wellCostFix ($M)", "wellFixO&M ($M/yr)", "varO&M ($/tCO2)", "N/A", "LON", "LAT", "N/A", "N/A", "N/A", "N/A", "Name"];
+      var sinkdata=header_array.join('\t') + "\n";
+      var cols =["ID","Sink_ID", "fieldCap", "costFix", "fixOM", "wellCap", "wellCostFix", "wellFixOM", "varOM", "N/A", "LON", "LAT", "N/A", "N/A", "N/A", "N/A", "Name"];
+      var col_dict = {"ID":0,"Sink_ID":"UniqueID","fieldCap":"StorageCap", "costFix":"TotalUnitCost","fixOM":"SiteOM","wellCap":"InjCap","wellCostFix":"WellRate","wellFixOM":"InjectionOM","varOM":"InjVarOM","N/A":"","LON":"X","LAT":"Y","Name":"Name"};
+      var tempstr = "";
+      for (i = 0; i < selections.length; i++) {
+            tempstr = "";
+            for ( key of cols) {
+                  if (key == "N/A") {
+                        tempstr += "0"+"\t";
+                  } else if (key == "ID") {
+                        tempstr += (i+1).toString() + "\t";
+                  } else {
+                        if (selections[i].feature.properties[col_dict[key]] == "-") {tempstr += "0\t";}
+                        else {tempstr += selections[i].feature.properties[col_dict[key]]+"\t";}
+                  } 
+            }
+            sinkdata += tempstr + "\n";
+      } 
+      return sinkdata;
+
+}
+
+function createdownloadlink(filename, data, text) {
+    var element = document.createElement('a');
+    //element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    var file = new Blob([data], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.setAttribute('download', filename);
+    element.text = text;
+    element.style.display = 'block';
+    return element;
+}
+
+function arrayToTable(textblob) {
+    var tableData = textblob.split("\n");
+    var table = $('<table class="table table-sm table-condensed table-bordered"></table>');
+    $(tableData).each(function (i, rowData) {
+        var row = $('<tr></tr>');
+        var rowData_a = rowData.split("\t");
+        if (rowData_a.length > 1) {
+        $(rowData_a).each(function (j, cellData) {
+            row.append($('<td>'+cellData+'</td>'));
+        });
+        table.append(row); }
+    });
+    return table[0].outerHTML;
+}
+
+function toggle_table_visibility(tableid) {
+      var e = document.getElementById(tableid);
+       if(e.style.display == 'block')
+          e.style.display = 'none';
+       else
+          e.style.display = 'block';
+    }
+
+function displayselecteddata(panelid) {
+
+      var div = document.createElement("div");
+      var sourcetxt = generatesourcedata(sourceselection);
+      div.innerHTML +="<Strong>Sources selected: " + sourceselection.length + "</Strong>";
+      var downloadlink = createdownloadlink("source.txt",sourcetxt,"Download Sources.txt");
+      div.appendChild(downloadlink);
+      //div.innerHTML += "<br>";
+      //div.innerHTML += "<p>" + sourcetxt + "</p>";
+      var table_id = "source_table_" + panelid;
+      div.innerHTML+='<a href="#" onclick=toggle_table_visibility("' + table_id + '")>Show/hide source data</a>';
+      div.innerHTML += "<br>";
+      div.innerHTML += '<div id='+ table_id +' style="overflow: auto;height: 200px; width: 95%; display: none" >'+arrayToTable(sourcetxt)+"</div>";
+      var sinktxt = generatesinkdata(sinkselection);
+      div.innerHTML += "<br>";
+      div.innerHTML +="<Strong>Sink selected: " + sinkselection.length + "</Strong>";
+      downloadlink = createdownloadlink("sink.txt",sinktxt,"Download Sinks.txt");
+      div.appendChild(downloadlink);
+      //div.innerHTML += "<p>" + sinktxt + "</p>";
+      table_id = "sink_table_" + panelid;
+      div.innerHTML+='<a href="#" onclick=toggle_table_visibility("' + table_id + '")>Show/hide sink data</a>';
+      div.innerHTML += "<br>";
+      div.innerHTML += '<div id='+ table_id +' style="overflow: auto;height: 200px; width: 95%; display: none">'+arrayToTable(sinktxt)+"</div>";
+      div.innerHTML += "<br>";
+      
+
+      // grab model parameters
+      mp_list = ["Capital_Recovery_Rate","Project_Period","Capture_Target"]; 
+      var p_value,entry_newid;
+      var mp_div = document.getElementById('model_parameters').outerHTML;
+      mp_div = mp_div.replace("125%","100%");
+      var tb_new = "";
+      var tb_entry;
+      for (const entry of mp_list) {
+            //get the value
+            p_value = $('#'+entry).val();
+            entry_newid = entry + "_" + panelid;
+            tb_entry = '<tr><td>'+entry+'</td><td><input id="'+entry_newid+ '" name="'+entry_newid+'" type="text" size=8 value='+  p_value +' required></td></tr>';
+            //tb_entry = tb_entry.replace(new RegExp(entry, 'g'), entry +"_"+ panelid);
+            tb_new += tb_entry;
+      }
+      mp_div= mp_div.replace(/<table>[\s\S]*?<\/table>/, '<table>' + tb_new + '<\/table>');
+      div.innerHTML += mp_div;
+      div.innerHTML += "<br>";
+      div.innerHTML += '<button type="button" id="bn_generatecandidatenetwork_'+ panelid +'" class="btn btn-primary btn-sm btn-block" onclick=generatecandidatenetwork("'+ panelid +'")>Generate Candidate Network</button>';
+      div.innerHTML += '<button type="button" id="bn_generatemps_' + panelid + '" class="btn btn-primary btn-sm btn-block" onclick=generatempsfile("'+ panelid + '")>Generate MPS file</button>';
+      div.innerHTML += "<br>";
+      div.innerHTML += '<button type="button" class="btn btn-primary btn-sm btn-block" onclick=case_submitexperiment("'+ panelid +'")><strong>Create a New Experiment</strong></button>';
+      div.innerHTML +=  '<a target="_blank" href="" id="case_view_experiment_' + panelid+ '" style="display: none;">View Experiment Summary</a>';
+ 
+      return div;
+}
+
+
+function create_scenario() {
+      if (scenarioid > 5 ) {alert("Maximum number of scenarios reached!");return;};
+      
+      // check if the source/sink are selected
+      if (sourceselection.length == 0 ) {alert('No sources are selected!');return}
+      if (sinkselection.length == 0 ) {alert('No sinks are selected!');return}
+      var panelid = 'scenario' + scenarioid;
+      var panediv = displayselecteddata(panelid);
+      var title = 'Scenario ' + scenarioid;
+      // record data first
+      sourceselection_panel[panelid] = sourceselection.concat();
+      sinkselection_panel[panelid] = sinkselection.concat();
+
+      // get the name of scenario
+      var sname = prompt("Please name the secenario", title);
+      if (sname != null) { title = sname;} else {return;}
+      sidebar.addPanel({
+            id:   panelid,
+            tab:  '<i class="fa fa-cog" aria-hidden="true"></i>',
+            title: title,
+            pane: '<div style="font-size: 125%">' + panediv.innerHTML +"</div>",
+      });
+      scenarioid += 1;
+      // simple show the data
+      sidebar.open(panelid);
+
+}
+
+
+//generate MPS file
+function generatempsfile(panelid,showmodal=true) {
+    // get the data from panelid
+    var source_selection = sourceselection_panel[panelid];
+    var sink_selection = sinkselection_panel[panelid];
+    var sourcedata = generatesourcedata(source_selection);
+    var sinkdata=generatesinkdata(sink_selection);
+    // get the model para
+    var crf = $("#Capital_Recovery_Rate_" + panelid).val();
+    var numYears = $("#Project_Period_" + panelid).val();
+    var capacityTarget = $("#Capture_Target_" + panelid).val();
+    // generate formdata
+    var formData = new FormData();
+    //var current_dataset_id = "Lower48US";
+    formData.set('crf', crf ? crf : 0.1);
+    formData.set('numYears', numYears ? numYears : 10);
+    formData.set('capacityTarget', capacityTarget ? capacityTarget : 5);
+    formData.set('sources', sourcedata);
+    formData.set('sinks', sinkdata);
+    formData.set('dataset', current_dataset_id);
+
+    // check if needs run candidate network _cached
+    // Use the cachedCandidateNetwork if the selected sources and sinks are the same
+    var candidateNetworkRequest = null;
+    if (candidatenetwork_cached.hasOwnProperty(panelid)) {
+          candidateNetworkRequest = Promise.resolve(candidatenetwork_cached[panelid]);
+    } else {
+          candidateNetworkRequest = generatecandidatenetwork(panelid).then(data => data["CandidateNetwork"]);
+    }
+    candidateNetworkRequest.then((candidateNetwork) => {
+
+          formData.set('candidateNetwork', candidateNetwork);
+          return AiravataAPI.utils.FetchUtils.post("/maptool/mps/", formData).then(function( data ) {
+                m_html =`<div class="modal fade in" id="dynamicModal" tabindex="-1" role="dialog">
+<div class="modal-dialog" role="document">
+<div class="modal-content">
+    <div class="modal-header">
+    <h5 class="modal-title">Generate MPS file</h5>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+    </button>
+    </div>
+    <div class="modal-body">
+    <p><strong class="text-break">MPS file</strong> was generated successfully.</p>
+    </div>
+    <div class="modal-footer">
+    <button type="button" class="btn btn-primary">
+          <a target="_blank" href="/workspace/applications/{{ cplex_application_id }}/create_experiment?Sources=sources_input_file&Sinks=sinks_input_file&Cplex-input-file=user_input_file&Dataset-id=${current_dataset_id}" style="color:inherit">Create Experiment</a></button>
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    </div>
+</div>
+</div>
+</div>`;
+    m_html = m_html.replace("user_input_file", data["mps"]);
+    m_html = m_html.replace("sources_input_file", data["sources"]);
+    m_html = m_html.replace("sinks_input_file", data["sinks"]);
+$('body').append(m_html);
+$("#dynamicModal").modal();
+
+cplexInputValues_panel[panelid] = {"Sources": data["sources"], "Sinks": data["sinks"],"Cplex-input-file": data["mps"], "Dataset-id": current_dataset_id};
+console.log(showmodal);
+ if (showmodal == true) {$("#dynamicModal").modal('show'); }
+
+          }).catch(display_error_modal);
+    });
+}
+
+function case_submitexperiment(panelid) {
+      //debug info
+      //console.log(panelid);
+      var cplexInputValues;
+      if (cplexInputValues_panel.hasOwnProperty(panelid)) {
+         cplexInputValues = cplexInputValues_panel[panelid];
+      } else {
+          generatempsfile(panelid,showmodal=false);
+      }
+
+            var cplex_application_id = "{{ cplex_application_id }}";
+            var hostname = "{{ cplex_hostname }}";
+            const services = AiravataAPI.services;
+            // Load the application interface for the application module with id cplex_application_id
+            const loadAppInterface = services.ApplicationModuleService.getApplicationInterface({
+                  lookup: cplex_application_id,
+            });
+            // Find the compute resource id for the 'hostname'
+            const loadComputeResourceIds = services.ComputeResourceService.names()
+            .then((computeResourceIds) => {
+                  for (computeResourceId in computeResourceIds) {
+                        if (computeResourceIds[computeResourceId] === hostname) {
+                              return computeResourceId;
+                        }
+                  }
+                  throw new Exception("Couldn't find a compute resource for host " + hostname);
+            });
+            // Find a group resource profile that can run an experiment on 'hostname'
+            // Also, find the default queue configuration for the application deployment on that 'hostname'
+            const loadResourceProfiles = services.GroupResourceProfileService.list()
+            const loadGroupResourceProfileAndQueue = Promise.all([loadComputeResourceIds, loadResourceProfiles])
+            .then(([computeResourceId, groupResourceProfiles]) => {
+
+                  const groupResourceProfile = groupResourceProfiles.find(grp => {
+                        for (computePref of grp.computePreferences) {
+                              if (computePref.computeResourceId === computeResourceId) {
+                                    return true;
+                              }
+                        }
+                        return false;
+                  });
+                  if (!groupResourceProfile) {
+                        throw new Exception("Couldn't find a group resource profile for host " + hostname);
+                  }
+                  const loadDeployments = services.ApplicationDeploymentService.list({
+                        appModuleId: cplex_application_id,
+                        groupResourceProfileId: groupResourceProfile.groupResourceProfileId,
+                  })
+                  .then(deployments => {
+                        const deployment = deployments.find(d => d.computeHostId === computeResourceId);
+                        if (!deployment) {
+                              throw new Exception("Couldn't find a deployment for host " + hostname);
+                        }
+                        return services.ApplicationDeploymentService.getQueues({
+                              lookup: deployment.appDeploymentId
+                        })
+                        .then(queues => {
+                              const queue = queues.find(q => q.isDefaultQueue);
+                              if (!queue) {
+                                    throw new Exception("Couldn't find a default queue for host " + hostname);
+                              }
+                              return queue;
+                        });
+                  });
+                  return Promise.all([computeResourceId, groupResourceProfile, loadDeployments]);
+            });
+            // Load user's workspace prefs to find the id of most recently used project; experiment must be added to a project
+            const loadWorkspacePrefs = services.WorkspacePreferencesService.get();
+            Promise.all([loadAppInterface,loadGroupResourceProfileAndQueue, loadWorkspacePrefs])
+            .then(([appInterface, [computeResourceId, groupResourceProfile, defaultQueue], workspacePrefs]) => {
+                  const experiment = appInterface.createExperiment();
+                  experiment.experimentName = "CPLEX on " + new Date().toLocaleString();
+                  experiment.projectId = workspacePrefs.most_recent_project_id;
+                  // Copy groupResourceProfileId and queue defaults to experiment configuration
+                  experiment.userConfigurationData.groupResourceProfileId = groupResourceProfile.groupResourceProfileId;
+                  experiment.userConfigurationData.computationalResourceScheduling.resourceHostId = computeResourceId;
+                  experiment.userConfigurationData.computationalResourceScheduling.totalCPUCount = defaultQueue.defaultCPUCount;
+                  experiment.userConfigurationData.computationalResourceScheduling.nodeCount = defaultQueue.defaultNodeCount;
+                  experiment.userConfigurationData.computationalResourceScheduling.wallTimeLimit = defaultQueue.defaultWalltime;
+                  experiment.userConfigurationData.computationalResourceScheduling.queueName = defaultQueue.queueName;
+                  // Copy input values from Maptool.cplexInputValues to experimentInputs
+                  for (let input of experiment.experimentInputs) {
+                        if (input.name in cplexInputValues) {
+                              input.value = cplexInputValues[input.name];
+                        }
+                  }
+
+                  return services.ExperimentService.create({ data: experiment });
+            })
+            .then(experiment => {
+                 return services.ExperimentService.launch({
+                       lookup: experiment.experimentId
+                 }).then(() => {
+
+                        // Create a link to the experiment summary page
+                        var caseViewExperimentLink = document.getElementById("case_view_experiment_" + panelid);
+                        caseViewExperimentLink.setAttribute("href", `/workspace/experiments/${encodeURIComponent(experiment.experimentId)}/`);
+                        document.getElementById("case_view_experiment_" + panelid).style.display = 'inline';
+                 });
+            });
+
+      }
+
+     
+</script>
+{% endblock scripts %}
+
+{% block content %}
+
+<div id="sidebar" class="leaflet-sidebar collapsed">
+
+      <!-- nav tabs -->
+        <div class="leaflet-sidebar-tabs">
+            <!-- top aligned tabs -->
+            <ul role="tablist">
+                <li><a href="#home" role="tab"><i class="fas fa-tools"></i></a></li>
+            </ul>
+
+            <!-- bottom aligned tabs -->
+            <ul role="tablist">
+                  <li><a href="#profile" role="tab"><i class="fa fa-user"></i></a></li>
+                <li><a href="#settings" role="tab"><i class="fas fa-toolbox"></i></a></li>
+            </ul>
+        </div>
+
+        <!-- panel content -->
+        <div class="leaflet-sidebar-content">
+            <div class="leaflet-sidebar-pane" id="home">
+                <h1 class="leaflet-sidebar-header">
+                    Build: <span id="case_name"></span>
+                    <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
+                </h1>
+                <div><span  style="font-size: 150%" id="case_description"></span></div>
+                <div id="layercontrol" class="form-check" style="font-size: 150%"></div>
+                <br>
+                <!-- model parameters-->
+                <div class="card border-info">
+                <div class="card-body">
+                <div id="model_parameters" style="font-size: 125%">
+                <strong>Model Parameters</strong><br>
+                <table>
+                            <tr><td>Capital Recovery Rate</td><td><input id="Capital_Recovery_Rate" name="Capital_Recovery_Rate" type="text" size=8 value="0.1" required></td></tr>
+                            <tr><td>Project Period (yrs)</td><td><input id="Project_Period" name="Project_Period" type="text" size=8 value="10" required></td></tr>
+                            <tr><td>Capture Target (MT/y)</td><td><input id="Capture_Target" name="Capture_Target" type="text" size=8 value="5" required></td></tr>
+                </table>
+                </div>
+                </div>
+            </div>
+                <!-- end of model parameters-->
+
+                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="create_scenario()"><strong>Create Scenario with the Selected</strong></button>  
+                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="clear_selection()"><strong>Clear the Selections</strong></button>  
+            </div>
+
+            <div class="leaflet-sidebar-pane" id="profile">
+                  <h1 class="leaflet-sidebar-header">Profile<div class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></div></h1>
+            </div>
+ 
+            <div class="leaflet-sidebar-pane" id="settings">
+                <h1 class="leaflet-sidebar-header">Settings<span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+                <br>
+                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="save_workspace()"><strong>Save Current Workspace</strong></button>  
+
+            </div>
+        </div>
+    </div>
+
+  <div class="main-content-wrapper">
+    <main class="main-content">
+      <div class="container-fluid">
+                  <div id="map"></div>
+      </div>
+
+    </main>
+  </div>
+
+
+{% endblock content %}

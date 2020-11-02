@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.conf.urls import include, url
+from django.contrib.auth.decorators import login_required
 from rest_framework import routers
 
 from . import geoserver, views
@@ -32,4 +33,6 @@ urlpatterns = [
     url(r"^case/(?P<case_id>[^/]+)$", views.get_case),
     url(r"^get-data", geoserver.get_data),
     url(r"^api/", include(router.urls)),
+    url(r"^build", login_required(views.BuildView.as_view()), name="build"),
+    
 ]

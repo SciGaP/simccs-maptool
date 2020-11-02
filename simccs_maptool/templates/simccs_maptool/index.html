@@ -845,32 +845,145 @@
                   formData.set('candidateNetwork', Maptool.cachedCandidateNetwork);
             }
             return AiravataAPI.utils.FetchUtils.post("/maptool/mps/", formData).then(function( data ) {
-                  var m_html =`<div class="modal fade in" tabindex="-1" role="dialog">
-<div class="modal-dialog" role="document">
-<div class="modal-content">
-      <div class="modal-header">
-      <h5 class="modal-title">Generate MPS file</h5>
-      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
-      </button>
-      </div>
-      <div class="modal-body">
-      <p><strong class="text-break">MPS file</strong> was generated successfully.</p>
-      </div>
-      <div class="modal-footer">
-      <button type="button" class="btn btn-primary">
-            <a href="/workspace/applications/{{ cplex_application_id }}/create_experiment?Sources=sources_input_file&Sinks=sinks_input_file&Cplex-input-file=user_input_file&Dataset-id=${current_dataset_id}" style="color:inherit">Create Experiment</a></button>
-      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-      </div>
-</div>
-</div>
-</div>`;
-      m_html = m_html.replace("user_input_file", data["mps"]);
-      m_html = m_html.replace("sources_input_file", data["sources"]);
-      m_html = m_html.replace("sinks_input_file", data["sinks"]);
-      $(m_html).appendTo('body').modal('show');
+//                   var m_html =`<div class="modal fade in" tabindex="-1" role="dialog">
+// <div class="modal-dialog" role="document">
+// <div class="modal-content">
+//       <div class="modal-header">
+//       <h5 class="modal-title">Generate MPS file</h5>
+//       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+//       <span aria-hidden="true">&times;</span>
+//       </button>
+//       </div>
+//       <div class="modal-body">
+//       <p><strong class="text-break">MPS file</strong> was generated successfully.</p>
+//       </div>
+//       <div class="modal-footer">
+//       <button type="button" class="btn btn-primary">
+//             <a href="/workspace/applications/{{ cplex_application_id }}/create_experiment?Sources=sources_input_file&Sinks=sinks_input_file&Cplex-input-file=user_input_file&Dataset-id=${current_dataset_id}" style="color:inherit">Create Experiment</a></button>
+//       <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+//       </div>
+// </div>
+// </div>
+// </div>`;
+//       m_html = m_html.replace("user_input_file", data["mps"]);
+//       m_html = m_html.replace("sources_input_file", data["sources"]);
+//       m_html = m_html.replace("sinks_input_file", data["sinks"]);
+//       $(m_html).appendTo('body').modal('show');
+
+            Maptool.cplexInputValues = {
+                  "Sources": data.sources,
+                  "Sinks": data.sinks,
+                  "Cplex-input-file": data.mps,
+                  "Dataset-id": current_dataset_id
+            }; 
+            var submitExpButton = document.querySelector("#bn_case_submitexp");
+            submitExpButton.disabled = false;
+
+            // load the mps file and provide a download link to download the file
+            fetch(`/api/download?data-product-uri=${encodeURIComponent(data.mps)}`, {
+                    credentials: "same-origin",
+            })
+            .then((result) => result.text())
+            .then(mpsFile => {
+                  downloadcsv(mpsFile, "cap.mps", "text/plain","case_download_mps"); 
+                  document.getElementById("case_download_mps").style.display = 'inline';
+            });
 
             }).catch(display_error_modal);
+      }
+
+      function case_submitexperiment() {
+            var cplex_application_id = "{{ cplex_application_id }}";
+            var hostname = "{{ cplex_hostname }}";
+            const services = AiravataAPI.services;
+            // Load the application interface for the application module with id cplex_application_id
+            const loadAppInterface = services.ApplicationModuleService.getApplicationInterface({
+                  lookup: cplex_application_id,
+            });
+            // Find the compute resource id for the 'hostname'
+            const loadComputeResourceIds = services.ComputeResourceService.names()
+            .then((computeResourceIds) => {
+                  for (computeResourceId in computeResourceIds) {
+                        if (computeResourceIds[computeResourceId] === hostname) {
+                              return computeResourceId;
+                        }
+                  }
+                  throw new Exception("Couldn't find a compute resource for host " + hostname);
+            });
+            // Find a group resource profile that can run an experiment on 'hostname'
+            // Also, find the default queue configuration for the application deployment on that 'hostname'
+            const loadResourceProfiles = services.GroupResourceProfileService.list()
+            const loadGroupResourceProfileAndQueue = Promise.all([loadComputeResourceIds, loadResourceProfiles])
+            .then(([computeResourceId, groupResourceProfiles]) => {
+
+                  const groupResourceProfile = groupResourceProfiles.find(grp => {
+                        for (computePref of grp.computePreferences) {
+                              if (computePref.computeResourceId === computeResourceId) {
+                                    return true;
+                              }
+                        }
+                        return false;
+                  });
+                  if (!groupResourceProfile) {
+                        throw new Exception("Couldn't find a group resource profile for host " + hostname);
+                  }
+                  const loadDeployments = services.ApplicationDeploymentService.list({
+                        appModuleId: cplex_application_id,
+                        groupResourceProfileId: groupResourceProfile.groupResourceProfileId,
+                  })
+                  .then(deployments => {
+                        const deployment = deployments.find(d => d.computeHostId === computeResourceId);
+                        if (!deployment) {
+                              throw new Exception("Couldn't find a deployment for host " + hostname);
+                        }
+                        return services.ApplicationDeploymentService.getQueues({
+                              lookup: deployment.appDeploymentId
+                        })
+                        .then(queues => {
+                              const queue = queues.find(q => q.isDefaultQueue);
+                              if (!queue) {
+                                    throw new Exception("Couldn't find a default queue for host " + hostname);
+                              }
+                              return queue;
+                        });
+                  });
+                  return Promise.all([computeResourceId, groupResourceProfile, loadDeployments]);
+            });
+            // Load user's workspace prefs to find the id of most recently used project; experiment must be added to a project
+            const loadWorkspacePrefs = services.WorkspacePreferencesService.get();
+            Promise.all([loadAppInterface,loadGroupResourceProfileAndQueue, loadWorkspacePrefs])
+            .then(([appInterface, [computeResourceId, groupResourceProfile, defaultQueue], workspacePrefs]) => {
+                  const experiment = appInterface.createExperiment();
+                  experiment.experimentName = "CPLEX on " + new Date().toLocaleString();
+                  experiment.projectId = workspacePrefs.most_recent_project_id;
+                  // Copy groupResourceProfileId and queue defaults to experiment configuration
+                  experiment.userConfigurationData.groupResourceProfileId = groupResourceProfile.groupResourceProfileId;
+                  experiment.userConfigurationData.computationalResourceScheduling.resourceHostId = computeResourceId;
+                  experiment.userConfigurationData.computationalResourceScheduling.totalCPUCount = defaultQueue.defaultCPUCount;
+                  experiment.userConfigurationData.computationalResourceScheduling.nodeCount = defaultQueue.defaultNodeCount;
+                  experiment.userConfigurationData.computationalResourceScheduling.wallTimeLimit = defaultQueue.defaultWalltime;
+                  experiment.userConfigurationData.computationalResourceScheduling.queueName = defaultQueue.queueName;
+                  // Copy input values from Maptool.cplexInputValues to experimentInputs
+                  for (let input of experiment.experimentInputs) {
+                        if (input.name in Maptool.cplexInputValues) {
+                              input.value = Maptool.cplexInputValues[input.name];
+                        }
+                  }
+
+                  return services.ExperimentService.create({ data: experiment });
+            })
+            .then(experiment => {
+                 return services.ExperimentService.launch({
+                       lookup: experiment.experimentId
+                 }).then(() => {
+
+                        // Create a link to the experiment summary page
+                        var caseViewExperimentLink = document.getElementById("case_view_experiment");
+                        caseViewExperimentLink.setAttribute("href", `/workspace/experiments/${encodeURIComponent(experiment.experimentId)}/`);
+                        document.getElementById("case_view_experiment").style.display = 'inline';
+                 });
+            });
+
       }
 
            
@@ -2667,6 +2780,9 @@
                                           <tr><td>Capture Target (MT/y)</td><td><input id="case_Capture_Target" name="caase_Capture_Target" type="text" size=8 value=5 required></td></tr>
                               </table><br>
                               <button type="button" id="bn_case_generatemps" class="btn btn-primary btn-sm btn-block" onclick="case_generatempsfile()" disabled>Generate MPS file</button>
+                              <a href="" id="case_download_mps" style="display: none;">Download MPS</a>
+                              <button type="button" id="bn_case_submitexp" class="btn btn-primary btn-sm btn-block mt-2" onclick="case_submitexperiment()" disabled>Submit Experiment</button>
+                              <a href="" id="case_view_experiment" style="display: none;">View Experiment Summary</a>
       
                         </div>
 

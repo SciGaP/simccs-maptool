@@ -62,11 +62,28 @@ class HomeView(TemplateView):
         context["cplex_application_id"] = getattr(settings, "MAPTOOL_SETTINGS", {}).get(
             "CPLEX_APPLICATION_ID", "Cplex_a7eaf483-ab92-4441-baeb-2f302ccb2919"
         )
+        context["cplex_hostname"] = getattr(settings, "MAPTOOL_SETTINGS", {}).get(
+            "CPLEX_HOSTNAME", "karst.uits.iu.edu"
+        )
         return context
 
 
 class HelpView(TemplateView):
     template_name = "simccs_maptool/help.html"
+
+
+class BuildView(TemplateView):
+    template_name = "simccs_maptool/build.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["cplex_application_id"] = getattr(settings, "MAPTOOL_SETTINGS", {}).get(
+            "CPLEX_APPLICATION_ID", "Cplex_a7eaf483-ab92-4441-baeb-2f302ccb2919"
+        )
+        context["cplex_hostname"] = getattr(settings, "MAPTOOL_SETTINGS", {}).get(
+            "CPLEX_HOSTNAME", "karst.uits.iu.edu"
+        )
+        return context
 
 
 @login_required
@@ -286,7 +303,9 @@ def _get_experiment_file(request, experiment, name, input_file=False):
             if exp_output.name == name:
                 data_product_uri = exp_output.value
     if data_product_uri:
-        return user_storage.open_file(request, data_product_uri)
+        data_product = request.airavata_client.getDataProduct(
+            request.authz_token, data_product_uri)
+        return user_storage.open_file(request, data_product)
     else:
         return None
 
