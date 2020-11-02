@@ -23,12 +23,14 @@
 				"DataID": "source001",
 				"URL": "",
 				"Style": "",
+				"Popup": ["Name", "CapCO2", "TotalUnitCost"],
 				"BBOX": ""
 			},
 			{
 				"DataID": "sink001",
 				"URL": "",
 				"Style": "TotalUnitCost",
+				"Popup": ["Name", "StorageCap", "TotalUnitCost"],
 				"BBOX": ""
 			}
 		],
