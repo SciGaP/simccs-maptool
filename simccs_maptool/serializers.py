@@ -8,6 +8,16 @@ from simccs_maptool import models
 logger = logging.getLogger(__name__)
 
 
+class BboxField(serializers.Field):
+    def to_representation(self, value):
+        """Convert comma-delimited string to list of numbers."""
+        return list(map(float, value.split(",")))
+
+    def to_internal_value(self, data):
+        """Convert list of numbers to comma-delimited string."""
+        return ",".join(map(str, data))
+
+
 class DatasetSerializer(serializers.ModelSerializer):
     file = serializers.FileField(
         write_only=True,
@@ -63,6 +73,7 @@ class DatasetSerializer(serializers.ModelSerializer):
 
 class MaptoolDataSerializer(serializers.ModelSerializer):
     dataset = serializers.PrimaryKeyRelatedField(queryset=models.Dataset.objects.all())
+    bbox = BboxField(required=False, allow_null=True)
 
     class Meta:
         model = models.MaptoolData
@@ -71,6 +82,7 @@ class MaptoolDataSerializer(serializers.ModelSerializer):
 
 class MaptoolConfigSerializer(serializers.ModelSerializer):
     data = MaptoolDataSerializer(many=True, allow_null=True)
+    bbox = BboxField(required=False, allow_null=True)
 
     class Meta:
         model = models.MaptoolConfig
@@ -101,7 +113,10 @@ class CaseSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         # TODO: add/remove/update MaptoolConfig.data entries
-        # TODO: update MaptoolConfig
+        # update MaptoolConfig
+        maptool = validated_data.pop("maptool")
+        instance.maptool.bbox = maptool["bbox"]
+        instance.maptool.save()
         # update Case - description, group, title
         instance.description = validated_data["description"]
         instance.title = validated_data["title"]
