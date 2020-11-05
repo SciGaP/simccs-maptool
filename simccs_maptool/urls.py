@@ -13,11 +13,15 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.conf.urls import include, url
 from django.contrib.auth.decorators import login_required
+from rest_framework import routers
 
 from . import geoserver, views
 
+router = routers.DefaultRouter()
+router.register(r"cases", views.CaseViewSet, basename="case")
+router.register(r"datasets", views.DatasetViewSet, basename="dataset")
 app_name = "simccs_maptool"
 urlpatterns = [
     url(r"^$", views.HomeView.as_view(), name="home"),
@@ -28,6 +32,7 @@ urlpatterns = [
     url(r"^solution-summary/(?P<experiment_id>[^/]+)$", views.solution_summary),
     url(r"^case/(?P<case_id>[^/]+)$", views.get_case),
     url(r"^get-data", geoserver.get_data),
+    url(r"^api/", include(router.urls)),
     url(r"^build", login_required(views.BuildView.as_view()), name="build"),
     
 ]

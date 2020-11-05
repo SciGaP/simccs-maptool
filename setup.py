@@ -11,6 +11,7 @@ setuptools.setup(
         'pyjnius',
         'pyshp',
         "airavata-django-portal-sdk @ git+https://github.com/apache/airavata-django-portal-sdk.git@master#egg=airavata-django-portal-sdk",
+        'djangorestframework'
     ],
     entry_points="""
 [airavata.djangoapp]

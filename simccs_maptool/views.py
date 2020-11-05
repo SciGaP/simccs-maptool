@@ -17,8 +17,9 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.urls import reverse
 from django.views.generic import TemplateView
+from rest_framework import parsers, viewsets
 
-from simccs_maptool import datasets
+from simccs_maptool import datasets, models, serializers
 
 from . import simccs_helper
 
@@ -525,3 +526,19 @@ def get_case(request, case_id):
             + urlencode({"data-product-uri": sinks_dp_uri})
         )
         return JsonResponse(samplecase_data)
+
+
+class CaseViewSet(viewsets.ModelViewSet):
+    serializer_class = serializers.CaseSerializer
+    # TODO: define get_queryset to only return Case's that the user is owner of
+    # or that user is a member of that group
+    queryset = models.Case.objects.all()
+    # TODO: set permission_classes to only allow owner or member of group permission
+
+
+class DatasetViewSet(viewsets.ModelViewSet):
+    serializer_class = serializers.DatasetSerializer
+    parser_classes = [parsers.MultiPartParser]
+
+    def get_queryset(self):
+        return models.Dataset.objects.filter(owner=self.request.user)
