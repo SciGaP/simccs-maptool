@@ -107,7 +107,10 @@ var current_dataset_id = "Lower48US";
 
 async function set_casedata() {
       var urlprefix = "/static/Data/Build/";
-      casejson = await getdata(urlprefix + '123test.json');
+      //casejson = await getdata(urlprefix + '123test.json');
+      //https://beta.simccs.scigap.org/maptool/case/123
+      casejson = await getdata('/case/123');
+
       document.getElementById("case_name").textContent=casejson["Title"];
       document.getElementById("case_description").textContent=casejson["Description"]; 
       // move map to bounding box
