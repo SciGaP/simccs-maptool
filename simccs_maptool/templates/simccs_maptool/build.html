@@ -365,7 +365,7 @@ $("#dynamicModal").modal();
 
 cplexInputValues_panel[panelid] = {"Sources": data["sources"], "Sinks": data["sinks"],"Cplex-input-file": data["mps"], "Dataset-id": current_dataset_id};
 console.log(showmodal);
- if (showmodal == true) {$("#dynamicModal").modal('show'); }
+// if (showmodal == true) {$("#dynamicModal").modal('show'); }
 return cplexInputValues_panel[panelid];
           }).catch(display_error_modal);
     });
@@ -375,14 +375,11 @@ function case_submitexperiment(panelid) {
       //debug info
       //console.log(panelid);
       var cplexInputValues;
-      var mpsRequest = null;
-
       if (cplexInputValues_panel.hasOwnProperty(panelid)) {
          cplexInputValues = cplexInputValues_panel[panelid];
-         mpsRequest = Promise.resolve(cplexInputValues);
       } else {
           //generatempsfile(panelid,showmodal=false);
-          mpsRequest = generatempsfile(panelid,showmodal=false).then(data => candidatenetwork_cached[panelid]);
+          mpsRequest = generatempsfile(panelid,showmodal=false).then(dcplexInputValues => candidatenetwork_cached[panelid]);
       }
       mpsRequest.then((cplexInputValues) => {     
             var cplex_application_id = "{{ cplex_application_id }}";
