@@ -108,7 +108,7 @@ function handleclick(id){
     
     // Storing data in form of JSON 
     var data = await response.json(); 
-    console.log(data);
+    //console.log(data);
     return data;
 } 
 

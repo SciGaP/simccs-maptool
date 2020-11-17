@@ -375,12 +375,16 @@ function case_submitexperiment(panelid) {
       //debug info
       //console.log(panelid);
       var cplexInputValues;
+      var mpsRequest = null;
+
       if (cplexInputValues_panel.hasOwnProperty(panelid)) {
          cplexInputValues = cplexInputValues_panel[panelid];
+         mpsRequest = Promise.resolve(cplexInputValues);
       } else {
           generatempsfile(panelid,showmodal=false);
+          mpsRequest = generatempsfile(panelid,showmodal=false).then(cplexInputValues = candidatenetwork_cached[panelid]);
       }
-
+      mpsRequest.then((cplexInputValues) => {     
             var cplex_application_id = "{{ cplex_application_id }}";
             var hostname = "{{ cplex_hostname }}";
             const services = AiravataAPI.services;
@@ -471,7 +475,7 @@ function case_submitexperiment(panelid) {
                         document.getElementById("case_view_experiment_" + panelid).style.display = 'inline';
                  });
             });
-
+      });
       }
 
      
