@@ -305,7 +305,7 @@ function create_scenario() {
 
 
 //generate MPS file
-function generatempsfile(panelid,showmodal=true) {
+function generatempsfile(panelid,showmodal=1) {
     // get the data from panelid
     var source_selection = sourceselection_panel[panelid];
     var sink_selection = sinkselection_panel[panelid];
@@ -365,7 +365,7 @@ $("#dynamicModal").modal();
 
 cplexInputValues_panel[panelid] = {"Sources": data["sources"], "Sinks": data["sinks"],"Cplex-input-file": data["mps"], "Dataset-id": current_dataset_id};
 console.log(showmodal);
-// if (showmodal == true) {$("#dynamicModal").modal('show'); }
+if (showmodal == 1) {$("#dynamicModal").modal('show'); }
 return cplexInputValues_panel[panelid];
           }).catch(display_error_modal);
     });
@@ -379,7 +379,7 @@ function case_submitexperiment(panelid) {
          cplexInputValues = cplexInputValues_panel[panelid];
       } else {
           //generatempsfile(panelid,showmodal=false);
-          mpsRequest = generatempsfile(panelid,showmodal=false).then(dcplexInputValues => candidatenetwork_cached[panelid]);
+          mpsRequest = generatempsfile(panelid,showmodal=0).then(cplexInputValues => candidatenetwork_cached[panelid]);
       }
       mpsRequest.then((cplexInputValues) => {     
             var cplex_application_id = "{{ cplex_application_id }}";
