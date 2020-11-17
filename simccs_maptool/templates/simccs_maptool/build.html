@@ -375,8 +375,10 @@ function case_submitexperiment(panelid) {
       //debug info
       //console.log(panelid);
       var cplexInputValues;
+      var mpsRequest = null;
       if (cplexInputValues_panel.hasOwnProperty(panelid)) {
          cplexInputValues = cplexInputValues_panel[panelid];
+         mpsRequest = Promise.resolve(cplexInputValues);
       } else {
           //generatempsfile(panelid,showmodal=false);
           mpsRequest = generatempsfile(panelid,showmodal=0).then(cplexInputValues => candidatenetwork_cached[panelid]);
