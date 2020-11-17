@@ -381,7 +381,7 @@ function case_submitexperiment(panelid) {
          cplexInputValues = cplexInputValues_panel[panelid];
          mpsRequest = Promise.resolve(cplexInputValues);
       } else {
-          generatempsfile(panelid,showmodal=false);
+          //generatempsfile(panelid,showmodal=false);
           mpsRequest = generatempsfile(panelid,showmodal=false).then(cplexInputValues = candidatenetwork_cached[panelid]);
       }
       mpsRequest.then((cplexInputValues) => {     
