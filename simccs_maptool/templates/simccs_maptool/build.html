@@ -366,7 +366,6 @@ cplexInputValues_panel[panelid] = {"Sources": data["sources"], "Sinks": data["si
 console.log(showmodal);
 if (showmodal == 1) {$("#dynamicModal").modal();
       $("#dynamicModal").modal('show'); }
-return cplexInputValues_panel[panelid];
           }).catch(display_error_modal);
     });
 }
@@ -381,7 +380,7 @@ function case_submitexperiment(panelid) {
          mpsRequest = Promise.resolve(cplexInputValues);
       } else {
           //generatempsfile(panelid,showmodal=false);
-          mpsRequest = generatempsfile(panelid,showmodal=0).then(cplexInputValues => candidatenetwork_cached[panelid]);
+          mpsRequest = generatempsfile(panelid,showmodal=0).then(cplexInputValues => {"Sources": data["sources"], "Sinks": data["sinks"],"Cplex-input-file": data["mps"], "Dataset-id": current_dataset_id});
       }
       mpsRequest.then((cplexInputValues) => {     
             var cplex_application_id = "{{ cplex_application_id }}";
