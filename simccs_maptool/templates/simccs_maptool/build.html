@@ -367,6 +367,7 @@ cplexInputValues_panel[panelid] = {"Sources": data["sources"], "Sinks": data["si
 
 // Create a link to download mps file
 var mpsDownloadLink = document.getElementById("mps_download_" + panelid);
+mpsDownloadLink.setAttribute("href",'');
 mpsDownloadLink.setAttribute("href", '/api/download?data-product-uri='+ data["mps"]);
 document.getElementById("mps_download_" + panelid).style.display = 'inline';
 
