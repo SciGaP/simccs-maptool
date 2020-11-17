@@ -380,7 +380,7 @@ function case_submitexperiment(panelid) {
          mpsRequest = Promise.resolve(cplexInputValues);
       } else {
           //generatempsfile(panelid,showmodal=false);
-          mpsRequest = generatempsfile(panelid,showmodal=0).then(cplexInputValues => {"Sources": data["sources"], "Sinks": data["sinks"],"Cplex-input-file": data["mps"], "Dataset-id": current_dataset_id});
+          mpsRequest = generatempsfile(panelid,showmodal=0).then(cplexInputValues => cplexInputValues_panel[panelid]);
       }
       mpsRequest.then((cplexInputValues) => {     
             var cplex_application_id = "{{ cplex_application_id }}";
