@@ -267,7 +267,7 @@ function displayselecteddata(panelid) {
       div.innerHTML += "<br>";
       div.innerHTML += '<button type="button" id="bn_generatecandidatenetwork_'+ panelid +'" class="btn btn-primary btn-sm btn-block" onclick=generatecandidatenetwork("'+ panelid +'")>Generate Candidate Network</button>';
       div.innerHTML += '<button type="button" id="bn_generatemps_' + panelid + '" class="btn btn-primary btn-sm btn-block" onclick=generatempsfile("'+ panelid + '")>Generate MPS file</button>';
-      div.innerHTML +=  '<a target="_blank" href="" id="mps_download_' + panelid + '" style="display: none;">Download MPS file</a>';
+      div.innerHTML +=  '<a target="_blank" download="cap.mps" href="" id="mps_download_' + panelid + '" style="display: none;">Download MPS file</a>';
       div.innerHTML += "<br>";
       div.innerHTML += '<button type="button" class="btn btn-primary btn-sm btn-block" onclick=case_submitexperiment("'+ panelid +'")><strong>Create a New Experiment</strong></button>';
       div.innerHTML +=  '<a target="_blank" href="" id="case_view_experiment_' + panelid+ '" style="display: none;">View Experiment Summary</a>';
