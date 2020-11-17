@@ -361,11 +361,11 @@ function generatempsfile(panelid,showmodal=1) {
     m_html = m_html.replace("sources_input_file", data["sources"]);
     m_html = m_html.replace("sinks_input_file", data["sinks"]);
 $('body').append(m_html);
-$("#dynamicModal").modal();
 
 cplexInputValues_panel[panelid] = {"Sources": data["sources"], "Sinks": data["sinks"],"Cplex-input-file": data["mps"], "Dataset-id": current_dataset_id};
 console.log(showmodal);
-if (showmodal == 1) {$("#dynamicModal").modal('show'); }
+if (showmodal == 1) {$("#dynamicModal").modal();
+      $("#dynamicModal").modal('show'); }
 return cplexInputValues_panel[panelid];
           }).catch(display_error_modal);
     });
