@@ -382,7 +382,7 @@ function case_submitexperiment(panelid) {
          mpsRequest = Promise.resolve(cplexInputValues);
       } else {
           //generatempsfile(panelid,showmodal=false);
-          mpsRequest = generatempsfile(panelid,showmodal=false).then(cplexInputValues = candidatenetwork_cached[panelid]);
+          mpsRequest = generatempsfile(panelid,showmodal=false).then(data => candidatenetwork_cached[panelid]);
       }
       mpsRequest.then((cplexInputValues) => {     
             var cplex_application_id = "{{ cplex_application_id }}";
