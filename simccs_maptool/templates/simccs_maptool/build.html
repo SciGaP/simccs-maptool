@@ -334,7 +334,7 @@ function generatempsfile(panelid,showmodal=1) {
     } else {
           candidateNetworkRequest = generatecandidatenetwork(panelid).then(data => data["CandidateNetwork"]);
     }
-    candidateNetworkRequest.then((candidateNetwork) => {
+    return candidateNetworkRequest.then((candidateNetwork) => {
 
           formData.set('candidateNetwork', candidateNetwork);
           return AiravataAPI.utils.FetchUtils.post("/maptool/mps/", formData).then(function( data ) {
@@ -391,9 +391,9 @@ function case_submitexperiment(panelid) {
          mpsRequest = Promise.resolve(cplexInputValues);
       } else {
           //generatempsfile(panelid,showmodal=false);
-          mpsRequest = generatempsfile(panelid,showmodal=0).then(cplexInputValues = cplexInputValues_panel[panelid]);
+          mpsRequest = generatempsfile(panelid,showmodal=0).then(() => {cplexInputValues = cplexInputValues_panel[panelid]});
       }
-      mpsRequest.then((cplexInputValues) => {     
+      mpsRequest.then(() => {     
             var cplex_application_id = "{{ cplex_application_id }}";
             var hostname = "{{ cplex_hostname }}";
             const services = AiravataAPI.services;
