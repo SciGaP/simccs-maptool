@@ -14,6 +14,7 @@ import shapefile
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.urls import reverse
 from django.views.generic import TemplateView
@@ -83,6 +84,16 @@ class BuildView(TemplateView):
         context["cplex_hostname"] = getattr(settings, "MAPTOOL_SETTINGS", {}).get(
             "CPLEX_HOSTNAME", "karst.uits.iu.edu"
         )
+        return context
+
+
+class CasesView(LoginRequiredMixin, TemplateView):
+
+    template_name = "simccs_maptool/vue-app.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['bundle_name'] = 'cases'
         return context
 
 
