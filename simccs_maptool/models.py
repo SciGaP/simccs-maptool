@@ -4,11 +4,12 @@ from django.db import models
 
 # 4 comma separated floating point numbers
 bbox_validator = validators.RegexValidator(regex=r"^-?\d+(\.\d+)?(,-?\d+(\.\d+)?){3}$")
+csv_validator = validators.RegexValidator(regex=r"^[^,]+(,[^,])+$")
 
 
 class Case(models.Model):
     title = models.CharField(max_length=255)
-    description = models.TextField()
+    description = models.TextField(null=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     group = models.CharField(max_length=64, null=True)
 
@@ -38,3 +39,4 @@ class MaptoolData(models.Model):
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
     style = models.TextField(null=True)
     bbox = models.CharField(max_length=128, null=True, validators=[bbox_validator])
+    popup = models.CharField(max_length=128, null=True, validators=[csv_validator])

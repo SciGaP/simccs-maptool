@@ -7,7 +7,7 @@
             <b-form-input v-model="aCase.title" required></b-form-input>
           </b-form-group>
           <b-form-group label="Description">
-            <b-form-input v-model="aCase.description" required></b-form-input>
+            <b-form-input v-model="aCase.description"></b-form-input>
           </b-form-group>
           <b-card>
             <b-form-group label="Source Dataset">
@@ -26,7 +26,53 @@
               <b-form-input v-model="sourceDataset.style"></b-form-input>
             </b-form-group>
             <b-form-group label="Popup Fields" v-if="sourceDataset.dataset">
-              <b-form-input v-model="sourceDataset.popup"></b-form-input>
+              <b-form-tags
+                v-model="sourceDataset.popup"
+                size="lg"
+                add-on-change
+                no-outer-focus
+                class="mb-2"
+              >
+                <template
+                  v-slot="{
+                    tags,
+                    inputAttrs,
+                    inputHandlers,
+                    disabled,
+                    removeTag,
+                  }"
+                >
+                  <ul
+                    v-if="tags.length > 0"
+                    class="list-inline d-inline-block mb-2"
+                  >
+                    <li v-for="tag in tags" :key="tag" class="list-inline-item">
+                      <b-form-tag
+                        @remove="removeTag(tag)"
+                        :title="tag"
+                        :disabled="disabled"
+                        variant="info"
+                        >{{ tag }}</b-form-tag
+                      >
+                    </li>
+                  </ul>
+                  <b-form-select
+                    v-bind="inputAttrs"
+                    v-on="inputHandlers"
+                    :disabled="
+                      disabled || sourceDatasetPopupFieldOptions.length === 0
+                    "
+                    :options="sourceDatasetPopupFieldOptions"
+                  >
+                    <template #first>
+                      <!-- This is required to prevent bugs with Safari -->
+                      <option disabled value=""
+                        >Choose a popup field ...</option
+                      >
+                    </template>
+                  </b-form-select>
+                </template>
+              </b-form-tags>
             </b-form-group>
           </b-card>
           <b-card>
@@ -46,7 +92,53 @@
               <b-form-input v-model="sinkDataset.style"></b-form-input>
             </b-form-group>
             <b-form-group label="Popup Fields" v-if="sinkDataset.dataset">
-              <b-form-input v-model="sinkDataset.popup"></b-form-input>
+              <b-form-tags
+                v-model="sinkDataset.popup"
+                size="lg"
+                add-on-change
+                no-outer-focus
+                class="mb-2"
+              >
+                <template
+                  v-slot="{
+                    tags,
+                    inputAttrs,
+                    inputHandlers,
+                    disabled,
+                    removeTag,
+                  }"
+                >
+                  <ul
+                    v-if="tags.length > 0"
+                    class="list-inline d-inline-block mb-2"
+                  >
+                    <li v-for="tag in tags" :key="tag" class="list-inline-item">
+                      <b-form-tag
+                        @remove="removeTag(tag)"
+                        :title="tag"
+                        :disabled="disabled"
+                        variant="info"
+                        >{{ tag }}</b-form-tag
+                      >
+                    </li>
+                  </ul>
+                  <b-form-select
+                    v-bind="inputAttrs"
+                    v-on="inputHandlers"
+                    :disabled="
+                      disabled || sinkDatasetPopupFieldOptions.length === 0
+                    "
+                    :options="sinkDatasetPopupFieldOptions"
+                  >
+                    <template #first>
+                      <!-- This is required to prevent bugs with Safari -->
+                      <option disabled value=""
+                        >Choose a popup field ...</option
+                      >
+                    </template>
+                  </b-form-select>
+                </template>
+              </b-form-tags>
             </b-form-group>
           </b-card>
           <b-form-group
@@ -74,16 +166,21 @@ export default {
   name: "new-case-container",
   data() {
     return {
-      aCase: {},
+      aCase: {
+        title: null,
+        description: null,
+      },
       sourceDataset: {
         dataset: null, // dataset.id
         style: null,
         bbox: null,
+        popup: [],
       },
       sinkDataset: {
         dataset: null, // dataset.id
         style: null,
         bbox: null,
+        popup: [],
       },
       datasets: null,
       map: null,
@@ -121,6 +218,13 @@ export default {
       });
       return utils.StringUtils.sortIgnoreCase(options, (o) => o.text);
     },
+    sourceDatasetPopupFieldOptions() {
+      // TODO: pull fields from properties in the source geojson file
+      const allOptions = ["Name", "CapCO2", "TotalUnitCost"];
+      return allOptions.filter(
+        (o) => this.sourceDataset.popup.indexOf(o) === -1
+      );
+    },
     sinkDatasets() {
       if (this.datasets) {
         return this.datasets.filter((ds) => ds.type === "sink");
@@ -136,6 +240,11 @@ export default {
         };
       });
       return utils.StringUtils.sortIgnoreCase(options, (o) => o.text);
+    },
+    sinkDatasetPopupFieldOptions() {
+      // TODO: pull fields from properties in the sink geojson file
+      const allOptions = ["Name", "StorageCap", "TotalUnitCost"];
+      return allOptions.filter((o) => this.sinkDataset.popup.indexOf(o) === -1);
     },
     bboxArray() {
       if (!this.mapBounds) {
@@ -161,11 +270,8 @@ export default {
       const newCase = this.aCase;
       newCase.maptool = {
         bbox: this.bboxArray,
-        data: [
-          this.sourceDataset,
-          this.sinkDataset
-        ]
-      }
+        data: [this.sourceDataset, this.sinkDataset],
+      };
       utils.FetchUtils.post("/maptool/api/cases/", newCase).then(() => {
         // TODO: add a success message
         this.$router.push({ path: "/" });

@@ -8,14 +8,33 @@ from simccs_maptool import models
 logger = logging.getLogger(__name__)
 
 
-class BboxField(serializers.Field):
+class CSVField(serializers.Field):
     def to_representation(self, value):
         """Convert comma-delimited string to list of numbers."""
-        return list(map(float, value.split(",")))
+        if value is not None and value != "":
+            return list(map(self.to_item_representation, value.split(",")))
+        else:
+            return []
+
+    def to_item_representation(self, value):
+        """Convert item in the list to representation."""
+        return value
 
     def to_internal_value(self, data):
         """Convert list of numbers to comma-delimited string."""
-        return ",".join(map(str, data))
+        return ",".join(map(self.to_item_internal_value, data))
+
+    def to_item_internal_value(self, data):
+        """Convert list member to internal value."""
+        return data
+
+
+class BboxField(CSVField):
+    def to_item_representation(self, value):
+        return float(value)
+
+    def to_item_internal_value(self, data):
+        return str(data)
 
 
 class DatasetSerializer(serializers.ModelSerializer):
@@ -74,10 +93,11 @@ class DatasetSerializer(serializers.ModelSerializer):
 class MaptoolDataSerializer(serializers.ModelSerializer):
     dataset = serializers.PrimaryKeyRelatedField(queryset=models.Dataset.objects.all())
     bbox = BboxField(required=False, allow_null=True)
+    popup = CSVField(required=False, allow_null=True)
 
     class Meta:
         model = models.MaptoolData
-        fields = ["bbox", "style", "dataset"]
+        fields = ["bbox", "style", "dataset", "popup"]
 
 
 class MaptoolConfigSerializer(serializers.ModelSerializer):
@@ -94,7 +114,7 @@ class CaseSerializer(serializers.ModelSerializer):
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
     group = serializers.CharField(required=False, allow_null=True)
     description = serializers.CharField(
-        style={"base_template": "textarea.html"}, allow_blank=True
+        style={"base_template": "textarea.html"}, allow_null=True
     )
 
     class Meta:
