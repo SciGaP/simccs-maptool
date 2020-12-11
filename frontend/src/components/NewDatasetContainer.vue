@@ -31,6 +31,7 @@ export default {
     return {
       dataset: {
         type: "source",
+        description: ""
       },
     };
   },

@@ -1,4 +1,6 @@
+import io
 import logging
+import os
 
 from airavata_django_portal_sdk import user_storage
 from rest_framework import serializers
@@ -6,6 +8,7 @@ from rest_framework import serializers
 from simccs_maptool import models
 
 logger = logging.getLogger(__name__)
+BASEDIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class CSVField(serializers.Field):
@@ -72,7 +75,11 @@ class DatasetSerializer(serializers.ModelSerializer):
         )
         if transformed_file:
             data_product = user_storage.save(
-                request, "Datasets", transformed_file, name=transformed_file.name
+                request,
+                "Datasets",
+                transformed_file,
+                name=transformed_file.name,
+                content_type="application/geo+json",
             )
             dataset.data_product_uri = data_product.productUri
             dataset.save()
@@ -86,8 +93,23 @@ class DatasetSerializer(serializers.ModelSerializer):
         return instance
 
     def _transform_file(self, input_file, dataset_type):
-        # TODO: transform the file and return the transformed file
-        pass
+        # TODO: transform the file and return the transformed file (GeoJSON)
+        # In this initial implementation the case data is hard coded but it is
+        # really loaded from data stored in the user's storage
+        case_data_dir = os.path.join(BASEDIR, "CaseData", "SimCCS_Macon")
+        with open(
+            os.path.join(case_data_dir, "SimCCS_MaconSources.geojson"), "rb"
+        ) as sources, open(
+            os.path.join(case_data_dir, "SCO2T_Arkosic_Macon_10K.geojson"), "rb"
+        ) as sinks:
+            if dataset_type == "source":
+                f = io.BytesIO(sources.read())
+                f.name = "SimCCS_MaconSources.geojson"
+                return f
+            elif dataset_type == "sink":
+                f = io.BytesIO(sinks.read())
+                f.name = "SCO2T_Arkosic_Macon_10K.geojson"
+                return f
 
 
 class MaptoolDataSerializer(serializers.ModelSerializer):
