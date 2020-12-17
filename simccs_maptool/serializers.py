@@ -46,6 +46,7 @@ class DatasetSerializer(serializers.ModelSerializer):
         required=False,
         help_text="Required when creating a new Dataset",
     )
+    id = serializers.IntegerField()
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
     data_product_uri = serializers.CharField(read_only=True)
     original_data_product_uri = serializers.CharField(read_only=True)
@@ -113,7 +114,7 @@ class DatasetSerializer(serializers.ModelSerializer):
 
 
 class MaptoolDataSerializer(serializers.ModelSerializer):
-    dataset = serializers.PrimaryKeyRelatedField(queryset=models.Dataset.objects.all())
+    dataset = DatasetSerializer()
     bbox = BboxField(required=False, allow_null=True)
     popup = CSVField(required=False, allow_null=True)
 
@@ -136,7 +137,7 @@ class CaseSerializer(serializers.ModelSerializer):
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
     group = serializers.CharField(required=False, allow_null=True)
     description = serializers.CharField(
-        style={"base_template": "textarea.html"}, allow_null=True
+        style={"base_template": "textarea.html"}, allow_blank=True
     )
 
     class Meta:
@@ -150,15 +151,30 @@ class CaseSerializer(serializers.ModelSerializer):
         case = models.Case.objects.create(owner=request.user, **validated_data)
         maptool_inst = models.MaptoolConfig.objects.create(case=case, **maptool)
         for datum in data:
-            models.MaptoolData.objects.create(maptool_config=maptool_inst, **datum)
+            dataset = datum.pop("dataset")
+            models.MaptoolData.objects.create(
+                maptool_config=maptool_inst, dataset_id=dataset["id"], **datum
+            )
         return case
 
     def update(self, instance, validated_data):
-        # TODO: add/remove/update MaptoolConfig.data entries
         # update MaptoolConfig
         maptool = validated_data.pop("maptool")
         instance.maptool.bbox = maptool["bbox"]
         instance.maptool.save()
+        # add/update MaptoolConfig.data entries
+        data = maptool.pop("data")
+        dataset_ids = []
+        for datum in data:
+            dataset = datum.pop("dataset")
+            dataset_ids.append(dataset["id"])
+            models.MaptoolData.objects.update_or_create(
+                maptool_config=instance.maptool,
+                dataset_id=dataset["id"],
+                defaults=datum,
+            )
+        # Remove datasets that have been removed from case
+        instance.maptool.data.exclude(dataset_id__in=dataset_ids).delete()
         # update Case - description, group, title
         instance.description = validated_data["description"]
         instance.title = validated_data["title"]

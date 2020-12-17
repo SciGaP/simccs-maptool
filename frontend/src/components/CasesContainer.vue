@@ -29,10 +29,14 @@
       </div>
     </div>
     <b-card>
-      <b-table :items="caseItems">
-        <template #cell(actions)="">
+      <b-table :items="caseItems" :fields="caseFields">
+        <template #cell(actions)="data">
           <b-button variant="primary">Use</b-button>
-          <b-button variant="primary">Edit</b-button>
+          <b-button
+            variant="primary"
+            :to="{ name: 'case', params: { id: data.item.id } }"
+            >Edit</b-button
+          >
           <b-button variant="danger">Delete</b-button>
         </template>
       </b-table>
@@ -73,12 +77,16 @@ export default {
         });
       }
     },
+    caseFields() {
+      return ["title", "description", "actions"];
+    },
     caseItems() {
       if (!this.cases) {
         return [];
       } else {
         return this.cases.map((aCase) => {
           return {
+            id: aCase.id,
             title: aCase.title,
             description: aCase.description,
             actions: null,
