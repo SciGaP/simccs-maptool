@@ -73,6 +73,7 @@ class DatasetSerializer(serializers.ModelSerializer):
     description = serializers.CharField(
         style={"base_template": "textarea.html"}, allow_blank=True
     )
+    original_filename = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Dataset
@@ -131,6 +132,15 @@ class DatasetSerializer(serializers.ModelSerializer):
                 f = io.BytesIO(sinks.read())
                 f.name = "SCO2T_Arkosic_Macon_10K.geojson"
                 return f
+
+    def get_original_filename(self, dataset):
+        request = self.context['request']
+        try:
+            data_product = request.airavata_client.getDataProduct(
+                request.authz_token, dataset.original_data_product_uri)
+            return data_product.productName
+        except Exception:
+            return "N/A"
 
 
 class MaptoolDataSerializer(serializers.ModelSerializer):

@@ -72,6 +72,7 @@ export default {
             name: ds.name,
             description: ds.description,
             type: ds.type,
+            filename: ds.original_filename,
             actions: null,
           };
         });
