@@ -1,5 +1,9 @@
 <template>
-  <case-editor :value="aCase" @submit="onSubmit" />
+  <case-editor
+    :value="aCase"
+    :server-validation-errors="serverValidationErrors"
+    @submit="onSubmit"
+  />
 </template>
 
 <script>
@@ -12,21 +16,31 @@ export default {
   data() {
     return {
       aCase: {
-        title: null,
-        description: null,
+        title: "",
+        description: "",
         maptool: {
           bbox: null,
           data: [],
         },
       },
+      serverValidationErrors: null,
     };
   },
   methods: {
     onSubmit(newCase) {
-      utils.FetchUtils.post("/maptool/api/cases/", newCase).then(() => {
-        // TODO: add a success message
-        this.$router.push({ path: "/" });
-      });
+      // reset any validation errors
+      this.serverValidationErrors = null;
+      utils.FetchUtils.post("/maptool/api/cases/", newCase)
+        .then(() => {
+          // TODO: add a success message
+          this.$router.push({ path: "/" });
+        })
+        .catch((e) => {
+          if (e.details && e.details.response) {
+            this.serverValidationErrors = e.details.response;
+          }
+          // TODO: else: display some sort of error message for unexpected error
+        });
     },
   },
 };

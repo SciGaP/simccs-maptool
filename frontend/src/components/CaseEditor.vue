@@ -3,8 +3,18 @@
     <b-row>
       <b-col>
         <b-form @submit="onSubmit">
-          <b-form-group label="Title">
-            <b-form-input v-model="aCase.title" required></b-form-input>
+          <b-form-group label="Title" label-class="required">
+            <b-form-input
+              v-model="$v.aCase.title.$model"
+              :state="validateState($v.aCase.title)"
+              required
+            ></b-form-input>
+            <b-form-invalid-feedback v-if="!$v.aCase.title.required"
+              >This field is required.</b-form-invalid-feedback
+            >
+            <b-form-invalid-feedback v-if="!$v.aCase.title.serverValidation">{{
+              this.serverValidationErrors.title.join(" ")
+            }}</b-form-invalid-feedback>
           </b-form-group>
           <b-form-group label="Description">
             <b-form-input v-model="aCase.description"></b-form-input>
@@ -14,13 +24,13 @@
               v-for="datasetSelection in aCase.maptool.data"
               :key="datasetSelection.dataset.id"
             >
-              <b-form-group label="Dataset">
+              <b-form-group label="Dataset" label-class="required">
                 <b-form-select
                   v-model="datasetSelection.dataset.id"
                   :options="getDatasetOptions(datasetSelection)"
                 >
                   <template #first>
-                    <b-form-select-option :value="null"
+                    <b-form-select-option :value="null" disabled
                       >-- Please select a dataset --</b-form-select-option
                     >
                   </template>
@@ -104,7 +114,11 @@
             >Add Dataset</b-button
           >
           <div>
-            <b-button type="submit" variant="primary" class="mt-4"
+            <b-button
+              type="submit"
+              variant="primary"
+              class="mt-4"
+              :disabled="$v.$invalid"
               >Save</b-button
             >
           </div>
@@ -128,14 +142,24 @@
 <script>
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import { validationMixin } from "vuelidate";
+import { required } from "vuelidate/lib/validators";
+import validateFromServer from "../validators/validateFromServer";
+import { validateState } from "../validators/formHelpers";
 
 const { utils } = AiravataAPI;
 export default {
+  mixins: [validationMixin],
   name: "case-editor",
   props: {
     value: {
       type: Object,
       required: true,
+    },
+    // parent component should pass in any server side validation errors that
+    // occur on submission
+    serverValidationErrors: {
+      type: Object,
     },
   },
   data() {
@@ -144,6 +168,34 @@ export default {
       datasets: null,
       map: null,
       mapBounds: null,
+      submittedData: null,
+    };
+  },
+  validations() {
+    return {
+      aCase: {
+        title: {
+          required,
+          serverValidation: validateFromServer(
+            () => (this.submittedData ? this.submittedData.title : null),
+            () =>
+              this.serverValidationErrors
+                ? this.serverValidationErrors.title
+                : null
+          ),
+        },
+        maptool: {
+          data: {
+            $each: {
+              dataset: {
+                id: {
+                  required,
+                },
+              },
+            },
+          },
+        },
+      },
     };
   },
   created() {
@@ -236,6 +288,7 @@ export default {
           (ds) => ds.id === dataset.dataset.id
         );
       }
+      this.submittedData = JSON.parse(JSON.stringify(newCase)); // deep clone
       this.$emit("submit", newCase);
     },
     initMap() {
@@ -314,6 +367,7 @@ export default {
       const i = this.aCase.maptool.data.indexOf(datasetSelection);
       this.aCase.maptool.data.splice(i, 1);
     },
+    validateState,
   },
 };
 </script>

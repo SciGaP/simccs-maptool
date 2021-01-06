@@ -3,7 +3,7 @@ import logging
 import os
 
 from airavata_django_portal_sdk import user_storage
-from rest_framework import serializers
+from rest_framework import serializers, validators
 
 from simccs_maptool import models
 
@@ -40,13 +40,33 @@ class BboxField(CSVField):
         return str(data)
 
 
+class UniqueToUserValidator(validators.UniqueValidator):
+    requires_context = True
+
+    def __init__(self, queryset, user_field, message=None, lookup='exact'):
+        self.user_field = user_field
+        super().__init__(queryset, message=message, lookup=lookup)
+
+    def set_context(self, serializer_field):
+        self.user = serializer_field.context['request'].user
+        return super().set_context(serializer_field)
+
+    def filter_queryset(self, value, queryset):
+        # filter by current user
+        queryset = queryset.filter(**{self.user_field: self.user})
+        return super().filter_queryset(value, queryset)
+
+
 class DatasetSerializer(serializers.ModelSerializer):
     file = serializers.FileField(
         write_only=True,
         required=False,
         help_text="Required when creating a new Dataset",
     )
-    id = serializers.IntegerField()
+    id = serializers.IntegerField(required=False)
+    name = serializers.CharField(required=True, validators=[
+        UniqueToUserValidator(models.Dataset.objects.all(), 'owner')
+    ])
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
     data_product_uri = serializers.CharField(read_only=True)
     original_data_product_uri = serializers.CharField(read_only=True)
@@ -136,6 +156,9 @@ class CaseSerializer(serializers.ModelSerializer):
     maptool = MaptoolConfigSerializer(required=True, allow_null=True)
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
     group = serializers.CharField(required=False, allow_null=True)
+    title = serializers.CharField(required=True, validators=[
+        UniqueToUserValidator(models.Case.objects.all(), 'owner')
+    ])
     description = serializers.CharField(
         style={"base_template": "textarea.html"}, allow_blank=True
     )

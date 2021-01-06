@@ -13,6 +13,9 @@ class Case(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     group = models.CharField(max_length=64, null=True)
 
+    class Meta:
+        unique_together = ["owner", "title"]
+
 
 class Dataset(models.Model):
     TYPE_CHOICES = (
@@ -28,14 +31,19 @@ class Dataset(models.Model):
     data_product_uri = models.CharField(max_length=64)
     original_data_product_uri = models.CharField(max_length=64)
 
+    class Meta:
+        unique_together = ["owner", "name"]
+
 
 class MaptoolConfig(models.Model):
-    case = models.OneToOneField(Case, on_delete=models.CASCADE, related_name='maptool')
+    case = models.OneToOneField(Case, on_delete=models.CASCADE, related_name="maptool")
     bbox = models.CharField(max_length=128, null=True, validators=[bbox_validator])
 
 
 class MaptoolData(models.Model):
-    maptool_config = models.ForeignKey(MaptoolConfig, on_delete=models.CASCADE, related_name="data")
+    maptool_config = models.ForeignKey(
+        MaptoolConfig, on_delete=models.CASCADE, related_name="data"
+    )
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
     style = models.TextField(null=True)
     bbox = models.CharField(max_length=128, null=True, validators=[bbox_validator])
