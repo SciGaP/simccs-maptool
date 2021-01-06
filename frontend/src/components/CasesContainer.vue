@@ -12,10 +12,6 @@
     </div>
     <b-card>
       <b-table :items="datasetItems">
-        <template #cell(actions)="">
-          <b-button variant="primary">Edit</b-button>
-          <b-button variant="danger">Delete</b-button>
-        </template>
       </b-table>
     </b-card>
     <div class="row">
@@ -73,7 +69,7 @@ export default {
             description: ds.description,
             type: ds.type,
             filename: ds.original_filename,
-            actions: null,
+            // actions: null,
           };
         });
       }
