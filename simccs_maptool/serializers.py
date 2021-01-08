@@ -43,12 +43,12 @@ class BboxField(CSVField):
 class UniqueToUserValidator(validators.UniqueValidator):
     requires_context = True
 
-    def __init__(self, queryset, user_field, message=None, lookup='exact'):
+    def __init__(self, queryset, user_field, message=None, lookup="exact"):
         self.user_field = user_field
         super().__init__(queryset, message=message, lookup=lookup)
 
     def set_context(self, serializer_field):
-        self.user = serializer_field.context['request'].user
+        self.user = serializer_field.context["request"].user
         return super().set_context(serializer_field)
 
     def filter_queryset(self, value, queryset):
@@ -64,9 +64,10 @@ class DatasetSerializer(serializers.ModelSerializer):
         help_text="Required when creating a new Dataset",
     )
     id = serializers.IntegerField(required=False)
-    name = serializers.CharField(required=True, validators=[
-        UniqueToUserValidator(models.Dataset.objects.all(), 'owner')
-    ])
+    name = serializers.CharField(
+        required=True,
+        validators=[UniqueToUserValidator(models.Dataset.objects.all(), "owner")],
+    )
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
     data_product_uri = serializers.CharField(read_only=True)
     original_data_product_uri = serializers.CharField(read_only=True)
@@ -134,17 +135,17 @@ class DatasetSerializer(serializers.ModelSerializer):
                 return f
 
     def get_original_filename(self, dataset):
-        request = self.context['request']
+        request = self.context["request"]
         try:
             data_product = request.airavata_client.getDataProduct(
-                request.authz_token, dataset.original_data_product_uri)
+                request.authz_token, dataset.original_data_product_uri
+            )
             return data_product.productName
         except Exception:
             return "N/A"
 
 
 class MaptoolDataSerializer(serializers.ModelSerializer):
-    dataset = DatasetSerializer()
     bbox = BboxField(required=False, allow_null=True)
     popup = CSVField(required=False, allow_null=True)
 
@@ -166,12 +167,14 @@ class CaseSerializer(serializers.ModelSerializer):
     maptool = MaptoolConfigSerializer(required=True, allow_null=True)
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
     group = serializers.CharField(required=False, allow_null=True)
-    title = serializers.CharField(required=True, validators=[
-        UniqueToUserValidator(models.Case.objects.all(), 'owner')
-    ])
+    title = serializers.CharField(
+        required=True,
+        validators=[UniqueToUserValidator(models.Case.objects.all(), "owner")],
+    )
     description = serializers.CharField(
         style={"base_template": "textarea.html"}, allow_blank=True
     )
+    datasets = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Case
@@ -184,10 +187,7 @@ class CaseSerializer(serializers.ModelSerializer):
         case = models.Case.objects.create(owner=request.user, **validated_data)
         maptool_inst = models.MaptoolConfig.objects.create(case=case, **maptool)
         for datum in data:
-            dataset = datum.pop("dataset")
-            models.MaptoolData.objects.create(
-                maptool_config=maptool_inst, dataset_id=dataset["id"], **datum
-            )
+            models.MaptoolData.objects.create(maptool_config=maptool_inst, **datum)
         return case
 
     def update(self, instance, validated_data):
@@ -200,11 +200,9 @@ class CaseSerializer(serializers.ModelSerializer):
         dataset_ids = []
         for datum in data:
             dataset = datum.pop("dataset")
-            dataset_ids.append(dataset["id"])
+            dataset_ids.append(dataset.id)
             models.MaptoolData.objects.update_or_create(
-                maptool_config=instance.maptool,
-                dataset_id=dataset["id"],
-                defaults=datum,
+                maptool_config=instance.maptool, dataset=dataset, defaults=datum
             )
         # Remove datasets that have been removed from case
         instance.maptool.data.exclude(dataset_id__in=dataset_ids).delete()
@@ -214,3 +212,10 @@ class CaseSerializer(serializers.ModelSerializer):
         instance.group = validated_data["group"]
         instance.save()
         return instance
+
+    def get_datasets(self, instance):
+        datasets = map(lambda d: d.dataset, instance.maptool.data.all())
+        serializer = DatasetSerializer(
+            datasets, many=True, context={"request": self.context["request"]}
+        )
+        return serializer.data

@@ -22,11 +22,11 @@
           <template v-if="datasetsLoaded">
             <b-card
               v-for="datasetSelection in aCase.maptool.data"
-              :key="datasetSelection.dataset.id"
+              :key="datasetSelection.dataset"
             >
               <b-form-group label="Dataset" label-class="required">
                 <b-form-select
-                  v-model="datasetSelection.dataset.id"
+                  v-model="datasetSelection.dataset"
                   :options="getDatasetOptions(datasetSelection)"
                 >
                   <template #first>
@@ -36,12 +36,12 @@
                   </template>
                 </b-form-select>
               </b-form-group>
-              <b-form-group label="Style" v-if="datasetSelection.dataset.id">
+              <b-form-group label="Style" v-if="datasetSelection.dataset">
                 <b-form-input v-model="datasetSelection.style"></b-form-input>
               </b-form-group>
               <b-form-group
                 label="Popup Fields"
-                v-if="datasetSelection.dataset.id"
+                v-if="datasetSelection.dataset"
               >
                 <b-form-tags
                   v-model="datasetSelection.popup"
@@ -188,9 +188,7 @@ export default {
           data: {
             $each: {
               dataset: {
-                id: {
-                  required,
-                },
+                required,
               },
             },
           },
@@ -252,7 +250,7 @@ export default {
       }
     },
     addDatasetEnabled() {
-      return !this.aCase.maptool.data.find((d) => d.dataset.id === null);
+      return !this.aCase.maptool.data.find((d) => d.dataset === null);
     },
     bboxArray() {
       if (!this.mapBounds) {
@@ -277,17 +275,6 @@ export default {
       event.preventDefault();
       const newCase = this.aCase;
       newCase.maptool.bbox = this.bboxArray;
-      // Replace dataset.id with full dataset object
-      for (
-        let datasetIndex = 0;
-        datasetIndex < newCase.maptool.data.length;
-        datasetIndex++
-      ) {
-        const dataset = newCase.maptool.data[datasetIndex];
-        dataset.dataset = this.datasets.find(
-          (ds) => ds.id === dataset.dataset.id
-        );
-      }
       this.submittedData = JSON.parse(JSON.stringify(newCase)); // deep clone
       this.$emit("submit", newCase);
     },
@@ -315,27 +302,29 @@ export default {
       this.map.remove();
     },
     getDatasetOptions(datasetSelection) {
-      const filterAlreadySelected = (ds) => {
+      const notAlreadySelected = (ds) => {
         const alreadySelected = this.aCase.maptool.data.find(
-          (d) => d.dataset.id === ds.id
+          (d) => d.dataset === ds.id
         );
         return !alreadySelected || alreadySelected === datasetSelection;
       };
       const sourceOptions = this.sourceDatasets
-        .filter(filterAlreadySelected)
         .map((ds) => {
           return {
             text: ds.name,
             value: ds.id,
+            // NOTE: disable, don't filter, already selected options.
+            // Dynamically removing options messes up the selected one.
+            disabled: !notAlreadySelected(ds)
           };
         });
       utils.StringUtils.sortIgnoreCase(sourceOptions, (o) => o.text);
       const sinkOptions = this.sinkDatasets
-        .filter(filterAlreadySelected)
         .map((ds) => {
           return {
             text: ds.name,
             value: ds.id,
+            disabled: !notAlreadySelected(ds)
           };
         });
       utils.StringUtils.sortIgnoreCase(sinkOptions, (o) => o.text);
@@ -345,8 +334,13 @@ export default {
       ];
     },
     datasetPopupFieldOptions(datasetSelection) {
+      if (!this.datasets || !datasetSelection.dataset) {
+        return [];
+      }
+      const dataset = this.datasets.find(
+        (ds) => ds.id === datasetSelection.dataset
+      );
       // TODO: pull fields from properties in the dataset geojson file
-      const dataset = datasetSelection.dataset;
       const allOptions =
         dataset.type === "source"
           ? ["Name", "CapCO2", "TotalUnitCost"]
@@ -355,9 +349,7 @@ export default {
     },
     addDataset() {
       this.aCase.maptool.data.push({
-        dataset: {
-          id: null,
-        },
+        dataset: null,
         style: null,
         bbox: null,
         popup: [],
