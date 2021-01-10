@@ -11,8 +11,7 @@
       </div>
     </div>
     <b-card>
-      <b-table :items="datasetItems">
-      </b-table>
+      <b-table :items="datasetItems"></b-table>
     </b-card>
     <div class="row">
       <div class="col">
@@ -27,13 +26,21 @@
     <b-card>
       <b-table :items="caseItems" :fields="caseFields">
         <template #cell(actions)="data">
-          <b-button variant="primary">Use</b-button>
+          <b-link
+            class="btn btn-secondary"
+            role="button"
+            :href="`/maptool/build/?case=${data.item.id}`"
+          >
+            <i class="fa fa-map" aria-hidden="true"></i>
+            Use</b-link
+          >
           <b-button
             variant="primary"
             :to="{ name: 'case', params: { id: data.item.id } }"
-            >Edit</b-button
           >
-          <b-button variant="danger">Delete</b-button>
+            <i class="fa fa-edit" aria-hidden="true"></i>
+            Edit</b-button
+          >
         </template>
       </b-table>
     </b-card>

@@ -2,7 +2,7 @@ import io
 import logging
 import os
 
-from airavata_django_portal_sdk import user_storage
+from airavata_django_portal_sdk import urls as sdk_urls, user_storage
 from rest_framework import serializers, validators
 
 from simccs_maptool import models
@@ -75,6 +75,7 @@ class DatasetSerializer(serializers.ModelSerializer):
         style={"base_template": "textarea.html"}, allow_blank=True
     )
     original_filename = serializers.SerializerMethodField()
+    url = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Dataset
@@ -143,6 +144,9 @@ class DatasetSerializer(serializers.ModelSerializer):
             return data_product.productName
         except Exception:
             return "N/A"
+
+    def get_url(self, dataset):
+        return sdk_urls.get_download_url(dataset.data_product_uri)
 
 
 class MaptoolDataSerializer(serializers.ModelSerializer):

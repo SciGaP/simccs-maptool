@@ -116,7 +116,7 @@ function handleclick(id){
 async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
     var data = await getdata(dataurl);
     var newLayer;
-    if (popup_fields == "") {
+    if (!popup_fields || popup_fields.length === 0) {
         popup_fields = ["Name"];
     }
 
@@ -166,12 +166,14 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
             }
         selector += "</select>";
         document.getElementById("layercontrol").innerHTML+="<div>" + selector + "</div>"; 
+        // Activate bootstrap-select plugin
+        $('#selector_' + datadesc['dataid']).selectpicker();
         //console.log("selector added");
     }
 
     newLayer.addTo(map);
     maplayers[datadesc['dataid']] = newLayer;
-    if (datastyle !== "") {       // generate legend
+    if (datastyle) {       // generate legend
             var legend = createLegend(datastyle);
             document.getElementById("layercontrol").appendChild(legend);   
         } 

@@ -70,7 +70,8 @@
          
          $(document).ready(function() {
             // set up data
-            set_casedata();
+            var queryParams = new URLSearchParams(document.location.search);
+            set_casedata(queryParams.get('case'));
             sidebar.open("home");
 
             //bind slector event
@@ -105,28 +106,33 @@ var candidatenetwork_cached = {} // panelid: network data
 var cplexInputValues_panel = {} // panelid: "Sources": data.sources, "Sinks": data.sinks,"Cplex-input-file": data.mps, "Dataset-id": current_dataset_id
 var current_dataset_id = "Lower48US";
 
-async function set_casedata() {
+async function set_casedata(caseId) {
       var urlprefix = "/static/Data/Build/";
-      casejson = await getdata(urlprefix + '123test.json');
-      document.getElementById("case_name").textContent=casejson["Title"];
-      document.getElementById("case_description").textContent=casejson["Description"]; 
+      if (caseId) {
+            urlprefix = "";
+            casejson = await getdata(`/maptool/api/cases/${caseId}/`);
+      } else {
+            casejson = await getdata(urlprefix + '123test.json');
+      }
+      document.getElementById("case_name").textContent=casejson["title"];
+      document.getElementById("case_description").textContent=casejson["description"]; 
       // move map to bounding box
-      var bbox = casejson["Maptool"]["BBOX"];
+      var bbox = casejson["maptool"]["bbox"];
       map.fitBounds([[bbox[1],bbox[0]],[bbox[3],bbox[2]]]);
       // reformat data as big array
       var datasets = {};
-      for (entry of casejson['Datasets'])
+      for (entry of casejson['datasets'])
       {
-            datasets[entry['DataID']]={'dataid':entry['DataID'],'name': entry['Name'], 'description':entry['Description'],'type':entry['Type']};
+            datasets[entry['id']]={'dataid':entry['id'],'name': entry['name'], 'description':entry['description'],'type':entry['type'],'url':entry['url']};
       }
       
       //load source/sink
       var dataurl, datastyle, datameta;
-      for (entry of casejson['Maptool']['Data']) {
-            datameta = datasets[entry["DataID"]];
-            dataurl = urlprefix + entry["URL"];
-            datastyle = entry['Style'];
-            popupfields = entry['Popup'];
+      for (entry of casejson['maptool']['data']) {
+            datameta = datasets[entry["dataset"]];
+            dataurl = urlprefix + datameta["url"];
+            datastyle = entry['style'];
+            popupfields = entry['popup'];
             addcasedata(datameta,dataurl,datastyle,popupfields);
       }
       // load cost surface
