@@ -112,10 +112,12 @@ async function set_casedata(caseId) {
             urlprefix = "";
             casejson = await getdata(`/maptool/api/cases/${caseId}/`);
       } else {
-            casejson = await getdata(urlprefix + '123test.json');
+            //https://beta.simccs.scigap.org/maptool/case/123
+            casejson = await getdata('/maptool/case/123');
       }
       document.getElementById("case_name").textContent=casejson["title"];
       document.getElementById("case_description").textContent=casejson["description"]; 
+
       // move map to bounding box
       var bbox = casejson["maptool"]["bbox"];
       map.fitBounds([[bbox[1],bbox[0]],[bbox[3],bbox[2]]]);
@@ -130,7 +132,7 @@ async function set_casedata(caseId) {
       var dataurl, datastyle, datameta;
       for (entry of casejson['maptool']['data']) {
             datameta = datasets[entry["dataset"]];
-            dataurl = urlprefix + datameta["url"];
+            dataurl = datameta["url"];
             datastyle = entry['style'];
             popupfields = entry['popup'];
             addcasedata(datameta,dataurl,datastyle,popupfields);
@@ -269,6 +271,7 @@ function displayselecteddata(panelid) {
       div.innerHTML += "<br>";
       div.innerHTML += '<button type="button" id="bn_generatecandidatenetwork_'+ panelid +'" class="btn btn-primary btn-sm btn-block" onclick=generatecandidatenetwork("'+ panelid +'")>Generate Candidate Network</button>';
       div.innerHTML += '<button type="button" id="bn_generatemps_' + panelid + '" class="btn btn-primary btn-sm btn-block" onclick=generatempsfile("'+ panelid + '")>Generate MPS file</button>';
+      div.innerHTML +=  '<a target="_blank" download="cap.mps" href="" id="mps_download_' + panelid + '" style="display: none;">Download MPS file</a>';
       div.innerHTML += "<br>";
       div.innerHTML += '<button type="button" class="btn btn-primary btn-sm btn-block" onclick=case_submitexperiment("'+ panelid +'")><strong>Create a New Experiment</strong></button>';
       div.innerHTML +=  '<a target="_blank" href="" id="case_view_experiment_' + panelid+ '" style="display: none;">View Experiment Summary</a>';
@@ -307,7 +310,7 @@ function create_scenario() {
 
 
 //generate MPS file
-function generatempsfile(panelid,showmodal=true) {
+function generatempsfile(panelid,showmodal=1) {
     // get the data from panelid
     var source_selection = sourceselection_panel[panelid];
     var sink_selection = sinkselection_panel[panelid];
@@ -335,7 +338,7 @@ function generatempsfile(panelid,showmodal=true) {
     } else {
           candidateNetworkRequest = generatecandidatenetwork(panelid).then(data => data["CandidateNetwork"]);
     }
-    candidateNetworkRequest.then((candidateNetwork) => {
+    return candidateNetworkRequest.then((candidateNetwork) => {
 
           formData.set('candidateNetwork', candidateNetwork);
           return AiravataAPI.utils.FetchUtils.post("/maptool/mps/", formData).then(function( data ) {
@@ -363,12 +366,21 @@ function generatempsfile(panelid,showmodal=true) {
     m_html = m_html.replace("sources_input_file", data["sources"]);
     m_html = m_html.replace("sinks_input_file", data["sinks"]);
 $('body').append(m_html);
-$("#dynamicModal").modal();
 
 cplexInputValues_panel[panelid] = {"Sources": data["sources"], "Sinks": data["sinks"],"Cplex-input-file": data["mps"], "Dataset-id": current_dataset_id};
-console.log(showmodal);
- if (showmodal == true) {$("#dynamicModal").modal('show'); }
 
+// Create a link to download mps file
+var mpsDownloadLink = document.getElementById("mps_download_" + panelid);
+mpsDownloadLink.setAttribute("href",'');
+mpsDownloadLink.setAttribute("href", '/api/download?data-product-uri='+ data["mps"]);
+document.getElementById("mps_download_" + panelid).style.display = 'inline';
+
+console.log(showmodal);
+if (showmodal == 1) {
+      //$("#dynamicModal").modal();
+      //$("#dynamicModal").modal('show'); 
+      alert("MPS file was generated successfully.");
+}
           }).catch(display_error_modal);
     });
 }
@@ -377,12 +389,15 @@ function case_submitexperiment(panelid) {
       //debug info
       //console.log(panelid);
       var cplexInputValues;
+      var mpsRequest = null;
       if (cplexInputValues_panel.hasOwnProperty(panelid)) {
          cplexInputValues = cplexInputValues_panel[panelid];
+         mpsRequest = Promise.resolve(cplexInputValues);
       } else {
-          generatempsfile(panelid,showmodal=false);
+          //generatempsfile(panelid,showmodal=false);
+          mpsRequest = generatempsfile(panelid,showmodal=0).then(() => {cplexInputValues = cplexInputValues_panel[panelid]});
       }
-
+      mpsRequest.then(() => {     
             var cplex_application_id = "{{ cplex_application_id }}";
             var hostname = "{{ cplex_hostname }}";
             const services = AiravataAPI.services;
@@ -471,9 +486,10 @@ function case_submitexperiment(panelid) {
                         var caseViewExperimentLink = document.getElementById("case_view_experiment_" + panelid);
                         caseViewExperimentLink.setAttribute("href", `/workspace/experiments/${encodeURIComponent(experiment.experimentId)}/`);
                         document.getElementById("case_view_experiment_" + panelid).style.display = 'inline';
+                        alert('Experiment was created successfully, please check "View Experiment Summary" for the progress.');
                  });
             });
-
+      });
       }
 
      
