@@ -526,12 +526,12 @@ def get_case(request, case_id):
                 "data-product-uri"
             ]
         samplecase_data = json.load(samplecase)
-        samplecase_data["Maptool"]["Data"][0]["URL"] = (
+        samplecase_data["datasets"][0]["url"] = (
             reverse("django_airavata_api:download_file")
             + "?"
             + urlencode({"data-product-uri": sources_dp_uri})
         )
-        samplecase_data["Maptool"]["Data"][1]["URL"] = (
+        samplecase_data["datasets"][1]["url"] = (
             reverse("django_airavata_api:download_file")
             + "?"
             + urlencode({"data-product-uri": sinks_dp_uri})
