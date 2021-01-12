@@ -504,6 +504,8 @@ function case_submitexperiment(panelid) {
                         // Create a link to the experiment summary page
                         var caseViewExperimentLink = document.getElementById("case_view_experiment_" + panelid);
                         caseViewExperimentLink.setAttribute("href", `/workspace/experiments/${encodeURIComponent(experiment.experimentId)}/`);
+                        var drs = new Date(); var nrs = drs.toLocaleString();
+                        caseViewExperimentLink.setAttribute("text", 'View Experiment Summary ' + nrs);
                         document.getElementById("case_view_experiment_" + panelid).style.display = 'inline';
                         alert('Experiment was created successfully, please check "View Experiment Summary" for the progress.');
                  });
