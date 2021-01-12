@@ -1,0 +1,61 @@
+{
+  "name": "simccs-maptool-views",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A Vue.js project",
+  "author": "Marcus Christie <machristie@apache.org>",
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "bootstrap": "^4.3.1",
+    "bootstrap-vue": "^2.19.0",
+    "core-js": "^3.6.5",
+    "leaflet": "^1.7.1",
+    "vue": "^2.6.11",
+    "vue-router": "^3.2.0",
+    "vuelidate": "^0.7.6"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "~4.5.0",
+    "@vue/cli-plugin-eslint": "~4.5.0",
+    "@vue/cli-plugin-router": "~4.5.0",
+    "@vue/cli-service": "~4.5.0",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^6.7.2",
+    "eslint-plugin-vue": "^6.2.2",
+    "node-sass": "^5.0.0",
+    "sass-loader": "^10.1.0",
+    "vue-template-compiler": "^2.6.11",
+    "webpack-bundle-tracker": "^0.4.2-beta"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "parser": "babel-eslint"
+    },
+    "rules": {},
+    "globals": {
+      "AiravataAPI": "readonly"
+    }
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}

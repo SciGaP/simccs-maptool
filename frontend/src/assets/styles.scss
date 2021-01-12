@@ -1,0 +1,6 @@
+
+form .required:after {
+  content: "*";
+  margin-left: .125em;
+  color: var(--red); // Bootstrap defined 'red' color
+}

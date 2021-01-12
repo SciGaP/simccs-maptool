@@ -14,6 +14,7 @@ import shapefile
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.urls import reverse
 from django.views.generic import TemplateView
@@ -83,6 +84,16 @@ class BuildView(TemplateView):
         context["cplex_hostname"] = getattr(settings, "MAPTOOL_SETTINGS", {}).get(
             "CPLEX_HOSTNAME", "bigred3.uits.iu.edu"
         )
+        return context
+
+
+class CasesView(LoginRequiredMixin, TemplateView):
+
+    template_name = "simccs_maptool/vue-app.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['bundle_name'] = 'cases'
         return context
 
 
@@ -515,12 +526,12 @@ def get_case(request, case_id):
                 "data-product-uri"
             ]
         samplecase_data = json.load(samplecase)
-        samplecase_data["Maptool"]["Data"][0]["URL"] = (
+        samplecase_data["datasets"][0]["url"] = (
             reverse("django_airavata_api:download_file")
             + "?"
             + urlencode({"data-product-uri": sources_dp_uri})
         )
-        samplecase_data["Maptool"]["Data"][1]["URL"] = (
+        samplecase_data["datasets"][1]["url"] = (
             reverse("django_airavata_api:download_file")
             + "?"
             + urlencode({"data-product-uri": sinks_dp_uri})

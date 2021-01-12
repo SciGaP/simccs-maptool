@@ -9,6 +9,23 @@ from simccs_maptool import datasets, simccs_helper
 
 logger = logging.getLogger(__name__)
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+class Settings:
+    WEBPACK_LOADER = {
+        "SIMCCS_MAPTOOL": {
+            "BUNDLE_DIR_NAME": "simccs_maptool/dist/",  # must end with slash
+            "STATS_FILE": os.path.join(
+                BASE_DIR,
+                "static",
+                "simccs_maptool",
+                "dist",
+                "webpack-stats.json",
+            ),
+        }
+    }
+
 
 class MapToolConfig(AppConfig):
     name = "simccs_maptool"
@@ -22,12 +39,19 @@ class MapToolConfig(AppConfig):
     app_description = """
         SimCCS Map Tool.
     """
+    settings = Settings()
     nav = [
         {
             "label": "Map Tool",
             "icon": "fa fa-map",
             "url": "simccs_maptool:home",
             "active_prefixes": [""],
+        },
+        {
+            "label": "Build",
+            "icon": "fa fa-tools",
+            "url": "simccs_maptool:cases",
+            "active_prefixes": ["cases"],
         },
         {
             "label": "Documentation Links",

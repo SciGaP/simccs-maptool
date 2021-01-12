@@ -1,39 +1,38 @@
 {
-	"CaseID": "Test001",
-	"Title": "SimCCS_Macon",
-	"Description": "A testing case for Illinois Basin",
-	"Datasets": [{
-			"DataID": "source001",
-			"Name": "SimCCS_MaconSources",
-			"Description": "SimCCS_MaconSources",
-			"Type": "source"
-		},
-		{
-			"DataID": "sink001",
-			"Name": "SCO2T_Arkosic_Macon_10K",
-			"Description": "SCO2T_Arkosic_Macon_10K",
-			"Type": "sink"
-		}
-	],
-	"Maptool": {
-		"Sources": ["source001"],
-        "Sinks": ["sink001"],
-        "CostSurfaces": [],
-		"Data": [{
-				"DataID": "source001",
-				"URL": "",
-				"Style": "",
-				"Popup": ["Name", "CapCO2", "TotalUnitCost"],
-				"BBOX": ""
-			},
-			{
-				"DataID": "sink001",
-				"URL": "",
-				"Style": "TotalUnitCost",
-				"Popup": ["Name", "StorageCap", "TotalUnitCost"],
-				"BBOX": ""
-			}
-		],
-		"BBOX": [-89.91, 38.10, -87.70, 40.90]
-	}
+  "id": 123,
+  "title": "SimCCS_Macon",
+  "description": "A testing case for Illinois Basin",
+  "datasets": [
+    {
+      "id": 1,
+      "name": "SimCCS_MaconSources",
+      "description": "SimCCS_MaconSources",
+      "type": "source",
+      "url": null
+    },
+    {
+      "id": 2,
+      "name": "SCO2T_Arkosic_Macon_10K",
+      "description": "SCO2T_Arkosic_Macon_10K",
+      "type": "sink",
+      "url": null
+    }
+  ],
+  "maptool": {
+    "data": [
+      {
+        "dataset": 1,
+        "style": "",
+        "popup": ["Name", "CapCO2", "TotalUnitCost"],
+        "bbox": ""
+      },
+      {
+        "dataset": 2,
+        "style": "TotalUnitCost",
+        "popup": ["Name", "StorageCap", "TotalUnitCost"],
+        "bbox": ""
+      }
+    ],
+    "bbox": [-89.91, 38.1, -87.7, 40.9]
+  }
 }

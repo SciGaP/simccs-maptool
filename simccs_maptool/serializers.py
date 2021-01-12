@@ -1,21 +1,60 @@
+import io
 import logging
+import os
 
-from airavata_django_portal_sdk import user_storage
-from rest_framework import serializers
+from airavata_django_portal_sdk import urls as sdk_urls, user_storage
+from rest_framework import serializers, validators
 
 from simccs_maptool import models
 
 logger = logging.getLogger(__name__)
+BASEDIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class BboxField(serializers.Field):
+class CSVField(serializers.Field):
     def to_representation(self, value):
         """Convert comma-delimited string to list of numbers."""
-        return list(map(float, value.split(",")))
+        if value is not None and value != "":
+            return list(map(self.to_item_representation, value.split(",")))
+        else:
+            return []
+
+    def to_item_representation(self, value):
+        """Convert item in the list to representation."""
+        return value
 
     def to_internal_value(self, data):
         """Convert list of numbers to comma-delimited string."""
-        return ",".join(map(str, data))
+        return ",".join(map(self.to_item_internal_value, data))
+
+    def to_item_internal_value(self, data):
+        """Convert list member to internal value."""
+        return data
+
+
+class BboxField(CSVField):
+    def to_item_representation(self, value):
+        return float(value)
+
+    def to_item_internal_value(self, data):
+        return str(data)
+
+
+class UniqueToUserValidator(validators.UniqueValidator):
+    requires_context = True
+
+    def __init__(self, queryset, user_field, message=None, lookup="exact"):
+        self.user_field = user_field
+        super().__init__(queryset, message=message, lookup=lookup)
+
+    def set_context(self, serializer_field):
+        self.user = serializer_field.context["request"].user
+        return super().set_context(serializer_field)
+
+    def filter_queryset(self, value, queryset):
+        # filter by current user
+        queryset = queryset.filter(**{self.user_field: self.user})
+        return super().filter_queryset(value, queryset)
 
 
 class DatasetSerializer(serializers.ModelSerializer):
@@ -24,12 +63,19 @@ class DatasetSerializer(serializers.ModelSerializer):
         required=False,
         help_text="Required when creating a new Dataset",
     )
+    id = serializers.IntegerField(required=False)
+    name = serializers.CharField(
+        required=True,
+        validators=[UniqueToUserValidator(models.Dataset.objects.all(), "owner")],
+    )
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
     data_product_uri = serializers.CharField(read_only=True)
     original_data_product_uri = serializers.CharField(read_only=True)
     description = serializers.CharField(
         style={"base_template": "textarea.html"}, allow_blank=True
     )
+    original_filename = serializers.SerializerMethodField()
+    url = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Dataset
@@ -53,7 +99,11 @@ class DatasetSerializer(serializers.ModelSerializer):
         )
         if transformed_file:
             data_product = user_storage.save(
-                request, "Datasets", transformed_file, name=transformed_file.name
+                request,
+                "Datasets",
+                transformed_file,
+                name=transformed_file.name,
+                content_type="application/geo+json",
             )
             dataset.data_product_uri = data_product.productUri
             dataset.save()
@@ -67,17 +117,45 @@ class DatasetSerializer(serializers.ModelSerializer):
         return instance
 
     def _transform_file(self, input_file, dataset_type):
-        # TODO: transform the file and return the transformed file
-        pass
+        # TODO: transform the file and return the transformed file (GeoJSON)
+        # In this initial implementation the case data is hard coded but it is
+        # really loaded from data stored in the user's storage
+        case_data_dir = os.path.join(BASEDIR, "CaseData", "SimCCS_Macon")
+        with open(
+            os.path.join(case_data_dir, "SimCCS_MaconSources.geojson"), "rb"
+        ) as sources, open(
+            os.path.join(case_data_dir, "SCO2T_Arkosic_Macon_10K.geojson"), "rb"
+        ) as sinks:
+            if dataset_type == "source":
+                f = io.BytesIO(sources.read())
+                f.name = "SimCCS_MaconSources.geojson"
+                return f
+            elif dataset_type == "sink":
+                f = io.BytesIO(sinks.read())
+                f.name = "SCO2T_Arkosic_Macon_10K.geojson"
+                return f
+
+    def get_original_filename(self, dataset):
+        request = self.context["request"]
+        try:
+            data_product = request.airavata_client.getDataProduct(
+                request.authz_token, dataset.original_data_product_uri
+            )
+            return data_product.productName
+        except Exception:
+            return "N/A"
+
+    def get_url(self, dataset):
+        return sdk_urls.get_download_url(dataset.data_product_uri)
 
 
 class MaptoolDataSerializer(serializers.ModelSerializer):
-    dataset = serializers.PrimaryKeyRelatedField(queryset=models.Dataset.objects.all())
     bbox = BboxField(required=False, allow_null=True)
+    popup = CSVField(required=False, allow_null=True)
 
     class Meta:
         model = models.MaptoolData
-        fields = ["bbox", "style", "dataset"]
+        fields = ["bbox", "style", "dataset", "popup"]
 
 
 class MaptoolConfigSerializer(serializers.ModelSerializer):
@@ -93,9 +171,14 @@ class CaseSerializer(serializers.ModelSerializer):
     maptool = MaptoolConfigSerializer(required=True, allow_null=True)
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
     group = serializers.CharField(required=False, allow_null=True)
+    title = serializers.CharField(
+        required=True,
+        validators=[UniqueToUserValidator(models.Case.objects.all(), "owner")],
+    )
     description = serializers.CharField(
         style={"base_template": "textarea.html"}, allow_blank=True
     )
+    datasets = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Case
@@ -112,14 +195,31 @@ class CaseSerializer(serializers.ModelSerializer):
         return case
 
     def update(self, instance, validated_data):
-        # TODO: add/remove/update MaptoolConfig.data entries
         # update MaptoolConfig
         maptool = validated_data.pop("maptool")
         instance.maptool.bbox = maptool["bbox"]
         instance.maptool.save()
+        # add/update MaptoolConfig.data entries
+        data = maptool.pop("data")
+        dataset_ids = []
+        for datum in data:
+            dataset = datum.pop("dataset")
+            dataset_ids.append(dataset.id)
+            models.MaptoolData.objects.update_or_create(
+                maptool_config=instance.maptool, dataset=dataset, defaults=datum
+            )
+        # Remove datasets that have been removed from case
+        instance.maptool.data.exclude(dataset_id__in=dataset_ids).delete()
         # update Case - description, group, title
         instance.description = validated_data["description"]
         instance.title = validated_data["title"]
         instance.group = validated_data["group"]
         instance.save()
         return instance
+
+    def get_datasets(self, instance):
+        datasets = map(lambda d: d.dataset, instance.maptool.data.all())
+        serializer = DatasetSerializer(
+            datasets, many=True, context={"request": self.context["request"]}
+        )
+        return serializer.data
