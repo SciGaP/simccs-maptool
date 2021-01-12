@@ -312,8 +312,27 @@ function create_scenario() {
 //generate MPS file
 function generatempsfile(panelid,showmodal=1) {
     // get the data from panelid
-    var source_selection = sourceselection_panel[panelid];
-    var sink_selection = sinkselection_panel[panelid];
+    //var source_selection = sourceselection_panel[panelid];
+    //var sink_selection = sinkselection_panel[panelid];
+    // extract any changes
+    var source_selection = [];
+    var sink_selection = [];
+    // check selected sources
+    for (entry of sourceselection_panel[panelid]) {
+          if (entry.options.radius > 8) {source_selection.push(entry);}
+    }
+
+    // check selected sinks
+    for (entry of sinkselection_panel[panelid]) {
+         if (entry.options.color == 'black') {sink_selection.push(entry);}
+    }
+    
+    console.log(source_selection);
+    console.log(sink_selection);
+
+    if (source_selection.length == 0 ) {alert('No sources are selected!');return}
+    if (sink_selection.length == 0 ) {alert('No sinks are selected!');return}
+
     var sourcedata = generatesourcedata(source_selection);
     var sinkdata=generatesinkdata(sink_selection);
     // get the model para
