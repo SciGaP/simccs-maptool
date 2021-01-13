@@ -152,7 +152,7 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
     var radiostr='<input class="form-check-input"  type="radio" id="'+datadesc['dataid']+'" checked="checked" onclick=handleclick(this.id)>';
     radiostr += '<label class="form-check-label" for="'+datadesc['dataid']+'">'+ datadesc['type'].charAt(0).toUpperCase() + datadesc['type'].slice(1)+":"+datadesc['name']+'</label><br>';
     
-    document.getElementById("layercontrol").innerHTML+=radiostr;
+    $('#layercontrol').append(radiostr);
     // add selector
     if (datadesc['type'] == 'source') {
         var selector = '<select class="selectpicker" id="selector_' + datadesc['dataid'] +'" title="select by names ..." data-live-search="true" multiple data-actions-box="true" data-width="auto">';
@@ -165,10 +165,9 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
             selector += '<option value="'+ ukey +'">'+ uvalue +'</option>';
             }
         selector += "</select>";
-        document.getElementById("layercontrol").innerHTML+="<div>" + selector + "</div>"; 
+        $('#layercontrol').append(`<div>${selector}</div>`);
         // Activate bootstrap-select plugin
         $('#selector_' + datadesc['dataid']).selectpicker();
-        //console.log("selector added");
     }
 
     newLayer.addTo(map);
@@ -192,7 +191,7 @@ function addcostsurface(bbox) {
     var costsurface = L.imageOverlay(cost_image_url,cost_image_bounds).addTo(map);
     var radiostr='<input class="form-check-input"  type="radio" id="costsurface" checked="checked" onclick=handleclick(this.id)>';
     radiostr += '<label class="form-check-label" for="costsurface">Cost Surface</label><br>';
-    document.getElementById("layercontrol").innerHTML+=radiostr;
+    $('#layercontrol').append(radiostr);
     maplayers['costsurface'] = costsurface;
 }
 
