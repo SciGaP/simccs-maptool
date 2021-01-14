@@ -5,7 +5,10 @@
 1. Follow the instructions for installing the
    [Airavata Django Portal](https://github.com/apache/airavata-django-portal)
 2. With the Django Portal virtual environment activated, clone this repo and
-   install it into the portal's virtual environment
+   install it into the portal's virtual environment. Note, the `pip install`
+   command will also run the JS frontend build and will require Node.js and Yarn
+   installed (see the Airavata Django Portal installation instructions for more
+   details).
 
    ```
    git clone https://github.com/SciGaP/simccs-maptool.git
@@ -26,8 +29,8 @@ specified in Django Portal's `settings_local.py` file.
 - `MAPTOOL_SETTINGS` - this is a dictionary of Map Tool specific settings:
   - `CPLEX_APPLICATION_ID` - The Airavata application module id of the Cplex
     application to launch.
-  - `CPLEX_HOSTNAME` - The hostname of the compute resource on which to
-    launch Cplex.
+  - `CPLEX_HOSTNAME` - The hostname of the compute resource on which to launch
+    Cplex.
   - `DATASETS_DIR` - Directory of datasets and their basedata (cost network).
   - `JAVA_OPTIONS` - JVM command line options. Defaults to `-Xmx4g`. May be a
     list or tuple to pass multiple options.
@@ -51,6 +54,19 @@ export DJANGO_SETTINGS_MODULE=tests.test_settings
 export PYTHONPATH=$PWD
 django-admin makemigrations simccs_maptool
 ```
+
+## Building the Vue.js frontend code
+
+```bash
+cd frontend
+yarn install
+yarn run build
+```
+
+You can also instead run `yarn run serve` to start a Webpack dev server with hot
+reloading. See
+https://apache-airavata-django-portal.readthedocs.io/en/latest/dev/developing_frontend/
+for more details.
 
 ## Pyjnius - simccs.jar notes
 
