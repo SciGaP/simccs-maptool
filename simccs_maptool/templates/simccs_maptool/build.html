@@ -479,11 +479,11 @@ function case_submitexperiment(panelid) {
             Promise.all([loadAppInterface,loadGroupResourceProfileAndQueue, loadWorkspacePrefs])
             .then(([appInterface, [computeResourceId, groupResourceProfile, defaultQueue], workspacePrefs]) => {
                   const experiment = appInterface.createExperiment();
-                  var user_experiment_name = document.getElementById('experiment_name_'+panelid).value;
+                  var user_experiment_name = document.getElementById('experiment_name_'+ panelid).value;
                   if (user_experiment_name.trim() == '') {
                         experiment.experimentName = "CPLEX on " + new Date().toLocaleString();
                   } else {
-                        experiment.experimentName = user_experiment_name.trim();  
+                        experiment.experimentName = user_experiment_name.trim() +  " on "  + new Date().toLocaleString();  
                   }
 
                   experiment.projectId = workspacePrefs.most_recent_project_id;
