@@ -273,9 +273,10 @@ function displayselecteddata(panelid) {
       div.innerHTML += '<button type="button" id="bn_generatemps_' + panelid + '" class="btn btn-primary btn-sm btn-block" onclick=generatempsfile("'+ panelid + '")>Generate MPS file</button>';
       div.innerHTML +=  '<a target="_blank" download="cap.mps" href="" id="mps_download_' + panelid + '" style="display: none;">Download MPS file</a>';
       div.innerHTML += "<br>";
+      div.innerHTML += '<input class="form-control input-sm" id="experiment_name_'+panelid+'" name="" placeholder="Name (optional)" type="text">';
       div.innerHTML += '<button type="button" class="btn btn-primary btn-sm btn-block" onclick=case_submitexperiment("'+ panelid +'")><strong>Create a New Experiment</strong></button>';
-      div.innerHTML +=  '<a target="_blank" href="" id="case_view_experiment_' + panelid+ '" style="display: none;">View Experiment Summary</a>';
- 
+      //div.innerHTML +=  '<a target="_blank" href="" id="case_view_experiment_' + panelid+ '" style="display: none;">View Experiment Summary</a>';
+      div.innerHTML += '<ul id="list_view_experiment_' + panelid +'"> </ul>';
       return div;
 }
 
@@ -502,11 +503,17 @@ function case_submitexperiment(panelid) {
                  }).then(() => {
 
                         // Create a link to the experiment summary page
-                        var caseViewExperimentLink = document.getElementById("case_view_experiment_" + panelid);
-                        caseViewExperimentLink.setAttribute("href", `/workspace/experiments/${encodeURIComponent(experiment.experimentId)}/`);
+                        var list_view_experiment = document.getElementById("list_view_experiment_" + panelid);
+                        var a = document.createElement('a');
+                        a.href = `/workspace/experiments/${encodeURIComponent(experiment.experimentId)}/`;
                         var drs = new Date(); var nrs = drs.toLocaleString();
-                        caseViewExperimentLink.innerHTML = 'View Experiment Summary ' + nrs;
-                        document.getElementById("case_view_experiment_" + panelid).style.display = 'inline';
+                        a.innerHTML = 'View Experiment Summary ' + nrs;
+                        list_view_experiment.appendChild(a);
+                        // var caseViewExperimentLink = document.getElementById("case_view_experiment_" + panelid);
+                        // caseViewExperimentLink.setAttribute("href", `/workspace/experiments/${encodeURIComponent(experiment.experimentId)}/`);
+                        // var drs = new Date(); var nrs = drs.toLocaleString();
+                        // caseViewExperimentLink.innerHTML = 'View Experiment Summary ' + nrs;
+                        // document.getElementById("case_view_experiment_" + panelid).style.display = 'inline';
                         alert('Experiment was created successfully, please check "View Experiment Summary" for the progress.');
                  });
             });
