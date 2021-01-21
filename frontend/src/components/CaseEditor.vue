@@ -37,7 +37,16 @@
                 </b-form-select>
               </b-form-group>
               <b-form-group label="Style" v-if="datasetSelection.dataset">
-                <b-form-input v-model="datasetSelection.style"></b-form-input>
+                <b-form-select
+                  v-model="datasetSelection.style"
+                  :options="getStyleOptions(datasetSelection.dataset)"
+                >
+                  <template #first>
+                    <b-form-select-option :value="null"
+                      >-- Select a property to style --</b-form-select-option
+                    >
+                  </template>
+                </b-form-select>
               </b-form-group>
               <b-form-group
                 label="Popup Fields"
@@ -346,15 +355,11 @@ export default {
       if (!this.datasets || !datasetSelection.dataset) {
         return [];
       }
-      const dataset = this.datasets.find(
-        (ds) => ds.id === datasetSelection.dataset
+      const props = this.getGeojsonProperties(
+        this.geojson[datasetSelection.dataset]
       );
-      // TODO: pull fields from properties in the dataset geojson file
-      const allOptions =
-        dataset.type === "source"
-          ? ["Name", "CapCO2", "TotalUnitCost"]
-          : ["Name", "StorageCap", "TotalUnitCost"];
-      return allOptions.filter((o) => datasetSelection.popup.indexOf(o) === -1);
+      props.sort();
+      return props.filter((o) => datasetSelection.popup.indexOf(o) === -1);
     },
     addDataset() {
       this.aCase.maptool.data.push({
@@ -383,10 +388,33 @@ export default {
           });
           return marker;
         },
+        onEachFeature: (feature, layer) => {
+          layer.bindTooltip(() => {
+            return this.getPopupTooltip(dataset, feature);
+          });
+        },
       });
       this.layercontrol.addOverlay(layer, dataset.name);
       layer.addTo(this.map);
-      this.layers[dataset.id] = layer;
+      this.$set(this.layers, dataset.id, layer);
+    },
+    getPopupTooltip(dataset, feature) {
+      const data = this.aCase.maptool.data.find(
+        (d) => d.dataset === dataset.id
+      );
+      const popupFields = data.popup;
+      const title =
+        dataset.type === "source"
+          ? "Source"
+          : dataset.type === "sink"
+          ? "Sink"
+          : null;
+      let tooltip = `<strong>${title}<br>`;
+      for (const field of popupFields) {
+        tooltip += `${field}: ${feature.properties[field]}<br>`;
+      }
+      tooltip += "</strong>";
+      return tooltip;
     },
     getDatasetLayerColor(dataset) {
       return dataset.type === "source" ? "red" : "green";
@@ -395,16 +423,28 @@ export default {
       const layer = this.layers[datasetId];
       this.layercontrol.removeLayer(layer);
       layer.remove();
-      delete this.layers[datasetId];
+      this.$delete(this.layers, datasetId);
     },
     getDataset(datasetId) {
       return this.datasets.find((ds) => ds.id === datasetId);
     },
     loadDatasetLayer(dataset) {
       return utils.FetchUtils.get(dataset.url).then((geojson) => {
-        this.geojson[dataset.id] = geojson;
+        this.$set(this.geojson, dataset.id, geojson);
         this.addDatasetLayer(dataset, geojson);
       });
+    },
+    getGeojsonProperties(geojson) {
+      if (geojson && geojson.features && geojson.features.length > 0) {
+        return Object.keys(geojson.features[0].properties);
+      } else {
+        return [];
+      }
+    },
+    getStyleOptions(datasetId) {
+      const props = this.getGeojsonProperties(this.geojson[datasetId]);
+      props.sort();
+      return props;
     },
   },
   watch: {
