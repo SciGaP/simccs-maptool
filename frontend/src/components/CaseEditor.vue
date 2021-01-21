@@ -167,8 +167,11 @@ export default {
       aCase: JSON.parse(JSON.stringify(this.value)), // clone the input
       datasets: null,
       map: null,
+      layercontrol: null,
+      layers: {},
       mapBounds: null,
       submittedData: null,
+      geojson: {},
     };
   },
   validations() {
@@ -204,6 +207,11 @@ export default {
   },
   mounted() {
     this.initMap();
+    if (this.aCase.datasets) {
+      for (const ds of this.aCase.datasets) {
+        this.loadDatasetLayer(ds);
+      }
+    }
   },
   destroyed() {
     this.destroyMap();
@@ -293,6 +301,9 @@ export default {
         maxZoom: 20,
         subdomains: ["mt0", "mt1", "mt2", "mt3"],
       }).addTo(this.map);
+      this.layercontrol = L.control
+        .layers(null, null, { collapsed: false })
+        .addTo(this.map);
       this.mapBounds = this.map.getBounds();
       this.map.on("load moveend", () => {
         this.mapBounds = this.map.getBounds();
@@ -308,25 +319,23 @@ export default {
         );
         return !alreadySelected || alreadySelected === datasetSelection;
       };
-      const sourceOptions = this.sourceDatasets
-        .map((ds) => {
-          return {
-            text: ds.name,
-            value: ds.id,
-            // NOTE: disable, don't filter, already selected options.
-            // Dynamically removing options messes up the selected one.
-            disabled: !notAlreadySelected(ds)
-          };
-        });
+      const sourceOptions = this.sourceDatasets.map((ds) => {
+        return {
+          text: ds.name,
+          value: ds.id,
+          // NOTE: disable, don't filter, already selected options.
+          // Dynamically removing options messes up the selected one.
+          disabled: !notAlreadySelected(ds),
+        };
+      });
       utils.StringUtils.sortIgnoreCase(sourceOptions, (o) => o.text);
-      const sinkOptions = this.sinkDatasets
-        .map((ds) => {
-          return {
-            text: ds.name,
-            value: ds.id,
-            disabled: !notAlreadySelected(ds)
-          };
-        });
+      const sinkOptions = this.sinkDatasets.map((ds) => {
+        return {
+          text: ds.name,
+          value: ds.id,
+          disabled: !notAlreadySelected(ds),
+        };
+      });
       utils.StringUtils.sortIgnoreCase(sinkOptions, (o) => o.text);
       return [
         { label: "Sources", options: sourceOptions },
@@ -360,6 +369,70 @@ export default {
       this.aCase.maptool.data.splice(i, 1);
     },
     validateState,
+    addDatasetLayer(dataset, geojson) {
+      const fillColor = this.getDatasetLayerColor(dataset);
+      const layer = new L.geoJSON(geojson, {
+        pointToLayer: function(feature, latlng) {
+          const marker = L.circleMarker(latlng, {
+            radius: 8,
+            fillColor: fillColor,
+            color: "#000",
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8,
+          });
+          return marker;
+        },
+      });
+      this.layercontrol.addOverlay(layer, dataset.name);
+      layer.addTo(this.map);
+      this.layers[dataset.id] = layer;
+    },
+    getDatasetLayerColor(dataset) {
+      return dataset.type === "source" ? "red" : "green";
+    },
+    removeDatasetLayer(datasetId) {
+      const layer = this.layers[datasetId];
+      this.layercontrol.removeLayer(layer);
+      layer.remove();
+      delete this.layers[datasetId];
+    },
+    getDataset(datasetId) {
+      return this.datasets.find((ds) => ds.id === datasetId);
+    },
+    loadDatasetLayer(dataset) {
+      return utils.FetchUtils.get(dataset.url).then((geojson) => {
+        this.geojson[dataset.id] = geojson;
+        this.addDatasetLayer(dataset, geojson);
+      });
+    },
+  },
+  watch: {
+    "aCase.maptool.data": {
+      handler: function(data) {
+        const datasetIds = data
+          .map((d) => d.dataset)
+          .filter((id) => id !== null);
+        // Add missing datasets layers
+        for (const datasetId of datasetIds) {
+          if (!(datasetId in this.layers)) {
+            if (!(datasetId in this.geojson)) {
+              this.loadDatasetLayer(this.getDataset(datasetId));
+            } else {
+              const geojson = this.geojson[datasetId];
+              this.addDatasetLayer(this.getDataset(datasetId), geojson);
+            }
+          }
+        }
+        // Remove layers for datasets that have been removed
+        for (const datasetId of Object.keys(this.layers)) {
+          if (!datasetIds.includes(parseInt(datasetId))) {
+            this.removeDatasetLayer(datasetId);
+          }
+        }
+      },
+      deep: true,
+    },
   },
 };
 </script>
