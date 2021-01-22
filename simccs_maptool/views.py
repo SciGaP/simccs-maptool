@@ -492,9 +492,9 @@ def get_case(request, case_id):
     # really loaded from data stored in the user's storage
     case_data_dir = os.path.join(BASEDIR, "CaseData", "SimCCS_Macon")
     with open(os.path.join(case_data_dir, "samplecase.json")) as samplecase, open(
-        os.path.join(case_data_dir, "SimCCS_MaconSources.geojson")
+        os.path.join(case_data_dir, "Macon_Sources_SimCCS_OldFormat.geojson")
     ) as sources, open(
-        os.path.join(case_data_dir, "SCO2T_Arkosic_Macon_10K.geojson")
+        os.path.join(case_data_dir, "Macon_Arkosic_Sinks_SimCCS_OldFormat.geojson")
     ) as sinks:
 
         # Create directory in user storage to hold the geojson files
@@ -502,7 +502,7 @@ def get_case(request, case_id):
         if not user_storage.dir_exists(request, user_storage_dir):
             user_storage.create_user_dir(request, user_storage_dir)
         sources_geosjon_path = os.path.join(
-            user_storage_dir, "SimCCS_MaconSources.geojson"
+            user_storage_dir, "Macon_Sources_SimCCS_OldFormat.geojson"
         )
         if not user_storage.user_file_exists(request, sources_geosjon_path):
             sources_dp = user_storage.save(
@@ -514,7 +514,7 @@ def get_case(request, case_id):
                 "data-product-uri"
             ]
         sinks_geojson_path = os.path.join(
-            user_storage_dir, "SCO2T_Arkosic_Macon_10K.geojson"
+            user_storage_dir, "Macon_Arkosic_Sinks_SimCCS_OldFormat.geojson"
         )
         if not user_storage.user_file_exists(request, sinks_geojson_path):
             sinks_dp = user_storage.save(
