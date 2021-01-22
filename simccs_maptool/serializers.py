@@ -2,6 +2,8 @@ import io
 import logging
 import os
 
+import pandas as pd
+import geopandas as gpd
 from airavata_django_portal_sdk import urls as sdk_urls, user_storage
 from rest_framework import serializers, validators
 
@@ -83,7 +85,6 @@ class DatasetSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         file = validated_data.pop("file")
-        logger.debug(f"file={file}")
         request = self.context["request"]
         original_data_product = user_storage.save(
             request, "Datasets", file, name=file.name, content_type=file.content_type
@@ -95,7 +96,8 @@ class DatasetSerializer(serializers.ModelSerializer):
         )
         transformed_file = self._transform_file(
             user_storage.open_file(request, original_data_product),
-            validated_data["type"],
+            dataset_type=validated_data["type"],
+            content_type=file.content_type
         )
         if transformed_file:
             data_product = user_storage.save(
@@ -116,24 +118,29 @@ class DatasetSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-    def _transform_file(self, input_file, dataset_type):
-        # TODO: transform the file and return the transformed file (GeoJSON)
-        # In this initial implementation the case data is hard coded but it is
-        # really loaded from data stored in the user's storage
-        case_data_dir = os.path.join(BASEDIR, "CaseData", "SimCCS_Macon")
-        with open(
-            os.path.join(case_data_dir, "SimCCS_MaconSources.geojson"), "rb"
-        ) as sources, open(
-            os.path.join(case_data_dir, "SCO2T_Arkosic_Macon_10K.geojson"), "rb"
-        ) as sinks:
-            if dataset_type == "source":
-                f = io.BytesIO(sources.read())
-                f.name = "SimCCS_MaconSources.geojson"
-                return f
-            elif dataset_type == "sink":
-                f = io.BytesIO(sinks.read())
-                f.name = "SCO2T_Arkosic_Macon_10K.geojson"
-                return f
+    def _transform_file(self, input_file, dataset_type, content_type):
+        # transform the file and return the transformed file (GeoJSON)
+        if content_type.startswith("text/"):
+            return self._transform_text_file(input_file)
+        else:
+            raise Exception(f"Unrecognized file type {content_type}")
+
+    def _transform_text_file(self, input_file):
+        # assume the delimiter is "tab"
+        rawdata = pd.read_csv(input_file, sep="\t")
+        # convert to a geopandas object
+        geodata = gpd.GeoDataFrame(
+            rawdata, geometry=gpd.points_from_xy(rawdata.LON, rawdata.LAT)
+        )
+        # set the projection
+        geodata.set_crs(epsg=4326)
+        outputfile = input_file.name.split(".")[0] + ".geojson"
+        # Write out GeoJSON to in-memory file object
+        f = io.BytesIO()
+        geodata.to_file(f, driver="GeoJSON")
+        f.seek(0)
+        f.name = outputfile
+        return f
 
     def get_original_filename(self, dataset):
         request = self.context["request"]
