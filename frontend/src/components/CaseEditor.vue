@@ -23,8 +23,10 @@
             <b-card
               v-for="datasetSelection in aCase.maptool.data"
               :key="datasetSelection.dataset"
+              :title="getDatasetSelectionTitle(datasetSelection)"
+              title-tag="h5"
             >
-              <b-form-group label="Dataset" label-class="required">
+              <b-form-group>
                 <b-form-select
                   v-model="datasetSelection.dataset"
                   :options="getDatasetOptions(datasetSelection)"
@@ -445,6 +447,22 @@ export default {
       const props = this.getGeojsonProperties(this.geojson[datasetId]);
       props.sort();
       return props;
+    },
+    getDatasetSelectionTitle(datasetSelection) {
+      const datasetId = datasetSelection.dataset;
+      if (datasetId) {
+        const dataset = this.getDataset(datasetId);
+        switch (dataset.type) {
+          case "source":
+            return "Source: " + dataset.name;
+          case "sink":
+            return "Sink: " + dataset.name;
+          default:
+            return dataset.name;
+        }
+      } else {
+        return null;
+      }
     },
   },
   watch: {
