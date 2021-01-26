@@ -23,13 +23,13 @@
       {
         "dataset": 1,
         "style": "",
-        "popup": ["Name", "CapCO2", "TotalUnitCost"],
+        "popup": ["NAME", "capMax (MtCO2/y)", "varO&M ($/tCO2)"],
         "bbox": ""
       },
       {
         "dataset": 2,
-        "style": "TotalUnitCost",
-        "popup": ["Name", "StorageCap", "TotalUnitCost"],
+        "style": "varO&M ($/tCO2)",
+        "popup": ["Name", "fieldCap (MtCO2)", "varO&M ($/tCO2)"],
         "bbox": ""
       }
     ],
