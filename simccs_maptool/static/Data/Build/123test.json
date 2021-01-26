@@ -8,34 +8,44 @@
       "name": "SimCCS_MaconSources",
       "description": "SimCCS_MaconSources",
       "type": "source",
-      "url": "SimCCS_MaconSources.geojson.json"
+      "url": "Macon_Sources_SimCCS_OldFormat.geojson"
     },
     {
       "id": 2,
-      "name": "SCO2T_Arkosic_Macon_10K",
-      "description": "SCO2T_Arkosic_Macon_10K",
+      "name": "Macon_Arkosic_Sinks",
+      "description": "Macon_Arkosic_Sinks",
       "type": "sink",
-      "url": "SCO2T_Arkosic_Macon_10K.geojson.json"
+      "url": "Macon_Arkosic_Sinks_SimCCS_OldFormat.geojson"
     }
   ],
   "maptool": {
-    "Sources": ["source001"],
-    "Sinks": ["sink001"],
-    "CostSurfaces": [],
     "data": [
       {
         "dataset": 1,
         "style": "",
-        "popup": ["Name", "CapCO2", "TotalUnitCost"],
+        "popup": [
+          "NAME",
+          "capMax (MtCO2/y)",
+          "varO&M ($/tCO2)"
+        ],
         "bbox": ""
       },
       {
         "dataset": 2,
-        "style": "TotalUnitCost",
-        "popup": ["Name", "StorageCap", "TotalUnitCost"],
+        "style": "varO&M ($/tCO2)",
+        "popup": [
+          "Name",
+          "fieldCap (MtCO2)",
+          "varO&M ($/tCO2)"
+        ],
         "bbox": ""
       }
     ],
-    "bbox": [-89.91, 38.1, -87.7, 40.9]
+    "bbox": [
+      -89.91,
+      38.1,
+      -87.2,
+      40.9
+    ]
   }
 }

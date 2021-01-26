@@ -1,0 +1,11 @@
+{
+"type": "FeatureCollection",
+"features": [
+{ "type": "Feature", "properties": { "ID": 1, "costFix ($M)": 0, "fixO&M ($M\/y)": 0, "varO&M ($\/tCO2)": 18.4, "capMax (MtCO2\/y)": 1.0, "N\/A": "-", "LON": -88.88606, "LAT": 39.86731, "NAME": "ADM Decatur" }, "geometry": { "type": "Point", "coordinates": [ -88.88606, 39.86731 ] } },
+{ "type": "Feature", "properties": { "ID": 2, "costFix ($M)": 0, "fixO&M ($M\/y)": 0, "varO&M ($\/tCO2)": 81.21, "capMax (MtCO2\/y)": 0.292, "N\/A": "-", "LON": -88.241592, "LAT": 40.103901, "NAME": "Abbot Power" }, "geometry": { "type": "Point", "coordinates": [ -88.241592, 40.103901 ] } },
+{ "type": "Feature", "properties": { "ID": 3, "costFix ($M)": 0, "fixO&M ($M\/y)": 0, "varO&M ($\/tCO2)": 48.72, "capMax (MtCO2\/y)": 1.434, "N\/A": "-", "LON": -89.64145, "LAT": 39.80549, "NAME": "City Water Light and Power" }, "geometry": { "type": "Point", "coordinates": [ -89.64145, 39.80549 ] } },
+{ "type": "Feature", "properties": { "ID": 4, "costFix ($M)": 0, "fixO&M ($M\/y)": 0, "varO&M ($\/tCO2)": 26.07, "capMax (MtCO2\/y)": 0.45, "N\/A": "-", "LON": -88.39814, "LAT": 40.46948, "NAME": "One Earth Energy" }, "geometry": { "type": "Point", "coordinates": [ -88.39814, 40.46948 ] } },
+{ "type": "Feature", "properties": { "ID": 5, "costFix ($M)": 0, "fixO&M ($M\/y)": 0, "varO&M ($\/tCO2)": 11.46, "capMax (MtCO2\/y)": 1.593, "N\/A": "-", "LON": -87.423759, "LAT": 39.54031, "NAME": "Wabash Valley Resources" }, "geometry": { "type": "Point", "coordinates": [ -87.423759, 39.54031 ] } },
+{ "type": "Feature", "properties": { "ID": 6, "costFix ($M)": 0, "fixO&M ($M\/y)": 0, "varO&M ($\/tCO2)": 25.82, "capMax (MtCO2\/y)": 6.0, "N\/A": "-", "LON": -89.670776, "LAT": 38.277882, "NAME": "Prairie State Energy Campus" }, "geometry": { "type": "Point", "coordinates": [ -89.670776, 38.277882 ] } }
+]
+}

@@ -35,5 +35,7 @@ urlpatterns = [
     url(r"^get-data", geoserver.get_data),
     url(r"^api/", include(router.urls)),
     url(r"^build", login_required(views.BuildView.as_view()), name="build"),
+    # for local debug:
+    #url(r"^build", views.BuildView.as_view(), name="build"),
     
 ]

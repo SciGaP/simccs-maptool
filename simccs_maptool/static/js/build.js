@@ -19,16 +19,29 @@ map.createPane("pointsPane");
  // create the sidebar instance and add it to the map
  var sidebar = L.control.sidebar({ autopan: true, container: 'sidebar' }).addTo(map);
  
-// default point option
+// default point option (source)
+var sourceRadius = 9;
+var sinkRadius = 7;
 var geojsonMarkerOptions = {
-    radius: 8,
-    fillColor: "red",
-    color: "#000",
+    radius: sourceRadius,
+    fillColor: "blue",
+    color: "grey",
     weight: 1,
     opacity: 1,
     fillOpacity: 0.8,
     pane: "pointsPane"
 };
+// sink point option
+var sinkMarkerOptions = {
+    radius: sinkRadius,
+    fillColor: "blue",
+    color: "grey",
+    weight: 1,
+    opacity: 1,
+    fillOpacity: 0.8,
+    pane: "polygonsPane"
+};
+
 
 // function getcolor
 function getColor(d) {
@@ -65,12 +78,24 @@ function sourceOnEachFeature(feature, layer) {
     layer.on('click', function (e) {
       var target_id = sourceselection.indexOf(e.target)
       if (target_id >=0 ) {e.target.setStyle(geojsonMarkerOptions);sourceselection.splice(target_id,1);}
-      else {e.target.setStyle({weight:3,fillColor:"orangered",radius:12});
+      else {e.target.setStyle({weight:3,fillColor:"darkblue",color:"black",radius:sourceRadius + 3});
             sourceselection.push(e.target);}
       //document.dispatchEvent(new Event("source-selection-change"));
     })};
 
+// for sinks (points)
 // for sinks
+function sinkOnEachFeature(feature, layer) {
+    //bind click
+    layer.on('click', function (e) {
+        var target_id = sinkselection.indexOf(e.target)
+        if (target_id >=0 ) {e.target.setStyle({weight:1,color:'grey',fillOpacity:0.8,radius:sinkRadius});sinkselection.splice(target_id,1);}
+        else {e.target.setStyle({weight:2,color:"black",fillOpacity:1,radius:sinkRadius+2});
+              sinkselection.push(e.target);}
+        //document.dispatchEvent(new Event("sink-selection-change"));
+    })
+};
+
 function onEachFeatureClosure(popup_fields) {
     return function onEachFeature(feature, layer) {
         var content_str="<strong>Sink: <br>"
@@ -81,8 +106,8 @@ function onEachFeatureClosure(popup_fields) {
         layer.bindTooltip(content_str);
         layer.on('click', function (e) {
             var target_id = sinkselection.indexOf(e.target)
-            if (target_id >=0 ) {e.target.setStyle({weight:1,color:'grey',fillOpacity:0.4});sinkselection.splice(target_id,1);}
-            else {e.target.setStyle({weight:2,color:"black",fillOpacity:0.7});
+            if (target_id >=0 ) {e.target.setStyle({weight:1,color:"grey",fillOpacity:0.7});sinkselection.splice(target_id,1);}
+            else {e.target.setStyle({weight:2,color:"black",fillOpacity:1});
                   sinkselection.push(e.target);}
             document.dispatchEvent(new Event("sink-selection-change"));
         })
@@ -115,6 +140,7 @@ function handleclick(id){
 // load data by url
 async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
     var data = await getdata(dataurl);
+    
     var newLayer;
     if (!popup_fields || popup_fields.length === 0) {
         popup_fields = ["Name"];
@@ -137,13 +163,30 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
 
     } else if (datadesc['type'] == 'sink') {
         // load sink data
-        newLayer = new L.geoJSON(data, {style: function(feature){
+        newLayer = new L.geoJSON(data,{
+            pointToLayer: function (feature, latlng) {
+            var content_str="<strong>Sink: <br>"
+            for (entry of popup_fields) {
+                content_str += entry + ": " + feature.properties[entry] + "<br>";
+            }
+            content_str += "</strong>";
             var color_value = feature.properties[datastyle];
-            var fillcolor = getColor(color_value); 
-            return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.5,pane: "polygonsPane"};
+            var fillcolor = getColor(color_value);
+            var mymarker = L.circleMarker(latlng, sinkMarkerOptions);
+            mymarker.setStyle({'fillColor':fillcolor});
+            mymarker.bindTooltip(content_str);
+            return mymarker;       
           },
-          onEachFeature: onEachFeatureClosure(popup_fields),
+          onEachFeature: sinkOnEachFeature,
         });
+       
+        // newLayer = new L.geoJSON(data, {style: function(feature){
+        //     var color_value = feature.properties[datastyle];
+        //     var fillcolor = getColor(color_value); 
+        //     return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.5,pane: "polygonsPane"};
+        //   },
+        //   onEachFeature: onEachFeatureClosure(popup_fields),
+        // });
     }
     else {
         newLayer = new L.geoJSON(data);
@@ -158,8 +201,8 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
         var selector = '<select class="selectpicker" id="selector_' + datadesc['dataid'] +'" title="select by names ..." data-live-search="true" multiple data-actions-box="true" data-width="auto">';
         var ukey, uvalue;
         for (entry of data['features']) {
-            ukey = entry['properties']['UniqueID'];
-            uvalue = entry['properties']['Name'].trim();
+            ukey = entry['properties']['ID'];
+            uvalue = entry['properties']['NAME'].trim();
             // pick up first 15 
             if (uvalue.length > 20) {uvalue = uvalue.slice(0,20) + "...";}
             selector += '<option value="'+ ukey +'">'+ uvalue +'</option>';
@@ -233,12 +276,12 @@ function source_selectbynames(dataid,selected_ids) {
     var sourceLayer = maplayers[dataid];
     sourceLayer.eachLayer(function(layer) {
           // convert id to string object
-          source_id = layer.feature.properties['UniqueID'].toString();
+          source_id = layer.feature.properties['ID'].toString();
           // check if layer already in selection
           var target_id = sourceselection.indexOf(layer);
           if (selected_ids.includes(source_id)) {
                 // if not selected, add to selection
-                if (target_id < 0) {layer.setStyle({weight:3,fillColor:"orangered",radius:12});
+                if (target_id < 0) {layer.setStyle({weight:3,fillColor:"darkblue",radius:12});
                 sourceselection.push(layer);}
           } else {
                 // if deselected, remove it
@@ -277,7 +320,7 @@ function hideunselected(source_selection, sink_selection,network='') {
     }
     removedynlayers();
     var source_selection_layer = L.featureGroup(source_selection);
-    source_selection_layer.setStyle({weight:3,fillColor:"orangered",radius:12});
+    source_selection_layer.setStyle({weight:3,fillColor:"darkblue",radius:12});
     var sink_selection_layer = L.featureGroup(sink_selection);
     sink_selection_layer.setStyle({weight:2,color:"black",fillOpacity:0.7});
     source_selection_layer.addTo(map);
@@ -352,11 +395,11 @@ function generatecandidatenetwork(panelid) {
 }
 
 function getSourceIds(selections) {
-    return new Set(selections.map(src => src.feature.properties.UniqueID));
+    return new Set(selections.map(src => src.feature.properties.ID));
  }
 
  function getSinkIds(selections) {
-    return new Set(selections.map(snk => "saline-" + snk.feature.properties.UniqueID));
+    return new Set(selections.map(snk => "saline-" + snk.feature.properties.ID));
  }
 
 function display_error_modal(error, message) {
