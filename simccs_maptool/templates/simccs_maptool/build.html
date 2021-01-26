@@ -137,9 +137,9 @@ async function set_casedata(caseId) {
       var dataurl, datastyle, datameta;
       for (entry of casejson['maptool']['data']) {
             datameta = datasets[entry["dataset"]];
-            //dataurl = datameta["url"];
+            dataurl = datameta["url"];
             // for debug
-            dataurl = urlprefix + datameta["url"];
+            //dataurl = urlprefix + datameta["url"];
             datastyle = entry['style'];
             popupfields = entry['popup'];
             addcasedata(datameta,dataurl,datastyle,popupfields);

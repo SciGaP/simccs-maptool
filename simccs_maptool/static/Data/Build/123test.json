@@ -8,14 +8,14 @@
       "name": "SimCCS_MaconSources",
       "description": "SimCCS_MaconSources",
       "type": "source",
-      "url": "Macon_Sources_SimCCS_OldFormat.geojson"
+      "url": "/api/download?data-product-uri=airavata-dp%3A%2F%2F33273f93-aa6b-4814-a51d-8afc84aa37a6"
     },
     {
       "id": 2,
       "name": "Macon_Arkosic_Sinks",
       "description": "Macon_Arkosic_Sinks",
       "type": "sink",
-      "url": "Macon_Arkosic_Sinks_SimCCS_OldFormat.geojson"
+      "url": "/api/download?data-product-uri=airavata-dp%3A%2F%2F3157403c-9f2d-49b4-9b6e-be9645ef5a90"
     }
   ],
   "maptool": {
