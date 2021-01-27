@@ -37,6 +37,7 @@
           <b-button
             variant="primary"
             :to="{ name: 'case', params: { id: data.item.id } }"
+            v-if="data.item.userHasWriteAccess"
           >
             <i class="fa fa-edit" aria-hidden="true"></i>
             Edit</b-button
@@ -82,7 +83,7 @@ export default {
       }
     },
     caseFields() {
-      return ["title", "description", "actions"];
+      return ["title", "description", "owner", "actions"];
     },
     caseItems() {
       if (!this.cases) {
@@ -93,6 +94,7 @@ export default {
             id: aCase.id,
             title: aCase.title,
             description: aCase.description,
+            owner: aCase.owner,
             actions: null,
           };
         });

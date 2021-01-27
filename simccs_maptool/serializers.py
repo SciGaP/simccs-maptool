@@ -176,7 +176,7 @@ class MaptoolConfigSerializer(serializers.ModelSerializer):
 
 class CaseSerializer(serializers.ModelSerializer):
     maptool = MaptoolConfigSerializer(required=True, allow_null=True)
-    owner = serializers.PrimaryKeyRelatedField(read_only=True)
+    owner = serializers.SlugRelatedField(slug_field='username', read_only=True)
     group = serializers.CharField(required=False, allow_null=True)
     title = serializers.CharField(
         required=True,
@@ -186,6 +186,7 @@ class CaseSerializer(serializers.ModelSerializer):
         style={"base_template": "textarea.html"}, allow_blank=True
     )
     datasets = serializers.SerializerMethodField()
+    userHasWriteAccess = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Case
@@ -230,3 +231,6 @@ class CaseSerializer(serializers.ModelSerializer):
             datasets, many=True, context={"request": self.context["request"]}
         )
         return serializer.data
+
+    def get_userHasWriteAccess(self, instance):
+        return self.context['request'].user == instance.owner
