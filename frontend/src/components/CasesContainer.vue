@@ -95,6 +95,7 @@ export default {
             title: aCase.title,
             description: aCase.description,
             owner: aCase.owner,
+            userHasWriteAccess: aCase.userHasWriteAccess,
             actions: null,
           };
         });
