@@ -908,7 +908,7 @@
                               return computeResourceId;
                         }
                   }
-                  throw new Exception("Couldn't find a compute resource for host " + hostname);
+                  throw new Error("Couldn't find a compute resource for host " + hostname);
             });
             // Find a group resource profile that can run an experiment on 'hostname'
             // Also, find the default queue configuration for the application deployment on that 'hostname'
@@ -925,7 +925,7 @@
                         return false;
                   });
                   if (!groupResourceProfile) {
-                        throw new Exception("Couldn't find a group resource profile for host " + hostname);
+                        throw new Error("Couldn't find a group resource profile for host " + hostname);
                   }
                   const loadDeployments = services.ApplicationDeploymentService.list({
                         appModuleId: cplex_application_id,
@@ -934,7 +934,7 @@
                   .then(deployments => {
                         const deployment = deployments.find(d => d.computeHostId === computeResourceId);
                         if (!deployment) {
-                              throw new Exception("Couldn't find a deployment for host " + hostname);
+                              throw new Error("Couldn't find a deployment for host " + hostname);
                         }
                         return services.ApplicationDeploymentService.getQueues({
                               lookup: deployment.appDeploymentId
@@ -942,7 +942,7 @@
                         .then(queues => {
                               const queue = queues.find(q => q.isDefaultQueue);
                               if (!queue) {
-                                    throw new Exception("Couldn't find a default queue for host " + hostname);
+                                    throw new Error("Couldn't find a default queue for host " + hostname);
                               }
                               return queue;
                         });
