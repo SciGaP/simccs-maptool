@@ -194,7 +194,7 @@ def make_shapefiles(scenario_dir, results_dir):
         if cost_surface_data is not None:
             cost_surface_data.populate(data)
         # load the .mps/.sol solution
-        solution = data.loadSolution(results_dir, -1)  # timeslot
+        solution = data.loadSolution(results_dir)
         logger.debug(f"Solution loaded from {results_dir}")
         # generate shapefiles
         data.makeShapeFiles(results_dir, solution)
@@ -229,7 +229,7 @@ def load_solution(scenario_dir, results_dir):
         if cost_surface_data is not None:
             cost_surface_data.populate(data)
         # load the .mps/.sol solution
-        solution = data.loadSolution(results_dir, -1)  # timeslot
+        solution = data.loadSolution(results_dir)
         logger.debug("Solution loaded from {}".format(results_dir))
         return solution
     except Exception as e:
