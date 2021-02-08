@@ -6,7 +6,7 @@ def wfs_call(layername, cqlfilter):
     geoserver_url = "https://simccs.org/geoserver/SimCCS/ows"
     #service=WFS&version=1.0.0&request=GetFeature&maxFeatures=500&outputFormat=text%2Fjavascript&format_options=callback:loadjson';
     PARAMS = {'service':'WFS','version':'1.0.0','request':'GetFeature',
-        'maxFeatures':500,'outputFormat':'application/json',
+        'maxFeatures':10000,'outputFormat':'application/json',
         'cql_filter':str(cqlfilter),'typeName':layername}
     r = requests.get(url = geoserver_url, params = PARAMS) 
     print(PARAMS['cql_filter'])
