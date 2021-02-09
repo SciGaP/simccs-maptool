@@ -735,7 +735,7 @@ var geojsonLineOptions = {
             zIndex:2
         });
 
-        var sink_oil_eor_layer=L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
+        var sink_oil_eor_layer=L.tileLayer.wms("https://simccs.org/geoserver/SimCCS/wms?", {
             layers: 'SimCCS:NATCARB_OG_Test',
             format: 'image/png',
             transparent: true,
