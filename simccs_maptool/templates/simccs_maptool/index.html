@@ -89,8 +89,8 @@
     $( "#slider-range-sinkcost" ).slider({
       range: true,
       min: 0.0,
-      max: 20.0,
-      values:[0,20.0],
+      max: 230.0,
+      values:[0,230.0],
       step: 0.5,
       slide: function( event, ui ) {
         $( "#amount-sinkcost" ).val( ui.values[0].toFixed(1) + " - " + ui.values[1].toFixed(2));
@@ -122,8 +122,8 @@
     $( "#slider-range-sinkcapacity" ).slider({
       range: true,
       min: 0.0,
-      max: 130.0,
-      values:[0,130.0],
+      max: 135.0,
+      values:[0,135.0],
       step: 1,
       slide: function( event, ui ) {
         $( "#amount-sinkcapacity" ).val( ui.values[0].toFixed(1) + " - " + ui.values[1].toFixed(2));
@@ -482,12 +482,12 @@
          });
          
          var sinkLayer = new L.geoJSON('',{style: function(feature){
-           var co2 = feature.properties['sinkfixedcost'];
+           var co2 = feature.properties['varom_d_tco2'];
            var fillcolor = ''; 
-           if (co2 > 10.0) {fillcolor = '#f50000';} 
-           else if (co2 >= 5.0 && co2 <= 10.0) {fillcolor ='#fdff00'}
-           else {fillcolor = '#00f905'}
-           return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.5,pane: "polygonsPane"};
+           if (co2 > 25.0) {fillcolor = 'red';} 
+           else if (co2 >= 5.0 && co2 <= 25.0) {fillcolor ='yellow'}
+           else {fillcolor = 'green'}
+           return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.6,pane: "polygonsPane"};
          },
          
          onEachFeature: sinkOnEachFeature
@@ -499,7 +499,7 @@
            if (co2 <=10) {fillcolor = '#f50000';} 
            else if (co2 >10 && co2 <= 50) {fillcolor ='#fdff00'}
            else {fillcolor = '#00f905'}
-           return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.5,pane: "polygonsPane"};
+           return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.6,pane: "polygonsPane"};
          },
          
          onEachFeature: sinkOnEachFeature2
@@ -585,7 +585,7 @@
                  // loop through geojson
                  var entry;
                  var cost_array=[]
-                 for (entry of data['features']) {cost_array.push(entry['properties']['sinkfixedcost']);}
+                 for (entry of data['features']) {cost_array.push(entry['properties']['varom_d_tco2']);}
                  var cost_min = Math.min(...cost_array);
                  var cost_max = Math.max(...cost_array);
                  // slider min,max,values,step
@@ -1945,9 +1945,9 @@
             var sinkcapacity_1 = $("#slider-range-sinkcapacity").slider("values", 1);
             var cqlfilter_str = "";
             cqlfilter_str = "((";
-            cqlfilter_str += "sinkfixedcost Between " + fixedcost_0.toString() + " AND "+ fixedcost_1.toString();
+            cqlfilter_str += "varom_d_tco2 Between " + fixedcost_0.toString() + " AND "+ fixedcost_1.toString();
             cqlfilter_str += ") AND (";
-            cqlfilter_str += "sinkcapacity Between " + sinkcapacity_0.toString() + " AND "+ sinkcapacity_1.toString();
+            cqlfilter_str += "fieldcap_mtco2 Between " + sinkcapacity_0.toString() + " AND "+ sinkcapacity_1.toString();
             cqlfilter_str += "))";
             //alert(cqlfilter_str);
             // remove sink_sco2t_layer
@@ -2155,7 +2155,7 @@
             sinkselection = [];   
             var sinkcost;
             sinkLayer.eachLayer(function(layer) {
-                  sinkcost = layer.feature.properties['sinkfixedcost'];
+                  sinkcost = layer.feature.properties['varom_d_tco2'];
                   if (sinkcost>=fixedcost_0 && sinkcost<=fixedcost_1) {
                         layer.setStyle({weight:2,color:"black",fillOpacity:0.7});
                         sinkselection.push(layer);
@@ -2497,14 +2497,14 @@
                                  <label style="font-size: 100%;" class="form-check-label" for="sink_saline_formation">Saline Formation</label>
                                  <br> <small>(SCO2T_National_v1_10k)</small>
                                  <div id="sink_saline_div" >
-                                    <label>SinkFixedCost: 
+                                    <label>varO&M ($/tCO2): 
                                     <input type="text" id="amount-sinkcost" style="border: 0; font-weight: bold;" size="10"/>
                               </label>
                               <table style="width:100%"><tr>
                                    <td width="80%"> <div id="slider-range-sinkcost"></div></td><td width="5%"></td><td width="15%"><button type="button" class="btn btn-sm btn-light" onclick=refresh_saline()><i class="fas fa-redo"></i></span></button></td>
                               </tr>
                               </table>
-                              <label>SinkCapacity: 
+                              <label>fieldCap (MtCO2): 
                                     <input type="text" id="amount-sinkcapacity" style="border: 0; font-weight: bold;" size="10"/>
                               </label>
                               <table style="width:100%"><tr>
@@ -2575,7 +2575,7 @@
                                           <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
                                     </div>
                                     <div>
-                                          <label>SinkFixedCost: 
+                                          <label>varO&M ($/tCO2): 
                                                 <input type="text" id="amount-user-sinkcost" style="border: 0; font-weight: bold;" size="10"/>
                                           </label>
                                           <table style="width:100%"><tr>
