@@ -675,38 +675,38 @@ var geojsonLineOptions = {
 
     });
 
-        var sink_coal_layer = L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
-                layers: 'SimCCS:NATCARB_Coal',
-                format: 'image/png',
-                transparent: true
-        });
+        // var sink_coal_layer = L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
+        //         layers: 'SimCCS:NATCARB_Coal',
+        //         format: 'image/png',
+        //         transparent: true
+        // });
 
-        var sink_oil_layer=L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
-                layers: 'SimCCS:NATCARB_OG',
-                format: 'image/png',
-                transparent: true
-        });
+        // var sink_oil_layer=L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
+        //         layers: 'SimCCS:NATCARB_OG',
+        //         format: 'image/png',
+        //         transparent: true
+        // });
 
-        var sink_saline_layer=L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
-                layers: 'SimCCS:NATCARB_SALINE',
-                //layers: 'SimCCS:SCO2T_Database_v1_1_Cheapest_Grid',
-                format: 'image/png',
-                transparent: true
-        });
+        // var sink_saline_layer=L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
+        //         layers: 'SimCCS:NATCARB_SALINE',
+        //         //layers: 'SimCCS:SCO2T_Database_v1_1_Cheapest_Grid',
+        //         format: 'image/png',
+        //         transparent: true
+        // });
 
-        var sink_ordos_layer=L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
-                layers: 'SimCCS:China_OG',
-                format: 'image/png',
-                transparent: true
-        });
+        // var sink_ordos_layer=L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
+        //         layers: 'SimCCS:China_OG',
+        //         format: 'image/png',
+        //         transparent: true
+        // });
 
-        var cost_surface_layer = L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
-            layers: 'SimCCS:cost',
-            format: 'image/png',
-            transparent: true,
-            attribution: "SimCCS",
-            zIndex:1
-        });
+        // var cost_surface_layer = L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
+        //     layers: 'SimCCS:cost',
+        //     format: 'image/png',
+        //     transparent: true,
+        //     attribution: "SimCCS",
+        //     zIndex:1
+        // });
 
         var source_all_test_layer_1 = L.tileLayer.betterWms("https://simccs.org/geoserver/SimCCS/ows?", {
             //layers: 'SimCCS_Sources_Snapper',
@@ -727,7 +727,7 @@ var geojsonLineOptions = {
         // });
 
         var sink_sco2t_layer = L.tileLayer.betterWms("https://simccs.org/geoserver/SimCCS/wms?", {
-            layers: 'SCO2T_v3_1_2_LowCost_SimCCS_10K',
+            layers: 'sco2t_national_v1_10k',
             format: 'image/png',
             transparent: true,
             attribution: "SimCCS",

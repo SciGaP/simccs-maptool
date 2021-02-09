@@ -448,7 +448,7 @@
          //bind click
          //layer.bindTooltip("<strong>CO2_Low(t):"+feature.properties.CO2_Low__t.toString()+"<strong>");
          //layer.bindTooltip("<strong>Name: "+feature.properties.Resource_N+"<br>"+"Min Total Sink Cost: "+feature.properties['Min_Total_'].toString()+"<strong>");
-         layer.bindTooltip("<strong>Saline Sink: <br>Name: "+feature.properties['name']+"<br>"+"Sink Capacity: "+feature.properties['sinkcapacity'].toString()+"<br>"+"Sink Fixed Cost: "+feature.properties['sinkfixedcost'].toString()+"<strong>");
+         layer.bindTooltip("<strong>Saline Sink: <br>Name: "+feature.properties['name']+"<br>"+"fieldCap(MtCO2): "+feature.properties['fieldcap_mtco2'].toString()+"<br>"+"varO&M($/tCO2): "+feature.properties['varom_d_tco2'].toString()+"<strong>");
             layer.on('click', function (e) {
            var target_id = sinkselection.indexOf(e.target)
            if (target_id >=0 ) {e.target.setStyle({weight:1,color:'grey',fillOpacity:0.4});sinkselection.splice(target_id,1);}
@@ -1954,11 +1954,11 @@
             if (map.hasLayer(sink_sco2t_layer)) {map.removeLayer(sink_sco2t_layer);}
             // define a sink_sco2t_layer
             sink_sco2t_layer = L.tileLayer.betterWms("https://simccs.org/geoserver/SimCCS/wms?", {
-            layers: 'SCO2T_v3_1_2_LowCost_SimCCS_10K',
+            layers: 'sco2t_national_v1_10k',
             format: 'image/png',
             transparent: true,
             attribution: "SimCCS",
-            propertyName: 'name,sinkcapacity,sinkfixedcost,wellfixedcost,wellvarom',
+            propertyName: 'name,fieldcap_mtco2,costfix_m,wellcostfix_m,varom_d_tco2',
             cql_filter:cqlfilter_str,
             zIndex:2
             });
@@ -2068,7 +2068,7 @@
                         searchlayer='';
             }
             //get json display as marker
-            var geourl='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&maxFeatures=500&outputFormat=text%2Fjavascript&format_options=callback:loadsearchresult';
+            var geourl='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&maxFeatures=10000&outputFormat=text%2Fjavascript&format_options=callback:loadsearchresult';
             geourl += '&typeName=' + searchlayer;
             geourl += filter_str;
             // var cleanstr='';
@@ -2495,7 +2495,7 @@
                               <div class="form-check">
                                  <input class="form-check-input" type="radio" id="sink_saline_formation">
                                  <label style="font-size: 100%;" class="form-check-label" for="sink_saline_formation">Saline Formation</label>
-                                 <br> <small>(SCO2T_Database_v3_1_2)</small>
+                                 <br> <small>(SCO2T_National_v1_10k)</small>
                                  <div id="sink_saline_div" >
                                     <label>SinkFixedCost: 
                                     <input type="text" id="amount-sinkcost" style="border: 0; font-weight: bold;" size="10"/>

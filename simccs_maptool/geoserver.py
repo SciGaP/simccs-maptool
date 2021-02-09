@@ -45,10 +45,10 @@ def get_data(request):
         totalsink_og = data['totalFeatures']
         sinkcapacity_og = sum([x['properties']['VOL_LOW'] for x in data['features']])
         # sinks Saline Formation
-        cqlfilter = cqlfilter.replace("the_geom","geometry")
-        data = wfs_call('SCO2T_v3_1_2_LowCost_SimCCS_10K',cqlfilter)
+        cqlfilter = cqlfilter.replace("the_geom","wkb_geometry")
+        data = wfs_call('sco2t_national_v1_10k',cqlfilter)
         totalsink_saline = data['totalFeatures']
-        sinkcapacity_saline = sum([x['properties']['sinkcapacity'] for x in data['features']])
+        sinkcapacity_saline = sum([x['properties']['fieldcap_mtco2'] for x in data['features']])
         return JsonResponse({'totalsource':totalfeatures,'capturable':capturable,'totalsink_og':totalsink_og,'sinkcapacity_og':sinkcapacity_og,'totalsink_saline':totalsink_saline,'sinkcapacity_saline':sinkcapacity_saline})
 
     if method == "data":
@@ -57,8 +57,8 @@ def get_data(request):
             cqlfilter = 'Intersects(the_geom,Polygon((' + geom + ")))"
             data = wfs_call('Sources_082819_SimCCS_Format',cqlfilter)
         if layer == 'sink_saline':
-            cqlfilter = 'Intersects(geometry,Polygon((' + geom + ")))"
-            data = wfs_call('SCO2T_v3_1_2_LowCost_SimCCS_10K',cqlfilter)
+            cqlfilter = 'Intersects(wkb_geometry,Polygon((' + geom + ")))"
+            data = wfs_call('sco2t_national_v1_10k',cqlfilter)
         if layer == 'sink_og':
             cqlfilter = 'Intersects(the_geom,Polygon((' + geom + ")))"
             data = wfs_call('NATCARB_OG_Test',cqlfilter)
