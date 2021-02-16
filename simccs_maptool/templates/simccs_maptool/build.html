@@ -87,8 +87,8 @@
             sidebar.on('content', function(e) {
                   // e.id contains the id of the opened panel
                   // update map based on opened panel
-                  console.log(e.id);
-                        // hide unselected
+                  //console.log(e.id);
+                  // hide unselected
                   refreshmap(e.id);
 
             })
@@ -96,6 +96,7 @@
             }); // end of document ready 
 
 // gloabl variables
+var case_id;
 var casejson;
 var maplayers = {}; // record layers displayed on map, layername:layerdata
 var dynmaplayers = {}; // record dynamic layers from earch panel
@@ -115,12 +116,15 @@ async function set_casedata(caseId) {
       if (caseId) {
             urlprefix = "";
             casejson = await getdata(`/maptool/api/cases/${caseId}/`);
+            // record caseId
+            case_id = caseId;
       } else {
             //https://beta.simccs.scigap.org/maptool/case/123
             //casejson = await getdata('/maptool/case/123');
             // debug:
             casejson = await getdata(urlprefix + '123test.json');
-            console.log(casejson);
+            case_id = "123test";
+            //console.log(casejson);
       }
       document.getElementById("case_name").textContent=casejson["title"];
       document.getElementById("case_description").textContent=casejson["description"]; 
@@ -337,8 +341,8 @@ function generatempsfile(panelid,showmodal=1) {
          if (entry.options.color == 'black') {sink_selection.push(entry);}
     }
     
-    console.log(source_selection);
-    console.log(sink_selection);
+    //console.log(source_selection);
+    //console.log(sink_selection);
 
     if (source_selection.length == 0 ) {alert('No sources are selected!');return}
     if (sink_selection.length == 0 ) {alert('No sinks are selected!');return}
@@ -404,7 +408,7 @@ mpsDownloadLink.setAttribute("href",'');
 mpsDownloadLink.setAttribute("href", '/api/download?data-product-uri='+ data["mps"]);
 document.getElementById("mps_download_" + panelid).style.display = 'inline';
 
-console.log(showmodal);
+//console.log(showmodal);
 if (showmodal == 1) {
       //$("#dynamicModal").modal();
       //$("#dynamicModal").modal('show'); 
@@ -495,7 +499,8 @@ function case_submitexperiment(panelid) {
                         experiment.experimentName = user_experiment_name.trim() +  " on "  + new Date().toLocaleString();  
                   }
                   //"capacityTarget":capacityTarget,"projectPeriod":numYears,"capitalRecoveryRate":crf
-                  experiment.description = "capitalRecoveryRate:" + cplexInputValues["capitalRecoveryRate"] + ", ";
+                  experiment.description = "caseId:" + case_id + ", ";
+                  experiment.description += "capitalRecoveryRate:" + cplexInputValues["capitalRecoveryRate"] + ", ";
                   experiment.description += "projectPeriod:" + cplexInputValues["projectPeriod"] + ", ";
                   experiment.description += "capacityTarget:" + cplexInputValues["capacityTarget"];
                   experiment.projectId = workspacePrefs.most_recent_project_id;
