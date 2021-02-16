@@ -500,6 +500,7 @@ function case_submitexperiment(panelid) {
                   }
                   //"capacityTarget":capacityTarget,"projectPeriod":numYears,"capitalRecoveryRate":crf
                   experiment.description = "caseId:" + case_id + ", ";
+                  experiment.description = "scenario:" + panelid + ", ";
                   experiment.description += "capitalRecoveryRate:" + cplexInputValues["capitalRecoveryRate"] + ", ";
                   experiment.description += "projectPeriod:" + cplexInputValues["projectPeriod"] + ", ";
                   experiment.description += "capacityTarget:" + cplexInputValues["capacityTarget"];
@@ -530,8 +531,9 @@ function case_submitexperiment(panelid) {
                         var a = document.createElement('a');
                         a.href = `/workspace/experiments/${encodeURIComponent(experiment.experimentId)}/`;
                         a.target = "_blank";
-                        var drs = new Date(); var nrs = drs.toLocaleString();
-                        a.innerHTML = 'View Experiment Summary ' + nrs;
+                        //var drs = new Date(); var nrs = drs.toLocaleString();
+                        //a.innerHTML = 'View Experiment Summary ' + nrs;
+                        a.innnerHTML ="view: " + "<strong>" + experiment.experimentName + "</strong>";
                         var li = document.createElement('li');
                         li.appendChild(a);
                         list_view_experiment.appendChild(li);
