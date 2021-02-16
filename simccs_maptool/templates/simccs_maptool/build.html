@@ -500,7 +500,7 @@ function case_submitexperiment(panelid) {
                   }
                   //"capacityTarget":capacityTarget,"projectPeriod":numYears,"capitalRecoveryRate":crf
                   experiment.description = "caseId:" + case_id + ", ";
-                  experiment.description = "scenario:" + panelid + ", ";
+                  experiment.description += "scenario:" + panelid + ", ";
                   experiment.description += "capitalRecoveryRate:" + cplexInputValues["capitalRecoveryRate"] + ", ";
                   experiment.description += "projectPeriod:" + cplexInputValues["projectPeriod"] + ", ";
                   experiment.description += "capacityTarget:" + cplexInputValues["capacityTarget"];
