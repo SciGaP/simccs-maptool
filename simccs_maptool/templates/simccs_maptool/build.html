@@ -105,7 +105,9 @@ var sourceselection_panel = {}; // panelid:data
 var sinkselection_panel = {}; // panelid:data
 var candidatenetwork_panel = {}; // panelid: network layer
 var candidatenetwork_cached = {} // panelid: network data 
-var cplexInputValues_panel = {} // panelid: "Sources": data.sources, "Sinks": data.sinks,"Cplex-input-file": data.mps, "Dataset-id": current_dataset_id
+// panelid: "Sources": data.sources, "Sinks": data.sinks,"Cplex-input-file": data.mps, "Dataset-id": current_dataset_id
+// "capacityTarget":capacityTarget,"projectPeriod":numYears,"capitalRecoveryRate":crf
+var cplexInputValues_panel = {} 
 var current_dataset_id = "Lower48US";
 
 async function set_casedata(caseId) {
@@ -394,7 +396,7 @@ function generatempsfile(panelid,showmodal=1) {
     m_html = m_html.replace("sinks_input_file", data["sinks"]);
 $('body').append(m_html);
 
-cplexInputValues_panel[panelid] = {"Sources": data["sources"], "Sinks": data["sinks"],"Cplex-input-file": data["mps"], "Dataset-id": current_dataset_id,"capacityTarget":capacityTarget};
+cplexInputValues_panel[panelid] = {"Sources": data["sources"], "Sinks": data["sinks"],"Cplex-input-file": data["mps"], "Dataset-id": current_dataset_id,"capacityTarget":capacityTarget,"projectPeriod":numYears,"capitalRecoveryRate":crf};
 
 // Create a link to download mps file
 var mpsDownloadLink = document.getElementById("mps_download_" + panelid);
@@ -492,7 +494,7 @@ function case_submitexperiment(panelid) {
                   } else {
                         experiment.experimentName = user_experiment_name.trim() +  " on "  + new Date().toLocaleString();  
                   }
-
+                  experiment.description = "projectPeriod: " + cplexInputValues["projectPeriod"]
                   experiment.projectId = workspacePrefs.most_recent_project_id;
                   // Copy groupResourceProfileId and queue defaults to experiment configuration
                   experiment.userConfigurationData.groupResourceProfileId = groupResourceProfile.groupResourceProfileId;
