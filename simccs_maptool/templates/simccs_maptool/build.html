@@ -494,7 +494,10 @@ function case_submitexperiment(panelid) {
                   } else {
                         experiment.experimentName = user_experiment_name.trim() +  " on "  + new Date().toLocaleString();  
                   }
-                  experiment.description = "projectPeriod: " + cplexInputValues["projectPeriod"]
+                  //"capacityTarget":capacityTarget,"projectPeriod":numYears,"capitalRecoveryRate":crf
+                  experiment.description = "capitalRecoveryRate:" + cplexInputValues["capitalRecoveryRate"] + ", ";
+                  experiment.description += "projectPeriod:" + cplexInputValues["projectPeriod"] + ", ";
+                  experiment.description += "capacityTarget:" + cplexInputValues["capacityTarget"];
                   experiment.projectId = workspacePrefs.most_recent_project_id;
                   // Copy groupResourceProfileId and queue defaults to experiment configuration
                   experiment.userConfigurationData.groupResourceProfileId = groupResourceProfile.groupResourceProfileId;
