@@ -2,12 +2,15 @@ import io
 import logging
 import os
 
+from django.conf import settings
 import pandas as pd
 import geopandas as gpd
+from airavata.model.workspace.ttypes import Project
 from airavata_django_portal_sdk import urls as sdk_urls, user_storage
 from rest_framework import serializers, validators
 
 from simccs_maptool import models
+from airavata.model.group.ttypes import ResourcePermissionType
 
 logger = logging.getLogger(__name__)
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
@@ -69,16 +72,39 @@ class SimccsProjectSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         request = self.context["request"]
-        # TODO: create an airavata project for this SimCCS project and store its ID
-        # TODO: share project with specified group, if specified
         simccs_project = models.SimccsProject.objects.create(
             owner=request.user, **validated_data)
+        # create an airavata project for this SimCCS project and store its ID
+        airavata_project = Project(
+            owner=request.user.username,
+            gatewayId=settings.GATEWAY_ID,
+            name="simccs:" + validated_data["name"])
+        airavata_project_id = request.airavata_client.createProject(
+            request.authz_token, settings.GATEWAY_ID, airavata_project)
+        simccs_project.airavata_project = airavata_project_id
+        simccs_project.save()
+        if validated_data["group"]:
+            # share project with group
+            request.airavata_client.shareResourceWithGroups(
+                request.authz_token, airavata_project_id,
+                {validated_data["group"]: ResourcePermissionType.READ})
         return simccs_project
 
     def update(self, instance, validated_data):
+        request = self.context["request"]
         instance.name = validated_data["name"]
+        old_group = instance.group
         instance.group = validated_data["group"]
-        # TODO: if the group changes, update the sharing of the Airavata Project
+        if old_group != instance.group:
+            # if the group changes, update the sharing of the Airavata Project
+            if old_group:
+                request.airavata_client.revokeSharingOfResourceFromGroups(
+                    request.authz_token, instance.airavata_project,
+                    {old_group: ResourcePermissionType.READ})
+            if validated_data["group"]:
+                request.airavata_client.shareResourceWithGroups(
+                    request.authz_token, instance.airavata_project,
+                    {validated_data["group"]: ResourcePermissionType.READ})
         instance.save()
         return instance
 
