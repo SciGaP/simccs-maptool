@@ -59,6 +59,30 @@ class UniqueToUserValidator(validators.UniqueValidator):
         return super().filter_queryset(value, queryset)
 
 
+class SimccsProjectSerializer(serializers.ModelSerializer):
+    owner = serializers.PrimaryKeyRelatedField(read_only=True)
+    airavata_project = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = models.SimccsProject
+        fields = ("id", "name", "owner", "group", "airavata_project")
+
+    def create(self, validated_data):
+        request = self.context["request"]
+        # TODO: create an airavata project for this SimCCS project and store its ID
+        # TODO: share project with specified group, if specified
+        simccs_project = models.SimccsProject.objects.create(
+            owner=request.user, **validated_data)
+        return simccs_project
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data["name"]
+        instance.group = validated_data["group"]
+        # TODO: if the group changes, update the sharing of the Airavata Project
+        instance.save()
+        return instance
+
+
 class DatasetSerializer(serializers.ModelSerializer):
     file = serializers.FileField(
         write_only=True,
@@ -177,7 +201,6 @@ class MaptoolConfigSerializer(serializers.ModelSerializer):
 class CaseSerializer(serializers.ModelSerializer):
     maptool = MaptoolConfigSerializer(required=True, allow_null=True)
     owner = serializers.SlugRelatedField(slug_field='username', read_only=True)
-    group = serializers.CharField(required=False, allow_null=True)
     title = serializers.CharField(
         required=True,
         validators=[UniqueToUserValidator(models.Case.objects.all(), "owner")],

@@ -539,12 +539,28 @@ def get_case(request, case_id):
         return JsonResponse(samplecase_data)
 
 
+class SimccsProjectViewSet(viewsets.ModelViewSet):
+    serializer_class = serializers.SimccsProjectSerializer
+
+    def get_queryset(self):
+        # TODO: integrate group based authorization: return SimccsProjects
+        # where the current user is a member of the projects groups or the
+        # owner
+        return models.SimccsProject.objects.filter(owner=self.request.user)
+
+
 class CaseViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.CaseSerializer
-    # TODO: define get_queryset to only return Case's that the user is owner of
-    # or that user is a member of that group
-    queryset = models.Case.objects.all()
     # TODO: set permission_classes to only allow owner or member of group permission
+
+    def get_queryset(self):
+        # TODO: define get_queryset to only return Case's that the user is owner of
+        # or that user is a member of the project's group
+        queryset = models.Case.objects.all()
+        simccs_project = self.request.query_params.get('project', None)
+        if simccs_project is not None:
+            queryset = queryset.filter(simccs_project=simccs_project)
+        return queryset
 
 
 class DatasetViewSet(viewsets.ModelViewSet):
@@ -552,4 +568,10 @@ class DatasetViewSet(viewsets.ModelViewSet):
     parser_classes = [parsers.MultiPartParser]
 
     def get_queryset(self):
-        return models.Dataset.objects.filter(owner=self.request.user)
+        # TODO: define get_queryset to only return Datasets that the user is owner of
+        # or that user is a member of the project's group
+        queryset = models.Dataset.objects.filter(owner=self.request.user)
+        simccs_project = self.request.query_params.get('project', None)
+        if simccs_project is not None:
+            queryset = queryset.filter(simccs_project=simccs_project)
+        return queryset
