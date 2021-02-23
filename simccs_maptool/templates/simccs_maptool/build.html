@@ -582,10 +582,10 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
 
             for (capacity of capacityArr) {
                   var parasArr = [crf,numYears,capacity]
-                  var namestr = " capacity " + capacity;
+                  var namestr = " capacity_" + capacity;
                   case_submitexperiment(panelid,showmodal=0,batchmode=1,paras=parasArr,nameprefix = namestr);
             }
-            alert('Experiments was created successfully, please check "View Experiment Summary" for the progress.');
+            //alert('Experiments was created successfully, please check "View Experiment Summary" for the progress.');
 
       }
      
