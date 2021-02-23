@@ -508,7 +508,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                   const experiment = appInterface.createExperiment();
                   var user_experiment_name = document.getElementById('experiment_name_'+ panelid).value;
                   if (user_experiment_name.trim() == '') {
-                        experiment.experimentName = "CPLEX on " + nameprefix + new Date().toLocaleString();
+                        experiment.experimentName = "CPLEX" + nameprefix + " on "+ new Date().toLocaleString();
                   } else {
                         experiment.experimentName = user_experiment_name.trim() + nameprefix +  " on "  + new Date().toLocaleString();  
                   }
@@ -585,6 +585,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                   var namestr = " capacity " + capacity;
                   case_submitexperiment(panelid,showmodal=0,batchmode=1,paras=parasArr,nameprefix = namestr);
             }
+            alert('Experiments was created successfully, please check "View Experiment Summary" for the progress.');
 
       }
      
