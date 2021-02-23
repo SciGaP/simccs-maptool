@@ -288,6 +288,7 @@ function displayselecteddata(panelid) {
       div.innerHTML += "<br>";
       div.innerHTML += '<input class="form-control input-sm" id="experiment_name_'+panelid+'" name="" placeholder="Experiment Name (optional)" type="text">';
       div.innerHTML += '<button type="button" class="btn btn-primary btn-sm btn-block" onclick=case_submitexperiment("'+ panelid +'")><strong>Create a New Experiment</strong></button>';
+      div.innerHTML += '<button type="button" class="btn btn-primary btn-sm btn-block" onclick=case_submitmultipleexperiments("'+ panelid +'")><strong>Create Multiple Experiments</strong></button>';
       //div.innerHTML +=  '<a target="_blank" href="" id="case_view_experiment_' + panelid+ '" style="display: none;">View Experiment Summary</a>';
       div.innerHTML += '<ul id="list_view_experiment_' + panelid +'"> </ul>';
       return div;
@@ -324,7 +325,7 @@ function create_scenario() {
 
 
 //generate MPS file
-function generatempsfile(panelid,showmodal=1) {
+function generatempsfile(panelid,showmodal=1,paras=[]) {
     // get the data from panelid
     //var source_selection = sourceselection_panel[panelid];
     //var sink_selection = sinkselection_panel[panelid];
@@ -353,6 +354,12 @@ function generatempsfile(panelid,showmodal=1) {
     var crf = $("#Capital_Recovery_Rate_" + panelid).val();
     var numYears = $("#Project_Period_" + panelid).val();
     var capacityTarget = $("#Capture_Target_" + panelid).val();
+    // get paras from the input array
+    if (paras.length == 3) {
+      crf = paras[0];
+      numYears = paras[1];
+      capacityTarget = paras[2];
+    }
     // generate formdata
     var formData = new FormData();
     //var current_dataset_id = "Lower48US";
@@ -418,18 +425,25 @@ if (showmodal == 1) {
     });
 }
 
-function case_submitexperiment(panelid) {
+function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],nameprefix='') {
       //debug info
       //console.log(panelid);
       var cplexInputValues;
       var mpsRequest = null;
-      if (cplexInputValues_panel.hasOwnProperty(panelid)) {
-         cplexInputValues = cplexInputValues_panel[panelid];
-         mpsRequest = Promise.resolve(cplexInputValues);
-      } else {
-          //generatempsfile(panelid,showmodal=false);
-          mpsRequest = generatempsfile(panelid,showmodal=0).then(() => {cplexInputValues = cplexInputValues_panel[panelid]});
+      if (batchmode == 0) {
+            if (cplexInputValues_panel.hasOwnProperty(panelid)) {
+            cplexInputValues = cplexInputValues_panel[panelid];
+            mpsRequest = Promise.resolve(cplexInputValues);
+            } else {
+            //generatempsfile(panelid,showmodal=false);
+            mpsRequest = generatempsfile(panelid,showmodal=0).then(() => {cplexInputValues = cplexInputValues_panel[panelid]});
+            }
       }
+      // force regenerate mps for batch mode
+      if (batchmode == 1) {
+            mpsRequest = generatempsfile(panelid,showmodal=0,paras).then(() => {cplexInputValues = cplexInputValues_panel[panelid]});
+      }
+
       mpsRequest.then(() => {     
             var cplex_application_id = "{{ cplex_application_id }}";
             var hostname = "{{ cplex_hostname }}";
@@ -494,9 +508,9 @@ function case_submitexperiment(panelid) {
                   const experiment = appInterface.createExperiment();
                   var user_experiment_name = document.getElementById('experiment_name_'+ panelid).value;
                   if (user_experiment_name.trim() == '') {
-                        experiment.experimentName = "CPLEX on " + new Date().toLocaleString();
+                        experiment.experimentName = "CPLEX on " + nameprefix + new Date().toLocaleString();
                   } else {
-                        experiment.experimentName = user_experiment_name.trim() +  " on "  + new Date().toLocaleString();  
+                        experiment.experimentName = user_experiment_name.trim() + nameprefix +  " on "  + new Date().toLocaleString();  
                   }
                   //"capacityTarget":capacityTarget,"projectPeriod":numYears,"capitalRecoveryRate":crf
                   experiment.description = "caseId:" + case_id + ", ";
@@ -543,12 +557,36 @@ function case_submitexperiment(panelid) {
                         // var drs = new Date(); var nrs = drs.toLocaleString();
                         // caseViewExperimentLink.innerHTML = 'View Experiment Summary ' + nrs;
                         // document.getElementById("case_view_experiment_" + panelid).style.display = 'inline';
-                        alert('Experiment was created successfully, please check "View Experiment Summary" for the progress.');
+                        if (showmodal == 1) {
+                              alert('Experiment was created successfully, please check "View Experiment Summary" for the progress.');
+                        }
                  });
             });
       });
       }
 
+      function case_submitmultipleexperiments(panelid) {
+            // submit multiple experiments
+
+            // extract the parameter
+            // assume the format "number,number"
+            var crf = $("#Capital_Recovery_Rate_" + panelid).val();
+            var numYears = $("#Project_Period_" + panelid).val();
+            var capacities = $("#Capture_Target_" + panelid).val();
+            var capacityArr; 
+            if (capacities.includes(",")) { capacityArr = capacities.split(','); }
+            else {
+                  alert("Please input value,value,.. in Capture_Target.");
+                  return;
+            }
+
+            for (capacity of capacityArr) {
+                  var parasArr = [crf,numYears,capacity]
+                  var namestr = " capacity " + capacity;
+                  case_submitexperiment(panelid,showmodal=0,batchmode=1,paras=parasArr,nameprefix = namestr);
+            }
+
+      }
      
 </script>
 {% endblock scripts %}
