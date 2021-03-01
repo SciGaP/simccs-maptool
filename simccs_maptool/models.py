@@ -1,10 +1,21 @@
 from django.conf import settings
 from django.core import validators
 from django.db import models
+from django.db.models import Q
 
 # 4 comma separated floating point numbers
 bbox_validator = validators.RegexValidator(regex=r"^-?\d+(\.\d+)?(,-?\d+(\.\d+)?){3}$")
 csv_validator = validators.RegexValidator(regex=r"^[^,]+(,[^,])+$")
+
+
+def get_user_group_membership_ids(request):
+    "Return group ids for all groups that user is a member of"
+    # query for the groups that the user belongs to
+    group_manager_client = request.profile_service['group_manager']
+    group_memberships = group_manager_client.getAllGroupsUserBelongs(
+        request.authz_token, request.user.username + "@" + settings.GATEWAY_ID)
+    group_ids = [group.id for group in group_memberships]
+    return group_ids
 
 
 class SimccsProject(models.Model):
@@ -15,6 +26,15 @@ class SimccsProject(models.Model):
     # introduced after cases and datasets and so the migration needed a default
     # project to assign the cases and datasets
     airavata_project = models.CharField(max_length=255, null=True)
+
+    @staticmethod
+    def filter_by_user(request):
+        "Filter by owner or current user is member of project's group"
+        group_ids = get_user_group_membership_ids(request)
+        # return SimccsProjects where the current user is a member of the
+        # project's group or the owner
+        return SimccsProject.objects.filter(
+            Q(owner=request.user) | Q(group__in=group_ids))
 
 
 class Case(models.Model):

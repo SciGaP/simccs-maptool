@@ -15,10 +15,11 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django.http import JsonResponse
 from django.urls import reverse
 from django.views.generic import TemplateView
-from rest_framework import parsers, viewsets
+from rest_framework import parsers, permissions, viewsets
 
 from simccs_maptool import datasets, models, serializers
 
@@ -539,24 +540,35 @@ def get_case(request, case_id):
         return JsonResponse(samplecase_data)
 
 
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        # Only the owner has write access
+        return request.user == obj.owner
+
+
 class SimccsProjectViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.SimccsProjectSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
 
     def get_queryset(self):
-        # TODO: integrate group based authorization: return SimccsProjects
-        # where the current user is a member of the projects groups or the
-        # owner
-        return models.SimccsProject.objects.filter(owner=self.request.user)
+        request = self.request
+        return models.SimccsProject.filter_by_user(request)
 
 
 class CaseViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.CaseSerializer
-    # TODO: set permission_classes to only allow owner or member of group permission
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
 
     def get_queryset(self):
-        # TODO: define get_queryset to only return Case's that the user is owner of
-        # or that user is a member of the project's group
-        queryset = models.Case.objects.all()
+        # only return Cases that the user is the project's owner or the user is
+        # a member of the project's group
+        request = self.request
+        group_ids = models.get_user_group_membership_ids(request)
+        queryset = models.Case.objects.filter(
+            Q(simccs_project__owner=request.user) |
+            Q(simccs_project__group__in=group_ids))
         simccs_project = self.request.query_params.get('project', None)
         if simccs_project is not None:
             queryset = queryset.filter(simccs_project=simccs_project)
@@ -566,11 +578,16 @@ class CaseViewSet(viewsets.ModelViewSet):
 class DatasetViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.DatasetSerializer
     parser_classes = [parsers.MultiPartParser]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
 
     def get_queryset(self):
-        # TODO: define get_queryset to only return Datasets that the user is owner of
-        # or that user is a member of the project's group
-        queryset = models.Dataset.objects.filter(owner=self.request.user)
+        # only return Datasets that the user is the project's owner or that
+        # user is a member of the project's group
+        request = self.request
+        group_ids = models.get_user_group_membership_ids(request)
+        queryset = models.Dataset.objects.filter(
+            Q(simccs_project__owner=request.user) |
+            Q(simccs_project__group__in=group_ids))
         simccs_project = self.request.query_params.get('project', None)
         if simccs_project is not None:
             queryset = queryset.filter(simccs_project=simccs_project)

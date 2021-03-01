@@ -109,13 +109,19 @@ class SimccsProjectSerializer(serializers.ModelSerializer):
         return instance
 
 
+class SimccsProjectPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
+    def get_queryset(self):
+        request = self.context['request']
+        return models.SimccsProject.filter_by_user(request)
+
+
 class DatasetSerializer(serializers.ModelSerializer):
     file = serializers.FileField(
         write_only=True,
         required=False,
         help_text="Required when creating a new Dataset",
     )
-    id = serializers.IntegerField(required=False)
+    id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(
         required=True,
         validators=[UniqueToUserValidator(models.Dataset.objects.all(), "owner")],
@@ -128,6 +134,7 @@ class DatasetSerializer(serializers.ModelSerializer):
     )
     original_filename = serializers.SerializerMethodField()
     url = serializers.SerializerMethodField()
+    simccs_project = SimccsProjectPrimaryKeyRelatedField()
 
     class Meta:
         model = models.Dataset
@@ -236,6 +243,7 @@ class CaseSerializer(serializers.ModelSerializer):
     )
     datasets = serializers.SerializerMethodField()
     userHasWriteAccess = serializers.SerializerMethodField()
+    simccs_project = SimccsProjectPrimaryKeyRelatedField()
 
     class Meta:
         model = models.Case
@@ -267,10 +275,9 @@ class CaseSerializer(serializers.ModelSerializer):
             )
         # Remove datasets that have been removed from case
         instance.maptool.data.exclude(dataset_id__in=dataset_ids).delete()
-        # update Case - description, group, title
+        # update Case - description, title
         instance.description = validated_data["description"]
         instance.title = validated_data["title"]
-        instance.group = validated_data["group"]
         instance.save()
         return instance
 
