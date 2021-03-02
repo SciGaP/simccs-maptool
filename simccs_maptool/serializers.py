@@ -65,10 +65,14 @@ class UniqueToUserValidator(validators.UniqueValidator):
 class SimccsProjectSerializer(serializers.ModelSerializer):
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
     airavata_project = serializers.CharField(read_only=True)
+    new_owner = serializers.CharField(
+        write_only=True,
+        required=False,
+        help_text="Username of new project owner, used with transfer_ownership")
 
     class Meta:
         model = models.SimccsProject
-        fields = ("id", "name", "owner", "group", "airavata_project")
+        fields = ("id", "name", "owner", "group", "airavata_project", "new_owner")
 
     def create(self, validated_data):
         request = self.context["request"]
@@ -107,6 +111,29 @@ class SimccsProjectSerializer(serializers.ModelSerializer):
                     {validated_data["group"]: ResourcePermissionType.READ})
         instance.save()
         return instance
+
+    def validate_new_owner(self, value):
+        # validate_new_owner is only called if new_owner was included in request
+        # validate that the current action is transfer_ownership
+        request = self.context['request']
+        view = self.context['view']
+        action = view.action
+        if action != 'transfer_ownership':
+            raise serializers.ValidationError(
+                "new_owner is only allows in transfer_ownership action")
+        # validate that there is a group
+        if self.instance.group is None:
+            raise serializers.ValidationError(
+                "cannot assign new_owner until group has been assigned")
+        # validate that new_owner is a member of the group
+        group = request.profile_service['group_manager'].getGroup(
+            request.authz_token, self.instance.group)
+        user_id = value + "@" + settings.GATEWAY_ID
+        if user_id not in group.members:
+            raise serializers.ValidationError(
+                f"{value} is not a member of group {group.name}")
+
+        return value
 
 
 class SimccsProjectPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):

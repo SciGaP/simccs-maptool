@@ -20,10 +20,13 @@ from django.http import JsonResponse
 from django.urls import reverse
 from django.views.generic import TemplateView
 from rest_framework import parsers, permissions, viewsets
+from rest_framework.decorators import action
 
 from simccs_maptool import datasets, models, serializers
 
 from . import simccs_helper
+from django.contrib.auth import get_user_model
+from rest_framework.response import Response
 
 # TODO: temporary code to allow working in develop and master branch of
 # airavata-django-portal
@@ -555,6 +558,18 @@ class SimccsProjectViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         request = self.request
         return models.SimccsProject.filter_by_user(request)
+
+    @action(detail=True, methods=['post'])
+    def transfer_ownership(self, request, pk=None):
+        simccs_project = self.get_object()
+        serializer = self.get_serializer(simccs_project, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        new_owner = serializer.validated_data['new_owner']
+        new_owner_user = get_user_model().objects.get(username=new_owner)
+        # update owner field
+        serializer.instance.owner = new_owner_user
+        serializer.instance.save()
+        return Response(serializer.data)
 
 
 class CaseViewSet(viewsets.ModelViewSet):
