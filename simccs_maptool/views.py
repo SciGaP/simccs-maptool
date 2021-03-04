@@ -551,6 +551,13 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         return request.user == obj.owner
 
 
+class IsProjectOwner(permissions.BasePermission):
+    "Check if user is owner of the project to which this object belongs"
+
+    def has_object_permission(self, request, view, obj):
+        return request.user == obj.simccs_project.owner
+
+
 class SimccsProjectViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.SimccsProjectSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
@@ -589,6 +596,18 @@ class CaseViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(simccs_project=simccs_project)
         return queryset
 
+    @action(detail=True,
+            methods=['post'],
+            permission_classes=[permissions.IsAuthenticated, IsProjectOwner])
+    def claim_ownership(self, request, pk=None):
+        "Only Project owner can claim ownership of cases"
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        # update owner field
+        serializer.instance.owner = request.user
+        serializer.instance.save()
+        return Response(serializer.data)
+
 
 class DatasetViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.DatasetSerializer
@@ -607,3 +626,15 @@ class DatasetViewSet(viewsets.ModelViewSet):
         if simccs_project is not None:
             queryset = queryset.filter(simccs_project=simccs_project)
         return queryset
+
+    @action(detail=True,
+            methods=['post'],
+            permission_classes=[permissions.IsAuthenticated, IsProjectOwner])
+    def claim_ownership(self, request, pk=None):
+        "Only Project owner can claim ownership of datasets"
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        # update owner field
+        serializer.instance.owner = request.user
+        serializer.instance.save()
+        return Response(serializer.data)
