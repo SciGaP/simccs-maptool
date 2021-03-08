@@ -2,12 +2,15 @@ import io
 import logging
 import os
 
+from django.conf import settings
 import pandas as pd
 import geopandas as gpd
+from airavata.model.workspace.ttypes import Project
 from airavata_django_portal_sdk import urls as sdk_urls, user_storage
 from rest_framework import serializers, validators
 
 from simccs_maptool import models
+from airavata.model.group.ttypes import ResourcePermissionType
 
 logger = logging.getLogger(__name__)
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
@@ -59,18 +62,109 @@ class UniqueToUserValidator(validators.UniqueValidator):
         return super().filter_queryset(value, queryset)
 
 
+class SimccsProjectSerializer(serializers.ModelSerializer):
+    owner = serializers.SlugRelatedField(slug_field='username', read_only=True)
+    airavata_project = serializers.CharField(read_only=True)
+    new_owner = serializers.CharField(
+        write_only=True,
+        required=False,
+        help_text="Username of new project owner, used with transfer_ownership")
+
+    class Meta:
+        model = models.SimccsProject
+        fields = ("id", "name", "owner", "group", "airavata_project", "new_owner")
+
+    def create(self, validated_data):
+        request = self.context["request"]
+        simccs_project = models.SimccsProject.objects.create(
+            owner=request.user, **validated_data)
+        airavata_project_id = self._create_airavata_project(validated_data)
+        simccs_project.airavata_project = airavata_project_id
+        simccs_project.save()
+        if validated_data["group"]:
+            # share project with group
+            request.airavata_client.shareResourceWithGroups(
+                request.authz_token, airavata_project_id,
+                {validated_data["group"]: ResourcePermissionType.READ})
+        return simccs_project
+
+    def update(self, instance, validated_data):
+        request = self.context["request"]
+        instance.name = validated_data["name"]
+        # Normally the airavata_project is created in create(), but for
+        # cases/datasets that were created prior to the SimccsProject data
+        # model, those were assigned a default SimccsProject that the data
+        # migration was unable to create an airavata_project for
+        if instance.airavata_project is None:
+            instance.airavata_project = self._create_airavata_project(validated_data)
+        old_group = instance.group
+        instance.group = validated_data["group"]
+        if old_group != instance.group:
+            # if the group changes, update the sharing of the Airavata Project
+            if old_group:
+                request.airavata_client.revokeSharingOfResourceFromGroups(
+                    request.authz_token, instance.airavata_project,
+                    {old_group: ResourcePermissionType.READ})
+            if validated_data["group"]:
+                request.airavata_client.shareResourceWithGroups(
+                    request.authz_token, instance.airavata_project,
+                    {validated_data["group"]: ResourcePermissionType.READ})
+        instance.save()
+        return instance
+
+    def validate_new_owner(self, value):
+        # validate_new_owner is only called if new_owner was included in request
+        # validate that the current action is transfer_ownership
+        request = self.context['request']
+        view = self.context['view']
+        action = view.action
+        if action != 'transfer_ownership':
+            raise serializers.ValidationError(
+                "new_owner is only allows in transfer_ownership action")
+        # validate that there is a group
+        if self.instance.group is None:
+            raise serializers.ValidationError(
+                "cannot assign new_owner until group has been assigned")
+        # validate that new_owner is a member of the group
+        group = request.profile_service['group_manager'].getGroup(
+            request.authz_token, self.instance.group)
+        user_id = value + "@" + settings.GATEWAY_ID
+        if user_id not in group.members:
+            raise serializers.ValidationError(
+                f"{value} is not a member of group {group.name}")
+
+        return value
+
+    def _create_airavata_project(self, validated_data):
+        request = self.context['request']
+        # create an airavata project for this SimCCS project and store its ID
+        airavata_project = Project(
+            owner=request.user.username,
+            gatewayId=settings.GATEWAY_ID,
+            name="simccs:" + validated_data["name"])
+        airavata_project_id = request.airavata_client.createProject(
+            request.authz_token, settings.GATEWAY_ID, airavata_project)
+        return airavata_project_id
+
+
+class SimccsProjectPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
+    def get_queryset(self):
+        request = self.context['request']
+        return models.SimccsProject.filter_by_user(request)
+
+
 class DatasetSerializer(serializers.ModelSerializer):
     file = serializers.FileField(
         write_only=True,
         required=False,
         help_text="Required when creating a new Dataset",
     )
-    id = serializers.IntegerField(required=False)
+    id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(
         required=True,
         validators=[UniqueToUserValidator(models.Dataset.objects.all(), "owner")],
     )
-    owner = serializers.PrimaryKeyRelatedField(read_only=True)
+    owner = serializers.SlugRelatedField(slug_field='username', read_only=True)
     data_product_uri = serializers.CharField(read_only=True)
     original_data_product_uri = serializers.CharField(read_only=True)
     description = serializers.CharField(
@@ -78,6 +172,7 @@ class DatasetSerializer(serializers.ModelSerializer):
     )
     original_filename = serializers.SerializerMethodField()
     url = serializers.SerializerMethodField()
+    simccs_project = SimccsProjectPrimaryKeyRelatedField()
 
     class Meta:
         model = models.Dataset
@@ -177,7 +272,6 @@ class MaptoolConfigSerializer(serializers.ModelSerializer):
 class CaseSerializer(serializers.ModelSerializer):
     maptool = MaptoolConfigSerializer(required=True, allow_null=True)
     owner = serializers.SlugRelatedField(slug_field='username', read_only=True)
-    group = serializers.CharField(required=False, allow_null=True)
     title = serializers.CharField(
         required=True,
         validators=[UniqueToUserValidator(models.Case.objects.all(), "owner")],
@@ -187,6 +281,7 @@ class CaseSerializer(serializers.ModelSerializer):
     )
     datasets = serializers.SerializerMethodField()
     userHasWriteAccess = serializers.SerializerMethodField()
+    simccs_project = SimccsProjectPrimaryKeyRelatedField()
 
     class Meta:
         model = models.Case
@@ -218,10 +313,9 @@ class CaseSerializer(serializers.ModelSerializer):
             )
         # Remove datasets that have been removed from case
         instance.maptool.data.exclude(dataset_id__in=dataset_ids).delete()
-        # update Case - description, group, title
+        # update Case - description, title
         instance.description = validated_data["description"]
         instance.title = validated_data["title"]
-        instance.group = validated_data["group"]
         instance.save()
         return instance
 

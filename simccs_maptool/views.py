@@ -15,14 +15,18 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django.http import JsonResponse
 from django.urls import reverse
 from django.views.generic import TemplateView
-from rest_framework import parsers, viewsets
+from rest_framework import parsers, permissions, viewsets
+from rest_framework.decorators import action
 
 from simccs_maptool import datasets, models, serializers
 
 from . import simccs_helper
+from django.contrib.auth import get_user_model
+from rest_framework.response import Response
 
 # TODO: temporary code to allow working in develop and master branch of
 # airavata-django-portal
@@ -539,17 +543,98 @@ def get_case(request, case_id):
         return JsonResponse(samplecase_data)
 
 
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        # Only the owner has write access
+        return request.user == obj.owner
+
+
+class IsProjectOwner(permissions.BasePermission):
+    "Check if user is owner of the project to which this object belongs"
+
+    def has_object_permission(self, request, view, obj):
+        return request.user == obj.simccs_project.owner
+
+
+class SimccsProjectViewSet(viewsets.ModelViewSet):
+    serializer_class = serializers.SimccsProjectSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        request = self.request
+        return models.SimccsProject.filter_by_user(request)
+
+    @action(detail=True, methods=['post'])
+    def transfer_ownership(self, request, pk=None):
+        simccs_project = self.get_object()
+        serializer = self.get_serializer(simccs_project, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        new_owner = serializer.validated_data['new_owner']
+        new_owner_user = get_user_model().objects.get(username=new_owner)
+        # update owner field
+        serializer.instance.owner = new_owner_user
+        serializer.instance.save()
+        return Response(serializer.data)
+
+
 class CaseViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.CaseSerializer
-    # TODO: define get_queryset to only return Case's that the user is owner of
-    # or that user is a member of that group
-    queryset = models.Case.objects.all()
-    # TODO: set permission_classes to only allow owner or member of group permission
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        # only return Cases that the user is the project's owner or the user is
+        # a member of the project's group
+        request = self.request
+        group_ids = models.get_user_group_membership_ids(request)
+        queryset = models.Case.objects.filter(
+            Q(simccs_project__owner=request.user) |
+            Q(simccs_project__group__in=group_ids))
+        simccs_project = self.request.query_params.get('project', None)
+        if simccs_project is not None:
+            queryset = queryset.filter(simccs_project=simccs_project)
+        return queryset
+
+    @action(detail=True,
+            methods=['post'],
+            permission_classes=[permissions.IsAuthenticated, IsProjectOwner])
+    def claim_ownership(self, request, pk=None):
+        "Only Project owner can claim ownership of cases"
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        # update owner field
+        serializer.instance.owner = request.user
+        serializer.instance.save()
+        return Response(serializer.data)
 
 
 class DatasetViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.DatasetSerializer
     parser_classes = [parsers.MultiPartParser]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
 
     def get_queryset(self):
-        return models.Dataset.objects.filter(owner=self.request.user)
+        # only return Datasets that the user is the project's owner or that
+        # user is a member of the project's group
+        request = self.request
+        group_ids = models.get_user_group_membership_ids(request)
+        queryset = models.Dataset.objects.filter(
+            Q(simccs_project__owner=request.user) |
+            Q(simccs_project__group__in=group_ids))
+        simccs_project = self.request.query_params.get('project', None)
+        if simccs_project is not None:
+            queryset = queryset.filter(simccs_project=simccs_project)
+        return queryset
+
+    @action(detail=True,
+            methods=['post'],
+            permission_classes=[permissions.IsAuthenticated, IsProjectOwner])
+    def claim_ownership(self, request, pk=None):
+        "Only Project owner can claim ownership of datasets"
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        # update owner field
+        serializer.instance.owner = request.user
+        serializer.instance.save()
+        return Response(serializer.data)
