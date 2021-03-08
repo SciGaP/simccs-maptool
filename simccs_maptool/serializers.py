@@ -63,7 +63,7 @@ class UniqueToUserValidator(validators.UniqueValidator):
 
 
 class SimccsProjectSerializer(serializers.ModelSerializer):
-    owner = serializers.PrimaryKeyRelatedField(read_only=True)
+    owner = serializers.SlugRelatedField(slug_field='username', read_only=True)
     airavata_project = serializers.CharField(read_only=True)
     new_owner = serializers.CharField(
         write_only=True,
@@ -153,7 +153,7 @@ class DatasetSerializer(serializers.ModelSerializer):
         required=True,
         validators=[UniqueToUserValidator(models.Dataset.objects.all(), "owner")],
     )
-    owner = serializers.PrimaryKeyRelatedField(read_only=True)
+    owner = serializers.SlugRelatedField(slug_field='username', read_only=True)
     data_product_uri = serializers.CharField(read_only=True)
     original_data_product_uri = serializers.CharField(read_only=True)
     description = serializers.CharField(
