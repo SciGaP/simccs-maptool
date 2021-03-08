@@ -78,13 +78,7 @@ class SimccsProjectSerializer(serializers.ModelSerializer):
         request = self.context["request"]
         simccs_project = models.SimccsProject.objects.create(
             owner=request.user, **validated_data)
-        # create an airavata project for this SimCCS project and store its ID
-        airavata_project = Project(
-            owner=request.user.username,
-            gatewayId=settings.GATEWAY_ID,
-            name="simccs:" + validated_data["name"])
-        airavata_project_id = request.airavata_client.createProject(
-            request.authz_token, settings.GATEWAY_ID, airavata_project)
+        airavata_project_id = self._create_airavata_project(validated_data)
         simccs_project.airavata_project = airavata_project_id
         simccs_project.save()
         if validated_data["group"]:
@@ -97,6 +91,12 @@ class SimccsProjectSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         request = self.context["request"]
         instance.name = validated_data["name"]
+        # Normally the airavata_project is created in create(), but for
+        # cases/datasets that were created prior to the SimccsProject data
+        # model, those were assigned a default SimccsProject that the data
+        # migration was unable to create an airavata_project for
+        if instance.airavata_project is None:
+            instance.airavata_project = self._create_airavata_project(validated_data)
         old_group = instance.group
         instance.group = validated_data["group"]
         if old_group != instance.group:
@@ -134,6 +134,17 @@ class SimccsProjectSerializer(serializers.ModelSerializer):
                 f"{value} is not a member of group {group.name}")
 
         return value
+
+    def _create_airavata_project(self, validated_data):
+        request = self.context['request']
+        # create an airavata project for this SimCCS project and store its ID
+        airavata_project = Project(
+            owner=request.user.username,
+            gatewayId=settings.GATEWAY_ID,
+            name="simccs:" + validated_data["name"])
+        airavata_project_id = request.airavata_client.createProject(
+            request.authz_token, settings.GATEWAY_ID, airavata_project)
+        return airavata_project_id
 
 
 class SimccsProjectPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
