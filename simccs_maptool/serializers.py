@@ -69,10 +69,17 @@ class SimccsProjectSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False,
         help_text="Username of new project owner, used with transfer_ownership")
+    userHasWriteAccess = serializers.SerializerMethodField()
 
     class Meta:
         model = models.SimccsProject
-        fields = ("id", "name", "owner", "group", "airavata_project", "new_owner")
+        fields = ("id",
+                  "name",
+                  "owner",
+                  "group",
+                  "airavata_project",
+                  "new_owner",
+                  "userHasWriteAccess")
 
     def create(self, validated_data):
         request = self.context["request"]
@@ -134,6 +141,9 @@ class SimccsProjectSerializer(serializers.ModelSerializer):
                 f"{value} is not a member of group {group.name}")
 
         return value
+
+    def get_userHasWriteAccess(self, instance):
+        return self.context['request'].user == instance.owner
 
     def _create_airavata_project(self, validated_data):
         request = self.context['request']

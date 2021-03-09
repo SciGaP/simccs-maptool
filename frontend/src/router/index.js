@@ -2,6 +2,7 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import CasesContainer from "../components/CasesContainer.vue";
 import EditCaseContainer from "../components/EditCaseContainer.vue";
+import EditProjectContainer from "../components/EditProjectContainer.vue";
 import NewDatasetContainer from "../components/NewDatasetContainer.vue";
 import NewCaseContainer from "../components/NewCaseContainer.vue";
 import NewProjectContainer from "../components/NewProjectContainer.vue";
@@ -18,6 +19,11 @@ const routes = [
   {
     path: "/projects/new",
     component: NewProjectContainer,
+  },
+  {
+    path: "/projects/:projectId/edit",
+    component: EditProjectContainer,
+    props: true,
   },
   {
     path: "/projects/:projectId",

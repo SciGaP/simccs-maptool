@@ -1,8 +1,13 @@
 <template>
   <div>
     <div class="row">
-      <div class="col">
+      <div class="col-auto">
         <h1 class="h3 mb-3">Project: {{ name }}</h1>
+      </div>
+      <div class="col-auto" v-if="project && project.userHasWriteAccess">
+        <b-button to="edit" variant="primary" class="ml-2 text-nowrap"
+          ><i class="fa fa-edit" aria-hidden="true"></i> Edit Project</b-button
+        >
       </div>
       <div class="col-auto ml-auto d-flex align-items-start">
         <b-form-select
