@@ -14,6 +14,10 @@ export default {
       type: [String, Number],
       required: true,
     },
+    projectId: {
+      type: [String, Number],
+      required: true,
+    },
   },
   data() {
     return {
@@ -34,7 +38,10 @@ export default {
         updatedCase
       ).then(() => {
         // TODO: add a success message
-        this.$router.push({ path: "/" });
+        this.$router.push({
+          name: "project",
+          params: { projectId: this.projectId },
+        });
       });
     },
   },

@@ -32,10 +32,10 @@ urlpatterns = [
     url(r"^experiment-result/(?P<experiment_id>[^/]+)$", views.experiment_result),
     url(r"^solution-summary/(?P<experiment_id>[^/]+)$", views.solution_summary),
     url(r"^case/(?P<case_id>[^/]+)$", views.get_case),
-    url(r"^cases/", views.CasesView.as_view(), name="cases"),
+    url(r"^build/projects/", views.ProjectsView.as_view(), name="projects"),
     url(r"^get-data", geoserver.get_data),
     url(r"^api/", include(router.urls)),
-    url(r"^build", login_required(views.BuildView.as_view()), name="build"),
+    url(r"^build$", login_required(views.BuildView.as_view()), name="build"),
     # for local debug:
     #url(r"^build", views.BuildView.as_view(), name="build"),
     

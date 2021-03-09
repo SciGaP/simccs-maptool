@@ -5,7 +5,7 @@
         <h1 class="h4 mb-4">Datasets</h1>
       </div>
       <div class="col-auto">
-        <b-button to="/datasets/new" variant="primary"
+        <b-button to="datasets/new" variant="primary"
           ><i class="fa fa-plus" aria-hidden="true"></i> New Dataset</b-button
         >
       </div>
@@ -18,7 +18,7 @@
         <h1 class="h4 mb-4">Cases</h1>
       </div>
       <div class="col-auto">
-        <b-button to="/cases/new" variant="primary"
+        <b-button to="cases/new" variant="primary"
           ><i class="fa fa-plus" aria-hidden="true"></i> New Case</b-button
         >
       </div>
@@ -29,7 +29,7 @@
           <b-link
             class="btn btn-secondary"
             role="button"
-            :href="`/maptool/build/?case=${data.item.id}`"
+            :href="`/maptool/build?case=${data.item.id}`"
           >
             <i class="fa fa-map" aria-hidden="true"></i>
             Use</b-link
@@ -52,6 +52,12 @@
 const { utils } = AiravataAPI;
 export default {
   name: "cases-container",
+  props: {
+    projectId: {
+      type: [String, Number],
+      required: true,
+    },
+  },
   data() {
     return {
       datasets: null,
@@ -59,12 +65,21 @@ export default {
     };
   },
   created() {
-    utils.FetchUtils.get("/maptool/api/datasets/").then((datasets) => {
-      this.datasets = datasets;
-    });
-    utils.FetchUtils.get("/maptool/api/cases/").then((cases) => {
-      this.cases = cases;
-    });
+    this.fetchData();
+  },
+  methods: {
+    fetchData() {
+      utils.FetchUtils.get(
+        `/maptool/api/datasets/?project=${encodeURIComponent(this.projectId)}`
+      ).then((datasets) => {
+        this.datasets = datasets;
+      });
+      utils.FetchUtils.get(
+        `/maptool/api/cases/?project=${encodeURIComponent(this.projectId)}`
+      ).then((cases) => {
+        this.cases = cases;
+      });
+    },
   },
   computed: {
     datasetItems() {
@@ -101,6 +116,9 @@ export default {
         });
       }
     },
+  },
+  watch: {
+    projectId: "fetchData",
   },
 };
 </script>
