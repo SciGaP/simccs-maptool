@@ -603,6 +603,44 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             // Scenario: {ScenarioID, ScenarioTitle,Sources,Sinks,Parameters, Experiments}
             // Parameters: {Capital_Recovery_Rate,Project_Period,Capture_Target}
             // Experiments: {Name, URL, State, Result}
+            
+            // loop through scenarios
+            var ScenariosList = [];
+            var s_dict;
+            for (const [key, value] of Object.entries(scenario_title_panel)) {
+                  //key: panelid = ScenarioID
+                  //value: ScenarioTitle
+                  s_dict = {}; 
+                  var panelid = key;
+                  s_dict['ScenarioID'] = panelid;
+                  s_dict['ScenarioTitle'] = value;                
+                  // get parameters
+                  var crf = $("#Capital_Recovery_Rate_" + panelid).val();
+                  var numYears = $("#Project_Period_" + panelid).val();
+                  var capacityTarget = $("#Capture_Target_" + panelid).val();
+                  s_dict['Parameters'] = {"Capital_Recovery_Rate":crf,"Project_Period":numYears,"Capture_Target":capacityTarget};
+                  // get source data
+                  // sourceselection_panel
+                  var data_list = [];
+                  sourceselection_panel[panelid].forEach (function (item) {
+                        data_list.push(item.feature.properties);
+                  });
+                  s_dict['Sources'] = data_list;
+                  // get sink data
+                  // sinkselection_panel
+                  data_list = [];
+                  sinkselection_panel[panelid].forEach (function (item) {
+                        data_list.push(item.feature.properties);
+                  });
+                  s_dict['Sinks'] = data_list;
+                  // add experiments
+                  s_dict['Experiments'] = "";
+
+                  ScenariosList.push(s_dict);
+
+            }
+            wdict['Scenarios'] = ScenariosList;
+
             console.log(JSON.stringify(wdict));
       }
 
