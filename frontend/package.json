@@ -7,7 +7,8 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "format": "prettier --check --write src"
   },
   "dependencies": {
     "bootstrap": "^4.3.1",
@@ -27,6 +28,7 @@
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
     "node-sass": "^5.0.0",
+    "prettier": "^2.2.1",
     "sass-loader": "^10.1.0",
     "vue-template-compiler": "^2.6.11",
     "webpack-bundle-tracker": "^0.4.2-beta"

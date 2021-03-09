@@ -51,6 +51,12 @@ import { validateState } from "../validators/formHelpers";
 export default {
   mixins: [validationMixin],
   name: "new-dataset-container",
+  props: {
+    projectId: {
+      type: [String, Number],
+      required: true,
+    },
+  },
   data() {
     return {
       dataset: {
@@ -58,6 +64,7 @@ export default {
         type: "source",
         description: "",
         file: null,
+        simccs_project: this.projectId,
       },
       serverValidation: null,
       submittedData: null,
@@ -107,7 +114,10 @@ export default {
       utils.FetchUtils.post("/maptool/api/datasets/", formData)
         .then(() => {
           // TODO: add a success message
-          this.$router.push({ path: "/" });
+          this.$router.push({
+            name: "project",
+            params: { projectId: this.projectId },
+          });
         })
         .catch((e) => {
           this.submittedData = formData;

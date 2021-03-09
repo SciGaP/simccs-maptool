@@ -8,7 +8,7 @@ module.exports = {
       : "/static/simccs_maptool/dist/",
   outputDir: "../simccs_maptool/static/simccs_maptool/dist",
   pages: {
-    cases: "src/entry-cases"
+    projects: "src/entry-projects"
     // additional entry points go here ...
   },
   // css: {

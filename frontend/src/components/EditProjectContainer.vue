@@ -1,19 +1,14 @@
 <template>
-  <case-editor v-if="aCase" :value="aCase" @submit="onSubmit" />
+  <project-editor v-if="project" :value="project" @submit="onSubmit" />
 </template>
 
 <script>
-import CaseEditor from "./CaseEditor.vue";
+import ProjectEditor from "./ProjectEditor.vue";
 
 const { utils } = AiravataAPI;
 export default {
-  components: { CaseEditor },
-  name: "edit-case-container",
+  components: { ProjectEditor },
   props: {
-    id: {
-      type: [String, Number],
-      required: true,
-    },
     projectId: {
       type: [String, Number],
       required: true,
@@ -21,21 +16,21 @@ export default {
   },
   data() {
     return {
-      aCase: null,
+      project: null,
     };
   },
   created() {
     utils.FetchUtils.get(
-      `/maptool/api/cases/${encodeURIComponent(this.id)}/`
-    ).then((aCase) => {
-      this.aCase = aCase;
+      `/maptool/api/projects/${encodeURIComponent(this.projectId)}/`
+    ).then((project) => {
+      this.project = project;
     });
   },
   methods: {
-    onSubmit(updatedCase) {
+    onSubmit(updatedProject) {
       utils.FetchUtils.put(
-        `/maptool/api/cases/${encodeURIComponent(this.id)}/`,
-        updatedCase
+        `/maptool/api/projects/${encodeURIComponent(this.projectId)}/`,
+        updatedProject
       ).then(() => {
         // TODO: add a success message
         this.$router.push({

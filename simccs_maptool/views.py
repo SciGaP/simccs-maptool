@@ -91,13 +91,13 @@ class BuildView(TemplateView):
         return context
 
 
-class CasesView(LoginRequiredMixin, TemplateView):
+class ProjectsView(LoginRequiredMixin, TemplateView):
 
     template_name = "simccs_maptool/vue-app.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['bundle_name'] = 'cases'
+        context['bundle_name'] = 'projects'
         return context
 
 

@@ -12,4 +12,4 @@ new Vue({
   router,
   // entire base view is just the router outlet
   render: (h) => h("router-view"),
-}).$mount("#cases");
+}).$mount("#projects");

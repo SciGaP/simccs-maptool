@@ -13,6 +13,12 @@ const { utils } = AiravataAPI;
 export default {
   components: { CaseEditor },
   name: "new-case-container",
+  props: {
+    projectId: {
+      type: [String, Number],
+      required: true,
+    },
+  },
   data() {
     return {
       aCase: {
@@ -22,6 +28,7 @@ export default {
           bbox: null,
           data: [],
         },
+        simccs_project: this.projectId,
       },
       serverValidationErrors: null,
     };
@@ -33,7 +40,10 @@ export default {
       utils.FetchUtils.post("/maptool/api/cases/", newCase)
         .then(() => {
           // TODO: add a success message
-          this.$router.push({ path: "/" });
+          this.$router.push({
+            name: "project",
+            params: { projectId: this.projectId },
+          });
         })
         .catch((e) => {
           if (e.details && e.details.response) {

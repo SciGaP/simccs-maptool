@@ -93,16 +93,15 @@
                       v-on="inputHandlers"
                       :disabled="
                         disabled ||
-                          datasetPopupFieldOptions(datasetSelection).length ===
-                            0
+                        datasetPopupFieldOptions(datasetSelection).length === 0
                       "
                       :options="datasetPopupFieldOptions(datasetSelection)"
                     >
                       <template #first>
                         <!-- This is required to prevent bugs with Safari -->
-                        <option disabled value=""
-                          >Choose a popup field ...</option
-                        >
+                        <option disabled value="">
+                          Choose a popup field ...
+                        </option>
                       </template>
                     </b-form-select>
                   </template>
@@ -212,7 +211,9 @@ export default {
   },
   created() {
     // TODO: pass in datasets?
-    utils.FetchUtils.get("/maptool/api/datasets/").then((datasets) => {
+    utils.FetchUtils.get(
+      `/maptool/api/datasets/?project=${this.projectId}`
+    ).then((datasets) => {
       this.datasets = datasets;
     });
   },
@@ -228,6 +229,9 @@ export default {
     this.destroyMap();
   },
   computed: {
+    projectId() {
+      return this.aCase.simccs_project;
+    },
     cardTitle() {
       return this.aCase.title ? this.aCase.title : "New Case";
     },
@@ -379,7 +383,7 @@ export default {
     addDatasetLayer(dataset, geojson) {
       const fillColor = this.getDatasetLayerColor(dataset);
       const layer = new L.geoJSON(geojson, {
-        pointToLayer: function(feature, latlng) {
+        pointToLayer: function (feature, latlng) {
           const marker = L.circleMarker(latlng, {
             radius: 8,
             fillColor: fillColor,
@@ -467,7 +471,7 @@ export default {
   },
   watch: {
     "aCase.maptool.data": {
-      handler: function(data) {
+      handler: function (data) {
         const datasetIds = data
           .map((d) => d.dataset)
           .filter((id) => id !== null);
