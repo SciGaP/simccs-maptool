@@ -588,7 +588,12 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             //alert('Experiments was created successfully, please check "View Experiment Summary" for the progress.');
 
       }
-     
+
+      // save workspace function
+      function save_workspace() {
+            var workspace_dict = {};
+            console.log(JSON.stringify(workspace_dict));
+      }
 </script>
 {% endblock scripts %}
 
@@ -646,8 +651,9 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             <div class="leaflet-sidebar-pane" id="settings">
                 <h1 class="leaflet-sidebar-header">Settings<span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
                 <br>
+                <input class="form-control" id="workspace_name" name="" placeholder="Workspace Name (optional)" type="text">
+                <input class="form-control" id="workspace_desc" name="" placeholder="Description (optional)" type="text">
                 <button type="button" class="btn btn-primary btn-sm btn-block" onclick="save_workspace()"><strong>Save Current Workspace</strong></button>  
-
             </div>
         </div>
     </div>
