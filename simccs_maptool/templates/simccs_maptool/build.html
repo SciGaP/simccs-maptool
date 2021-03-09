@@ -563,6 +563,10 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                         var ex_dict = {};
                         ex_dict['ExperimentId'] = experiment.experimentId;
                         ex_dict['ExperimentName'] = experiment.experimentName;
+                        var crf1 = cplexInputValues["capitalRecoveryRate"];
+                        var ny1 = cplexInputValues["projectPeriod"];
+                        var ct1 = cplexInputValues["capacityTarget"];
+                        ex_dict['ExperimentParameters'] = {"Capital_Recovery_Rate":crf1,"Project_Period":ny1,"Capture_Target":ct1};
                         ex_dict['ExperimentURL'] = a.href;
                         ex_dict['ExperimentState'] = '';
                         ex_dict['ExperimentResult'] = '';
