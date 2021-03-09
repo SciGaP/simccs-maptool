@@ -102,6 +102,7 @@ var maplayers = {}; // record layers displayed on map, layername:layerdata
 var dynmaplayers = {}; // record dynamic layers from earch panel
 var sourceselection = []; // current source selection
 var sinkselection = []; // current sink selection
+var scenario_title_panel = {}; // panelid: scenario title
 var sourceselection_panel = {}; // panelid:data
 var sinkselection_panel = {}; // panelid:data
 var candidatenetwork_panel = {}; // panelid: network layer
@@ -317,6 +318,8 @@ function create_scenario() {
             title: title,
             pane: '<div style="font-size: 125%">' + panediv.innerHTML +"</div>",
       });
+      scenario_title_panel[panelid] = title;
+
       scenarioid += 1;
       // simple show the data
       sidebar.open(panelid);
@@ -514,7 +517,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                   }
                   //"capacityTarget":capacityTarget,"projectPeriod":numYears,"capitalRecoveryRate":crf
                   experiment.description = "caseId:" + case_id + ", ";
-                  experiment.description += "scenario:" + panelid + ", ";
+                  experiment.description += "scenario:" + scenario_title_panel[panelid] + ", ";
                   experiment.description += "capitalRecoveryRate:" + cplexInputValues["capitalRecoveryRate"] + ", ";
                   experiment.description += "projectPeriod:" + cplexInputValues["projectPeriod"] + ", ";
                   experiment.description += "capacityTarget:" + cplexInputValues["capacityTarget"];
@@ -591,9 +594,18 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
 
       // save workspace function
       function save_workspace() {
-            var workspace_dict = {};
-            console.log(JSON.stringify(workspace_dict));
+            var wdict = {};
+            wdict['Name'] = document.getElementById('workspace_name').val();
+            wdict['Descripton'] = document.getElementById('workspace_description').val();
+            // skip Editing History
+            // Buildtool: {CaseID, Scenarios}
+            // Scenarios: [Scenario]
+            // Scenario: {ScenarioID, ScenarioTitle,Sources,Sinks,Parameters, Experiments}
+            // Parameters: {Capital_Recovery_Rate,Project_Period,Capture_Target}
+            // Experiments: {Name, URL, State, Result}
+            console.log(JSON.stringify(wdict));
       }
+
 </script>
 {% endblock scripts %}
 
@@ -652,7 +664,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                 <h1 class="leaflet-sidebar-header">Settings<span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
                 <br>
                 <input class="form-control" id="workspace_name" name="" placeholder="Workspace Name (optional)" type="text">
-                <input class="form-control" id="workspace_desc" name="" placeholder="Description (optional)" type="text">
+                <input class="form-control" id="workspace_description" name="" placeholder="Description (optional)" type="text">
                 <button type="button" class="btn btn-primary btn-sm btn-block" onclick="save_workspace()"><strong>Save Current Workspace</strong></button>  
             </div>
         </div>
