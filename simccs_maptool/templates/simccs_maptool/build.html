@@ -594,9 +594,14 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
 
       // save workspace function
       function save_workspace() {
+
+            if (scenario_title_panel.length < 1) {
+                  alert("No Scenario is created!"); return;
+            }
+            
             var wdict = {};
-            wdict['Name'] = document.getElementById('workspace_name').val();
-            wdict['Descripton'] = document.getElementById('workspace_description').val();
+            wdict['Name'] = document.getElementById('workspace_name').value;
+            wdict['Descripton'] = document.getElementById('workspace_description').value;
             // skip Editing History
             // Buildtool: {CaseID, Scenarios}
             // Scenarios: [Scenario]
