@@ -105,6 +105,7 @@ var sinkselection = []; // current sink selection
 var scenario_title_panel = {}; // panelid: scenario title
 var sourceselection_panel = {}; // panelid:data
 var sinkselection_panel = {}; // panelid:data
+var experiment_panel = {}; //panelid: [eperiment]
 var candidatenetwork_panel = {}; // panelid: network layer
 var candidatenetwork_cached = {} // panelid: network data 
 // panelid: "Sources": data.sources, "Sinks": data.sinks,"Cplex-input-file": data.mps, "Dataset-id": current_dataset_id
@@ -555,6 +556,18 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                         li.appendChild(a);
                         list_view_experiment.appendChild(li);
 
+                        // record experiment_panel
+                        if (!(panelid in experiment_panel)) {
+                              experiment_panel[panelid] = [];
+                        }
+                        var ex_dict = {};
+                        ex_dict['ExperimentId'] = experiment.experimentId;
+                        ex_dict['ExperimentName'] = experiment.experimentName;
+                        ex_dict['ExperimentURL'] = a.href;
+                        ex_dict['ExperimentState'] = '';
+                        ex_dict['ExperimentResult'] = '';
+                        experiment_panel[panelid].push(ex_dict); 
+
                         // var caseViewExperimentLink = document.getElementById("case_view_experiment_" + panelid);
                         // caseViewExperimentLink.setAttribute("href", `/workspace/experiments/${encodeURIComponent(experiment.experimentId)}/`);
                         // var drs = new Date(); var nrs = drs.toLocaleString();
@@ -639,7 +652,11 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                   });
                   s_dict['Sinks'] = data_list;
                   // add experiments
-                  s_dict['Experiments'] = "";
+                  if (panelid in experiment_panel) {
+                        s_dict['Experiments'] = experiment_panel[panelid];
+                  } else {
+                        s_dict['Experiments'] = [];  
+                  }
 
                   ScenariosList.push(s_dict);
 
