@@ -598,7 +598,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             if (scenario_title_panel.length < 1) {
                   alert("No Scenario is created!"); return;
             }
-            
+
             var wdict = {};
             wdict['Name'] = document.getElementById('workspace_name').value;
             wdict['Descripton'] = document.getElementById('workspace_description').value;
@@ -644,6 +644,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                   ScenariosList.push(s_dict);
 
             }
+            wdict['CaseID'] = case_id;
             wdict['Scenarios'] = ScenariosList;
 
             console.log(JSON.stringify(wdict));
