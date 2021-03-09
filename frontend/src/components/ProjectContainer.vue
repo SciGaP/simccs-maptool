@@ -4,7 +4,7 @@
       <div class="col">
         <h1 class="h3 mb-3">Project: {{ name }}</h1>
       </div>
-      <div class="col-auto">
+      <div class="col-auto ml-auto d-flex align-items-start">
         <b-form-select
           :options="projectOptions"
           :value="projectId"
@@ -16,6 +16,9 @@
             >
           </template>
         </b-form-select>
+        <b-button to="/projects/new" variant="primary" class="ml-2 text-nowrap"
+          ><i class="fa fa-plus" aria-hidden="true"></i> New Project</b-button
+        >
       </div>
     </div>
 

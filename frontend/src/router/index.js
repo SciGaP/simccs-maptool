@@ -4,6 +4,7 @@ import CasesContainer from "../components/CasesContainer.vue";
 import EditCaseContainer from "../components/EditCaseContainer.vue";
 import NewDatasetContainer from "../components/NewDatasetContainer.vue";
 import NewCaseContainer from "../components/NewCaseContainer.vue";
+import NewProjectContainer from "../components/NewProjectContainer.vue";
 import ProjectsHomeContainer from "../components/ProjectsHomeContainer.vue";
 import ProjectContainer from "../components/ProjectContainer.vue";
 
@@ -13,6 +14,10 @@ const routes = [
   {
     path: "/projects",
     component: ProjectsHomeContainer,
+  },
+  {
+    path: "/projects/new",
+    component: NewProjectContainer,
   },
   {
     path: "/projects/:projectId",
