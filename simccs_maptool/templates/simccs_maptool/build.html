@@ -595,7 +595,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
       // save workspace function
       function save_workspace() {
 
-            if (scenario_title_panel.length < 1) {
+            if (Object.keys(scenario_title_panel).length == 0) {
                   alert("No Scenario is created!"); return;
             }
 
