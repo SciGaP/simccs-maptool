@@ -27,7 +27,7 @@
       <b-table :items="caseItems" :fields="caseFields">
         <template #cell(actions)="data">
           <b-link
-            class="btn btn-secondary"
+            class="btn btn-primary"
             role="button"
             :href="`/maptool/build?case=${data.item.id}`"
           >
@@ -35,13 +35,22 @@
             Use</b-link
           >
           <b-button
-            variant="primary"
+            variant="secondary"
             :to="{ name: 'case', params: { id: data.item.id } }"
             v-if="data.item.userHasWriteAccess"
           >
             <i class="fa fa-edit" aria-hidden="true"></i>
             Edit</b-button
           >
+          <b-button
+            variant="secondary"
+            @click="claimCase(data.item.id)"
+            title="Claim ownership of this case"
+            v-else-if="data.item.userIsProjectOwner"
+          >
+            <i class="fa fa-hand-paper" aria-hidden="true"></i>
+            Claim
+          </b-button>
         </template>
       </b-table>
     </b-card>
@@ -80,6 +89,12 @@ export default {
         this.cases = cases;
       });
     },
+    claimCase(caseId) {
+      utils.FetchUtils.post(
+        `/maptool/api/cases/${caseId}/claim_ownership/`
+      ).then(this.fetchData);
+      // TODO: handle failure
+    },
   },
   computed: {
     datasetItems() {
@@ -111,6 +126,7 @@ export default {
             description: aCase.description,
             owner: aCase.owner,
             userHasWriteAccess: aCase.userHasWriteAccess,
+            userIsProjectOwner: aCase.userIsProjectOwner,
             actions: null,
           };
         });

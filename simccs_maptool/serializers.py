@@ -183,6 +183,7 @@ class DatasetSerializer(serializers.ModelSerializer):
     original_filename = serializers.SerializerMethodField()
     url = serializers.SerializerMethodField()
     simccs_project = SimccsProjectPrimaryKeyRelatedField()
+    userIsProjectOwner = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Dataset
@@ -260,6 +261,9 @@ class DatasetSerializer(serializers.ModelSerializer):
     def get_url(self, dataset):
         return sdk_urls.get_download_url(dataset.data_product_uri)
 
+    def get_userIsProjectOwner(self, instance):
+        return self.context['request'].user == instance.simccs_project.owner
+
 
 class MaptoolDataSerializer(serializers.ModelSerializer):
     bbox = BboxField(required=False, allow_null=True)
@@ -292,6 +296,7 @@ class CaseSerializer(serializers.ModelSerializer):
     datasets = serializers.SerializerMethodField()
     userHasWriteAccess = serializers.SerializerMethodField()
     simccs_project = SimccsProjectPrimaryKeyRelatedField()
+    userIsProjectOwner = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Case
@@ -338,3 +343,6 @@ class CaseSerializer(serializers.ModelSerializer):
 
     def get_userHasWriteAccess(self, instance):
         return self.context['request'].user == instance.owner
+
+    def get_userIsProjectOwner(self, instance):
+        return self.context['request'].user == instance.simccs_project.owner
