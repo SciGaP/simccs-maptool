@@ -617,9 +617,15 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             }
 
             var wdict = {};
-            wdict['Name'] = document.getElementById('workspace_name').value;
+            var workspaceName = document.getElementById('workspace_name').value;
+            if (workspaceName.trim() == '') {
+                  workspaceName = "Workspace on " + new Date().toLocaleDateString();
+            } 
+            wdict['Name'] = workspaceName;
             wdict['Descripton'] = document.getElementById('workspace_description').value;
             // skip Editing History
+            wdict['Time'] = new Date().toLocaleString();
+            
             // Buildtool: {CaseID, Scenarios}
             // Scenarios: [Scenario]
             // Scenario: {ScenarioID, ScenarioTitle,Sources,Sinks,Parameters, Experiments}
