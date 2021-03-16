@@ -11,7 +11,9 @@ from rest_framework import serializers, validators
 
 from simccs_maptool import models
 from airavata.model.group.ttypes import ResourcePermissionType
+from airavata.model.status.ttypes import ExperimentState
 from collections import defaultdict
+from django.urls import reverse
 
 logger = logging.getLogger(__name__)
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
@@ -388,6 +390,22 @@ class ScenarioExperimentSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ScenarioExperiment
         fields = ('experiment_id', 'parameters')
+
+    def to_representation(self, instance):
+        request = self.context['request']
+        experiment = request.airavata_client.getExperiment(
+            request.authz_token, instance.experiment_id)
+        result = super().to_representation(instance)
+        result['experiment_name'] = experiment.experimentName
+        result['experiment_url'] = reverse(
+            "django_airavata_workspace:view_experiment", args=[instance.experiment_id])
+        result['experiment_state'] = ExperimentState._VALUES_TO_NAMES[
+            experiment.experimentStatus[-1].state]
+        result['experiment_result'] = reverse(
+            "simccs_maptool:experiment-result", args=[instance.experiment_id])
+        result['solution_summary'] = reverse(
+            "simccs_maptool:solution-summary", args=[instance.experiment_id])
+        return result
 
 
 class ScenarioSerializer(serializers.ModelSerializer):
