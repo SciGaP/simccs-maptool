@@ -11,6 +11,7 @@ from rest_framework import serializers, validators
 
 from simccs_maptool import models
 from airavata.model.group.ttypes import ResourcePermissionType
+from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
@@ -346,3 +347,164 @@ class CaseSerializer(serializers.ModelSerializer):
 
     def get_userIsProjectOwner(self, instance):
         return self.context['request'].user == instance.simccs_project.owner
+
+
+class ParametersSerializer(serializers.Serializer):
+    """Convert between a list of k/v dicts (internal) and a dict (external)"""
+    name = serializers.CharField(max_length=255)
+    value = serializers.CharField(max_length=255)
+
+    def to_internal_value(self, data):
+        parameters = []
+        for k, v in data.items():
+            parameters.append(dict(name=k, value=v))
+        return parameters
+
+    def to_representation(self, instance):
+        result = {}
+        for parameter in instance.all():
+            result[parameter.name] = parameter.value
+        return result
+
+
+class ScenarioSourceSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.ScenarioSource
+        fields = ('source_id', 'dataset')
+
+
+class ScenarioSinkSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.ScenarioSink
+        fields = ('sink_id', 'dataset')
+
+
+class ScenarioExperimentSerializer(serializers.ModelSerializer):
+    experiment_id = serializers.CharField(max_length=255)
+    parameters = ParametersSerializer()
+
+    class Meta:
+        model = models.ScenarioExperiment
+        fields = ('experiment_id', 'parameters')
+
+
+class ScenarioSerializer(serializers.ModelSerializer):
+    # Need the id to not be readonly so it is available for updates
+    id = serializers.IntegerField(label='ID', required=False)
+    parameters = ParametersSerializer()
+    sources = ScenarioSourceSerializer(many=True)
+    sinks = ScenarioSinkSerializer(many=True)
+    experiments = ScenarioExperimentSerializer(many=True)
+
+    class Meta:
+        model = models.Scenario
+        fields = ("id", "title", "sources", "sinks", "experiments", "parameters")
+
+
+class WorkspaceSerializer(serializers.ModelSerializer):
+    owner = serializers.SlugRelatedField(slug_field='username', read_only=True)
+    description = serializers.CharField(
+        style={"base_template": "textarea.html"}, allow_blank=True
+    )
+    scenarios = ScenarioSerializer(many=True)
+
+    class Meta:
+        model = models.Workspace
+        fields = ("id", "name", "description", "owner", "scenarios", "case")
+
+    def create(self, validated_data):
+        request = self.context["request"]
+        scenarios = validated_data.pop("scenarios")
+        workspace = models.Workspace.objects.create(
+            owner=request.user, **validated_data)
+        for scenario in scenarios:
+            sources = scenario.pop("sources")
+            sinks = scenario.pop("sinks")
+            experiments = scenario.pop("experiments")
+            parameters = scenario.pop("parameters")
+            scenario_inst = models.Scenario.objects.create(
+                workspace=workspace, **scenario)
+            for parameter in parameters:
+                models.ScenarioParameter.objects.create(
+                    scenario=scenario_inst, **parameter)
+            for source in sources:
+                models.ScenarioSource.objects.create(scenario=scenario_inst, **source)
+            for sink in sinks:
+                models.ScenarioSink.objects.create(scenario=scenario_inst, **sink)
+            for experiment in experiments:
+                experiment_parameters = experiment.pop("parameters")
+                experiment_inst = models.ScenarioExperiment.objects.create(
+                    scenario=scenario_inst, **experiment)
+                for parameter in experiment_parameters:
+                    models.ScenarioExperimentParameter.objects.create(
+                        experiment=experiment_inst, **parameter
+                    )
+        return workspace
+
+    def update(self, instance, validated_data):
+        logger.debug(f"workspace update {validated_data}")
+        scenarios = validated_data.pop("scenarios")
+        for scenario in scenarios:
+            sources = scenario.pop("sources")
+            sinks = scenario.pop("sinks")
+            experiments = scenario.pop("experiments")
+            parameters = scenario.pop("parameters")
+            logger.debug(f"scenario={scenario}")
+            scenario_inst = models.Scenario(workspace=instance, **scenario)
+            scenario_inst.save()
+            parameter_names = []
+            for parameter in parameters:
+                name = parameter.pop("name")
+                parameter_names.append(name)
+                models.ScenarioParameter.objects.update_or_create(
+                    scenario=scenario_inst, name=name, defaults=parameter)
+            # Delete any parameters no longer listed
+            scenario_inst.parameters.exclude(name__in=parameter_names).delete()
+            source_ids = defaultdict(list)
+            for source in sources:
+                source_id = source.pop("source_id")
+                dataset = source.pop("dataset")
+                source_ids[dataset].append(source_id)
+                models.ScenarioSource.objects.update_or_create(
+                    scenario=scenario_inst, source_id=source_id, dataset=dataset
+                )
+            # Delete any sources no longer listed
+            for dataset, source_id_list in source_ids.items():
+                scenario_inst.sources.filter(dataset=dataset).exclude(
+                    source_id__in=source_id_list).delete()
+            sink_ids = defaultdict(list)
+            for sink in sinks:
+                sink_id = sink.pop("sink_id")
+                dataset = sink.pop("dataset")
+                sink_ids[dataset].append(sink_id)
+                models.ScenarioSink.objects.update_or_create(
+                    scenario=scenario_inst, sink_id=sink_id, dataset=dataset
+                )
+            # Delete any sinks no longer listed
+            for dataset, sink_id_list in sink_ids.items():
+                scenario_inst.sinks.filter(dataset=dataset).exclude(
+                    sink_id__in=sink_id_list).delete()
+            experiment_ids = []
+            for experiment in experiments:
+                experiment_id = experiment.pop("experiment_id")
+                experiment_ids.append(experiment_id)
+                experiment_parameters = experiment.pop("parameters")
+                experiment_inst, created = models.ScenarioExperiment.objects.update_or_create(
+                    scenario=scenario_inst, experiment_id=experiment_id)
+                parameter_names = []
+                for parameter in experiment_parameters:
+                    name = parameter.pop("name")
+                    parameter_names.append(name)
+                    models.ScenarioExperimentParameter.objects.update_or_create(
+                        experiment=experiment_inst, name=name, defaults=parameter)
+                # Delete any parameters no longer listed
+                experiment_inst.parameters.exclude(name__in=parameter_names).delete()
+            # Delete any experiments no longer listed
+            scenario_inst.experiments.exclude(experiment_id__in=experiment_ids).delete()
+        # update workspace name and description
+        instance.name = validated_data['name']
+        instance.description = validated_data['description']
+        instance.save()
+        return instance

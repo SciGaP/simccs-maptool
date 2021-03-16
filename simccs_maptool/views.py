@@ -638,3 +638,21 @@ class DatasetViewSet(viewsets.ModelViewSet):
         serializer.instance.owner = request.user
         serializer.instance.save()
         return Response(serializer.data)
+
+
+class WorkspaceViewSet(viewsets.ModelViewSet):
+    serializer_class = serializers.WorkspaceSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        # only return Workspaces that the user is the case's project's owner or
+        # the user is a member of the case's project's group
+        request = self.request
+        group_ids = models.get_user_group_membership_ids(request)
+        queryset = models.Workspace.objects.filter(
+            Q(case__simccs_project__owner=request.user) |
+            Q(case__simccs_project__group__in=group_ids))
+        simccs_project = self.request.query_params.get('project', None)
+        if simccs_project is not None:
+            queryset = queryset.filter(case__simccs_project=simccs_project)
+        return queryset

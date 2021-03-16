@@ -23,6 +23,7 @@ router = routers.DefaultRouter()
 router.register(r"cases", views.CaseViewSet, basename="case")
 router.register(r"datasets", views.DatasetViewSet, basename="dataset")
 router.register(r"projects", views.SimccsProjectViewSet, basename="simccs-project")
+router.register(r"workspaces", views.WorkspaceViewSet, basename="workspace")
 app_name = "simccs_maptool"
 urlpatterns = [
     url(r"^$", views.HomeView.as_view(), name="home"),
