@@ -301,6 +301,7 @@ class CaseSerializer(serializers.ModelSerializer):
     userHasWriteAccess = serializers.SerializerMethodField()
     simccs_project = SimccsProjectPrimaryKeyRelatedField()
     userIsProjectOwner = serializers.SerializerMethodField()
+    airavata_project = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Case
@@ -350,6 +351,9 @@ class CaseSerializer(serializers.ModelSerializer):
 
     def get_userIsProjectOwner(self, instance):
         return self.context['request'].user == instance.simccs_project.owner
+    
+    def get_airavata_project(self, instance):
+        return instance.simccs_project.airavata_project
 
 
 class ParametersSerializer(serializers.Serializer):

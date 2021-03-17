@@ -506,9 +506,8 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                   return Promise.all([computeResourceId, groupResourceProfile, loadDeployments]);
             });
             // Load user's workspace prefs to find the id of most recently used project; experiment must be added to a project
-            const loadWorkspacePrefs = services.WorkspacePreferencesService.get();
-            Promise.all([loadAppInterface,loadGroupResourceProfileAndQueue, loadWorkspacePrefs])
-            .then(([appInterface, [computeResourceId, groupResourceProfile, defaultQueue], workspacePrefs]) => {
+            Promise.all([loadAppInterface,loadGroupResourceProfileAndQueue])
+            .then(([appInterface, [computeResourceId, groupResourceProfile, defaultQueue]]) => {
                   const experiment = appInterface.createExperiment();
                   var user_experiment_name = document.getElementById('experiment_name_'+ panelid).value;
                   if (user_experiment_name.trim() == '') {
@@ -522,7 +521,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                   experiment.description += "capitalRecoveryRate:" + cplexInputValues["capitalRecoveryRate"] + ", ";
                   experiment.description += "projectPeriod:" + cplexInputValues["projectPeriod"] + ", ";
                   experiment.description += "capacityTarget:" + cplexInputValues["capacityTarget"];
-                  experiment.projectId = workspacePrefs.most_recent_project_id;
+                  experiment.projectId = casejson.airavata_project;
                   // Copy groupResourceProfileId and queue defaults to experiment configuration
                   experiment.userConfigurationData.groupResourceProfileId = groupResourceProfile.groupResourceProfileId;
                   experiment.userConfigurationData.computationalResourceScheduling.resourceHostId = computeResourceId;
