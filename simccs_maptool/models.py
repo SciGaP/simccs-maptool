@@ -86,6 +86,8 @@ class Workspace(models.Model):
     description = models.TextField()
     case = models.ForeignKey(Case, on_delete=models.CASCADE)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ['case', 'owner', 'name']

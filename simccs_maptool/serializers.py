@@ -438,7 +438,7 @@ class WorkspaceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Workspace
-        fields = ("id", "name", "description", "owner", "scenarios", "case")
+        fields = ("id", "name", "description", "owner", "scenarios", "case", "created", "updated")
 
     @transaction.atomic
     def create(self, validated_data):
