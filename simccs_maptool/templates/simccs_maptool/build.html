@@ -561,15 +561,16 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                               experiment_panel[panelid] = [];
                         }
                         var ex_dict = {};
-                        ex_dict['ExperimentId'] = experiment.experimentId;
-                        ex_dict['ExperimentName'] = experiment.experimentName;
+                        ex_dict['experiment_id'] = experiment.experimentId;
+                        ex_dict['experiment_name'] = experiment.experimentName;
                         var crf1 = cplexInputValues["capitalRecoveryRate"];
                         var ny1 = cplexInputValues["projectPeriod"];
                         var ct1 = cplexInputValues["capacityTarget"];
-                        ex_dict['ExperimentParameters'] = {"Capital_Recovery_Rate":crf1,"Project_Period":ny1,"Capture_Target":ct1};
-                        ex_dict['ExperimentURL'] = a.href;
-                        ex_dict['ExperimentState'] = '';
-                        ex_dict['ExperimentResult'] = '';
+                        ex_dict['parameters'] = {"Capital_Recovery_Rate":crf1,"Project_Period":ny1,"Capture_Target":ct1};
+                        // These fields are provided in the response and are derived
+                        // ex_dict['ExperimentURL'] = a.href;
+                        // ex_dict['ExperimentState'] = '';
+                        // ex_dict['ExperimentResult'] = '';
                         experiment_panel[panelid].push(ex_dict); 
 
                         // var caseViewExperimentLink = document.getElementById("case_view_experiment_" + panelid);
@@ -621,10 +622,10 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             if (workspaceName.trim() == '') {
                   workspaceName = "Workspace on " + new Date().toLocaleDateString();
             } 
-            wdict['Name'] = workspaceName;
-            wdict['Descripton'] = document.getElementById('workspace_description').value;
+            wdict['name'] = workspaceName;
+            wdict['description'] = document.getElementById('workspace_description').value;
             // skip Editing History
-            wdict['Time'] = new Date().toLocaleString();
+            // wdict['Time'] = new Date().toLocaleString();
             
             // Buildtool: {CaseID, Scenarios}
             // Scenarios: [Scenario]
@@ -640,41 +641,50 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                   //value: ScenarioTitle
                   s_dict = {}; 
                   var panelid = key;
-                  s_dict['ScenarioID'] = panelid;
-                  s_dict['ScenarioTitle'] = value;                
+                  // id will be automatically assigned by the backend
+                  s_dict['scenario_id'] = panelid;
+                  s_dict['title'] = value;                
                   // get parameters
                   var crf = $("#Capital_Recovery_Rate_" + panelid).val();
                   var numYears = $("#Project_Period_" + panelid).val();
                   var capacityTarget = $("#Capture_Target_" + panelid).val();
-                  s_dict['Parameters'] = {"Capital_Recovery_Rate":crf,"Project_Period":numYears,"Capture_Target":capacityTarget};
+                  s_dict['parameters'] = {"Capital_Recovery_Rate":crf,"Project_Period":numYears,"Capture_Target":capacityTarget};
                   // get source data
                   // sourceselection_panel
                   var data_list = [];
                   sourceselection_panel[panelid].forEach (function (item) {
-                        data_list.push(item.feature.properties);
+                        data_list.push({"source_id": item.feature.properties.ID,
+                              "dataset": item.feature.properties.dataset_id});
                   });
-                  s_dict['Sources'] = data_list;
+                  s_dict['sources'] = data_list;
                   // get sink data
                   // sinkselection_panel
                   data_list = [];
                   sinkselection_panel[panelid].forEach (function (item) {
-                        data_list.push(item.feature.properties);
+                        data_list.push({"sink_id": item.feature.properties.ID,
+                              "dataset": item.feature.properties.dataset_id});
                   });
-                  s_dict['Sinks'] = data_list;
+                  s_dict['sinks'] = data_list;
                   // add experiments
                   if (panelid in experiment_panel) {
-                        s_dict['Experiments'] = experiment_panel[panelid];
+                        s_dict['experiments'] = experiment_panel[panelid];
                   } else {
-                        s_dict['Experiments'] = [];  
+                        s_dict['experiments'] = [];  
                   }
 
                   ScenariosList.push(s_dict);
 
             }
-            wdict['CaseID'] = case_id;
-            wdict['Scenarios'] = ScenariosList;
+            wdict['case'] = case_id;
+            wdict['scenarios'] = ScenariosList;
 
-            console.log(JSON.stringify(wdict));
+            
+            return AiravataAPI.utils.FetchUtils.post("/maptool/api/workspaces/", wdict)
+                  .then(result => {
+                        // TODO: get the id of the workspace and use that when updating it
+                        console.log("workspace save result", result);
+                        return result;
+                  });
       }
 
 </script>

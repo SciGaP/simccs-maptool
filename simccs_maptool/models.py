@@ -79,3 +79,77 @@ class MaptoolData(models.Model):
     style = models.TextField(null=True)
     bbox = models.CharField(max_length=128, null=True, validators=[bbox_validator])
     popup = models.CharField(max_length=128, null=True, validators=[csv_validator])
+
+
+class Workspace(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    case = models.ForeignKey(Case, on_delete=models.CASCADE)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ['case', 'owner', 'name']
+
+
+class Scenario(models.Model):
+    title = models.CharField(max_length=255)
+    scenario_id = models.CharField(max_length=255)
+    workspace = models.ForeignKey(Workspace,
+                                  on_delete=models.CASCADE,
+                                  related_name="scenarios")
+
+    class Meta:
+        unique_together = [['workspace', 'title'], ['workspace', 'scenario_id']]
+
+
+class ScenarioParameter(models.Model):
+    name = models.CharField(max_length=255)
+    value = models.CharField(max_length=255)
+    scenario = models.ForeignKey(Scenario,
+                                 on_delete=models.CASCADE,
+                                 related_name="parameters")
+
+    class Meta:
+        unique_together = ['scenario', 'name']
+
+
+class ScenarioSource(models.Model):
+    source_id = models.CharField(max_length=255)
+    scenario = models.ForeignKey(Scenario,
+                                 on_delete=models.CASCADE,
+                                 related_name="sources")
+    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
+    # TODO: source fields, or should we derive these from the dataset geojson?
+
+    class Meta:
+        unique_together = ['scenario', 'dataset', 'source_id']
+
+
+class ScenarioSink(models.Model):
+    sink_id = models.CharField(max_length=255)
+    scenario = models.ForeignKey(Scenario,
+                                 on_delete=models.CASCADE,
+                                 related_name="sinks")
+    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
+    # TODO: sink fields, or should we derive these from the dataset geojson?
+
+    class Meta:
+        unique_together = ['scenario', 'dataset', 'sink_id']
+
+
+class ScenarioExperiment(models.Model):
+    experiment_id = models.CharField(max_length=255, unique=True)
+    scenario = models.ForeignKey(Scenario,
+                                 on_delete=models.CASCADE,
+                                 related_name="experiments")
+
+
+class ScenarioExperimentParameter(models.Model):
+    name = models.CharField(max_length=255)
+    value = models.CharField(max_length=255)
+    experiment = models.ForeignKey(ScenarioExperiment,
+                                   on_delete=models.CASCADE,
+                                   related_name="parameters")
+
+    class Meta:
+        unique_together = ['experiment', 'name']
