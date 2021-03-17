@@ -409,8 +409,6 @@ class ScenarioExperimentSerializer(serializers.ModelSerializer):
 
 
 class ScenarioSerializer(serializers.ModelSerializer):
-    # Need the id to not be readonly so it is available for updates
-    id = serializers.IntegerField(label='ID', required=False)
     parameters = ParametersSerializer()
     sources = ScenarioSourceSerializer(many=True)
     sinks = ScenarioSinkSerializer(many=True)
@@ -418,7 +416,12 @@ class ScenarioSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Scenario
-        fields = ("id", "title", "sources", "sinks", "experiments", "parameters")
+        fields = ("title",
+                  "scenario_id",
+                  "sources",
+                  "sinks",
+                  "experiments",
+                  "parameters")
 
 
 class WorkspaceSerializer(serializers.ModelSerializer):
@@ -469,9 +472,10 @@ class WorkspaceSerializer(serializers.ModelSerializer):
             sinks = scenario.pop("sinks")
             experiments = scenario.pop("experiments")
             parameters = scenario.pop("parameters")
+            scenario_id = scenario.pop("scenario_id")
             logger.debug(f"scenario={scenario}")
-            scenario_inst = models.Scenario(workspace=instance, **scenario)
-            scenario_inst.save()
+            scenario_inst, created = models.Scenario.objects.update_or_create(
+                workspace=instance, scenario_id=scenario_id, defaults=scenario)
             parameter_names = []
             for parameter in parameters:
                 name = parameter.pop("name")

@@ -93,12 +93,13 @@ class Workspace(models.Model):
 
 class Scenario(models.Model):
     title = models.CharField(max_length=255)
+    scenario_id = models.CharField(max_length=255)
     workspace = models.ForeignKey(Workspace,
                                   on_delete=models.CASCADE,
                                   related_name="scenarios")
 
     class Meta:
-        unique_together = ['workspace', 'title']
+        unique_together = [['workspace', 'title'], ['workspace', 'scenario_id']]
 
 
 class ScenarioParameter(models.Model):

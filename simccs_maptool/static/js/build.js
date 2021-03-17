@@ -140,6 +140,10 @@ function handleclick(id){
 // load data by url
 async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
     var data = await getdata(dataurl);
+    // Add dataset_id to feature properties so we tie a source/sink back to its dataset
+    for (let feature of data.features) {
+        feature.properties.dataset_id = datadesc['dataid'];
+    }
     
     var newLayer;
     if (!popup_fields || popup_fields.length === 0) {
