@@ -2,6 +2,7 @@ import io
 import logging
 import os
 
+from django.db import transaction
 from django.conf import settings
 import pandas as pd
 import geopandas as gpd
@@ -435,6 +436,7 @@ class WorkspaceSerializer(serializers.ModelSerializer):
         model = models.Workspace
         fields = ("id", "name", "description", "owner", "scenarios", "case")
 
+    @transaction.atomic
     def create(self, validated_data):
         request = self.context["request"]
         scenarios = validated_data.pop("scenarios")
@@ -445,6 +447,12 @@ class WorkspaceSerializer(serializers.ModelSerializer):
             sinks = scenario.pop("sinks")
             experiments = scenario.pop("experiments")
             parameters = scenario.pop("parameters")
+            if models.Scenario.objects.filter(workspace=workspace,
+                                              title=scenario['title']).exists():
+                raise serializers.ValidationError({'title': 'A scenario with that title already exists in the workspace.'})
+            if models.Scenario.objects.filter(
+                    workspace=workspace, scenario_id=scenario['scenario_id']).exists():
+                raise serializers.ValidationError({'scenario_id': 'A scenario with that scenario_id already exists in the workspace.'})
             scenario_inst = models.Scenario.objects.create(
                 workspace=workspace, **scenario)
             for parameter in parameters:
@@ -464,6 +472,7 @@ class WorkspaceSerializer(serializers.ModelSerializer):
                     )
         return workspace
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         logger.debug(f"workspace update {validated_data}")
         scenarios = validated_data.pop("scenarios")
@@ -474,6 +483,11 @@ class WorkspaceSerializer(serializers.ModelSerializer):
             parameters = scenario.pop("parameters")
             scenario_id = scenario.pop("scenario_id")
             logger.debug(f"scenario={scenario}")
+            if models.Scenario.objects.exclude(
+                    scenario_id=scenario_id).filter(
+                    workspace=instance,
+                    title=scenario['title']).exists():
+                raise serializers.ValidationError({'title': 'A scenario with that title already exists in the workspace.'})
             scenario_inst, created = models.Scenario.objects.update_or_create(
                 workspace=instance, scenario_id=scenario_id, defaults=scenario)
             parameter_names = []
@@ -530,3 +544,11 @@ class WorkspaceSerializer(serializers.ModelSerializer):
         instance.description = validated_data['description']
         instance.save()
         return instance
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        request = self.context['request']
+        if models.Workspace.objects.exclude(pk=self.instance.pk).filter(
+                case_id=data['case'], owner=request.user, name=data['name']).exists():
+            raise serializers.ValidationError({'name': "You already have a workspace with that name for this case."})
+        return data
