@@ -186,6 +186,7 @@ class DatasetSerializer(serializers.ModelSerializer):
     )
     original_filename = serializers.SerializerMethodField()
     url = serializers.SerializerMethodField()
+    original_url = serializers.SerializerMethodField()
     simccs_project = SimccsProjectPrimaryKeyRelatedField()
     userIsProjectOwner = serializers.SerializerMethodField()
 
@@ -196,8 +197,10 @@ class DatasetSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         file = validated_data.pop("file")
         request = self.context["request"]
+        simccs_project = validated_data['simccs_project']
+        project_dir = os.path.join("ProjectData", f"Project-{simccs_project.id}")
         original_data_product = user_storage.save(
-            request, "Datasets", file, name=file.name, content_type=file.content_type
+            request, project_dir, file, name=file.name, content_type=file.content_type
         )
         dataset = models.Dataset.objects.create(
             **validated_data,
@@ -212,7 +215,7 @@ class DatasetSerializer(serializers.ModelSerializer):
         if transformed_file:
             data_product = user_storage.save(
                 request,
-                "Datasets",
+                project_dir,
                 transformed_file,
                 name=transformed_file.name,
                 content_type="application/geo+json",
@@ -264,6 +267,9 @@ class DatasetSerializer(serializers.ModelSerializer):
 
     def get_url(self, dataset):
         return sdk_urls.get_download_url(dataset.data_product_uri)
+
+    def get_original_url(self, dataset):
+        return sdk_urls.get_download_url(dataset.original_data_product_uri)
 
     def get_userIsProjectOwner(self, instance):
         return self.context['request'].user == instance.simccs_project.owner

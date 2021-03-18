@@ -11,7 +11,30 @@
       </div>
     </div>
     <b-card>
-      <b-table :items="datasetItems"></b-table>
+      <b-table :items="datasetItems" :fields="datasetFields">
+        <template #cell(name)="data">
+          {{ data.value }}
+          <div class="text-muted">
+            <small>{{ data.item.description }}</small>
+          </div>
+        </template>
+        <template #cell(type)="data">
+          <b-badge v-if="data.value === 'source'" variant="success"
+            ><i class="fa fa-arrow-circle-up" aria-hidden="true"></i>
+            Source</b-badge
+          >
+          <b-badge v-else-if="data.value === 'sink'" variant="danger"
+            ><i class="fa fa-arrow-circle-down" aria-hidden="true"></i>
+            Sink</b-badge
+          >
+        </template>
+        <template #cell(filename)="data">
+          <a :href="data.item.original_url">{{ data.value }}</a>
+        </template>
+        <template #cell(url)="data">
+          <a :href="data.value">Download</a>
+        </template>
+      </b-table>
     </b-card>
     <div class="row">
       <div class="col">
@@ -105,6 +128,9 @@ export default {
     },
   },
   computed: {
+    datasetFields() {
+      return ["name", "type", "filename", { key: "url", label: "GeoJSON" }];
+    },
     datasetItems() {
       if (!this.datasets) {
         return [];
@@ -115,6 +141,8 @@ export default {
             description: ds.description,
             type: ds.type,
             filename: ds.original_filename,
+            original_url: ds.original_url,
+            url: ds.url,
             // actions: null,
           };
         });
