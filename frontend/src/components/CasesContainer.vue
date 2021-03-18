@@ -44,9 +44,17 @@
           >
           <b-button
             variant="secondary"
+            :to="{ name: 'case-copy', params: { id: data.item.id } }"
+            v-if="!data.item.userHasWriteAccess"
+          >
+            <i class="fa fa-copy" aria-hidden="true"></i>
+            Copy</b-button
+          >
+          <b-button
+            variant="warning"
             @click="claimCase(data.item.id)"
             title="Claim ownership of this case"
-            v-else-if="data.item.userIsProjectOwner"
+            v-if="!data.item.userHasWriteAccess && data.item.userIsProjectOwner"
           >
             <i class="fa fa-hand-paper" aria-hidden="true"></i>
             Claim
