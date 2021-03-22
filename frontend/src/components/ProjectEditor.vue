@@ -184,7 +184,7 @@ export default {
       this.$emit("transferOwnership", this.project, this.newOwner);
     },
     formatGroupOptionText(group) {
-      return `${group.name} - created by ${this.stripDomainFromGroupUser(
+      return `${group.name} - owned by ${this.stripDomainFromGroupUser(
         group.ownerId
       )}, ${group.members.length} members`;
     },

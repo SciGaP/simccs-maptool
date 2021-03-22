@@ -2,7 +2,15 @@
   <div>
     <div class="row">
       <div class="col-auto">
-        <h1 class="h3 mb-3">Project: {{ name }}</h1>
+        <h1 class="h3 mb-0">Project: {{ name }}</h1>
+        <div class="text-muted mb-2">
+          <small
+            >Owned by <b>{{ project && project.owner }}</b></small
+          >
+          <small v-if="projectGroup"
+            >, shared with group <b>{{ projectGroup.name }}</b></small
+          >
+        </div>
       </div>
       <div class="col-auto" v-if="project && project.userHasWriteAccess">
         <b-button to="edit" variant="primary" class="ml-2 text-nowrap"
@@ -45,6 +53,7 @@ export default {
     return {
       project: null,
       projects: null,
+      projectGroup: null,
     };
   },
   created() {
@@ -80,6 +89,16 @@ export default {
         `/maptool/api/projects/${encodeURIComponent(this.projectId)}/`
       ).then((project) => {
         this.project = project;
+        if (project.group) {
+          this.fetchProjectGroup();
+        }
+      });
+    },
+    fetchProjectGroup() {
+      utils.FetchUtils.get(
+        `/api/groups/${encodeURIComponent(this.project.group)}/`
+      ).then((group) => {
+        this.projectGroup = group;
       });
     },
   },
