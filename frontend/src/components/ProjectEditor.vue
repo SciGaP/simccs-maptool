@@ -16,13 +16,41 @@
         label="Group"
         description="Share this project with a group."
       >
-        <b-form-select v-model="project.group" :options="groupOptions">
-          <template #first>
-            <b-form-select-option :value="null"
-              >-- Select a group --</b-form-select-option
+        <template #description>
+          Select a group of users to share this project with. Or
+          <b-link href="/groups/create/" target="_blank"
+            >create a new group</b-link
+          >
+          and then
+          <b-link @click="refreshGroups">refresh the list of groups</b-link> to
+          select it.
+        </template>
+        <b-input-group>
+          <b-form-select v-model="project.group" :options="groupOptions">
+            <template #first>
+              <b-form-select-option :value="null"
+                >-- Select a group --</b-form-select-option
+              >
+            </template>
+          </b-form-select>
+          <b-input-group-append>
+            <b-button
+              variant="outline-secondary"
+              :href="`/groups/edit/${encodeURIComponent(
+                selectedGroup && selectedGroup.id
+              )}/`"
+              target="_blank"
+              :disabled="!selectedGroupEditable"
+              >Edit</b-button
             >
-          </template>
-        </b-form-select>
+            <b-button
+              variant="outline-secondary"
+              @click="viewMembers"
+              :disabled="!selectedGroup"
+              >View Members</b-button
+            >
+          </b-input-group-append>
+        </b-input-group>
       </b-form-group>
       <div>
         <b-button type="submit" variant="primary" :disabled="$v.$invalid"
@@ -50,6 +78,17 @@
               >
             </template>
           </b-form-select>
+        </b-modal>
+        <b-modal
+          ref="view-members-modal"
+          :title="`Members of group ${selectedGroup && selectedGroup.name}`"
+          ok-only
+        >
+          <ul class="group-members-list">
+            <li v-for="member in selectedGroupMembers" :key="member">
+              {{ member }}
+            </li>
+          </ul>
         </b-modal>
       </div>
     </b-form>
@@ -89,7 +128,7 @@ export default {
         ? this.groups.map((g) => {
             return {
               value: g.id,
-              text: g.name,
+              text: this.formatGroupOptionText(g),
             };
           })
         : [];
@@ -104,11 +143,18 @@ export default {
         : null;
     },
     newOwnerOptions() {
+      return this.selectedGroupMembers.filter((m) => m !== this.project.owner);
+    },
+    selectedGroupMembers() {
       return this.selectedGroup
-        ? this.selectedGroup.members
-            .map((m) => m.slice(0, m.lastIndexOf("@")))
-            .filter((m) => m !== this.project.owner)
+        ? this.selectedGroup.members.map(this.stripDomainFromGroupUser)
         : [];
+    },
+    selectedGroupEditable() {
+      return (
+        this.selectedGroup &&
+        (this.selectedGroup.isOwner || this.selectedGroup.isAdmin)
+      );
     },
   },
   validations() {
@@ -137,8 +183,27 @@ export default {
     okClicked() {
       this.$emit("transferOwnership", this.project, this.newOwner);
     },
+    formatGroupOptionText(group) {
+      return `${group.name} - created by ${this.stripDomainFromGroupUser(
+        group.ownerId
+      )}, ${group.members.length} members`;
+    },
+    stripDomainFromGroupUser(userId) {
+      return userId.slice(0, userId.lastIndexOf("@"));
+    },
+    viewMembers() {
+      this.$refs["view-members-modal"].show();
+    },
+    refreshGroups() {
+      this.loadGroups();
+    },
   },
 };
 </script>
 
-<style></style>
+<style scoped>
+.group-members-list {
+  max-height: 50vh;
+  overflow: auto;
+}
+</style>
