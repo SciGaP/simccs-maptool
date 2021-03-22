@@ -74,6 +74,7 @@ class SimccsProjectSerializer(serializers.ModelSerializer):
         required=False,
         help_text="Username of new project owner, used with transfer_ownership")
     userHasWriteAccess = serializers.SerializerMethodField()
+    userMostRecentProject = serializers.SerializerMethodField()
 
     class Meta:
         model = models.SimccsProject
@@ -83,7 +84,8 @@ class SimccsProjectSerializer(serializers.ModelSerializer):
                   "group",
                   "airavata_project",
                   "new_owner",
-                  "userHasWriteAccess")
+                  "userHasWriteAccess",
+                  "userMostRecentProject")
 
     def create(self, validated_data):
         request = self.context["request"]
@@ -159,6 +161,11 @@ class SimccsProjectSerializer(serializers.ModelSerializer):
         airavata_project_id = request.airavata_client.createProject(
             request.authz_token, settings.GATEWAY_ID, airavata_project)
         return airavata_project_id
+
+    def get_userMostRecentProject(self, instance):
+        request = self.context['request']
+        return models.UserPreference.objects.filter(
+            name="most_recent_project", user=request.user, value=instance.id).exists()
 
 
 class SimccsProjectPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
@@ -357,7 +364,7 @@ class CaseSerializer(serializers.ModelSerializer):
 
     def get_userIsProjectOwner(self, instance):
         return self.context['request'].user == instance.simccs_project.owner
-    
+
     def get_airavata_project(self, instance):
         return instance.simccs_project.airavata_project
 
@@ -444,7 +451,15 @@ class WorkspaceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Workspace
-        fields = ("id", "name", "description", "owner", "scenarios", "case", "created", "updated")
+        fields = (
+            "id",
+            "name",
+            "description",
+            "owner",
+            "scenarios",
+            "case",
+            "created",
+            "updated")
 
     @transaction.atomic
     def create(self, validated_data):
@@ -459,10 +474,12 @@ class WorkspaceSerializer(serializers.ModelSerializer):
             parameters = scenario.pop("parameters")
             if models.Scenario.objects.filter(workspace=workspace,
                                               title=scenario['title']).exists():
-                raise serializers.ValidationError({'title': 'A scenario with that title already exists in the workspace.'})
+                raise serializers.ValidationError(
+                    {'title': 'A scenario with that title already exists in the workspace.'})
             if models.Scenario.objects.filter(
                     workspace=workspace, scenario_id=scenario['scenario_id']).exists():
-                raise serializers.ValidationError({'scenario_id': 'A scenario with that scenario_id already exists in the workspace.'})
+                raise serializers.ValidationError(
+                    {'scenario_id': 'A scenario with that scenario_id already exists in the workspace.'})
             scenario_inst = models.Scenario.objects.create(
                 workspace=workspace, **scenario)
             for parameter in parameters:
@@ -497,7 +514,8 @@ class WorkspaceSerializer(serializers.ModelSerializer):
                     scenario_id=scenario_id).filter(
                     workspace=instance,
                     title=scenario['title']).exists():
-                raise serializers.ValidationError({'title': 'A scenario with that title already exists in the workspace.'})
+                raise serializers.ValidationError(
+                    {'title': 'A scenario with that title already exists in the workspace.'})
             scenario_inst, created = models.Scenario.objects.update_or_create(
                 workspace=instance, scenario_id=scenario_id, defaults=scenario)
             parameter_names = []
@@ -560,5 +578,6 @@ class WorkspaceSerializer(serializers.ModelSerializer):
         request = self.context['request']
         if models.Workspace.objects.exclude(pk=self.instance.pk).filter(
                 case_id=data['case'], owner=request.user, name=data['name']).exists():
-            raise serializers.ValidationError({'name': "You already have a workspace with that name for this case."})
+            raise serializers.ValidationError(
+                {'name': "You already have a workspace with that name for this case."})
         return data

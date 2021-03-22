@@ -9,9 +9,14 @@ export default {
   created() {
     utils.FetchUtils.get(`/maptool/api/projects/`).then((projects) => {
       if (projects.length > 0) {
+        let defaultProject = projects.find((p) => p.userMostRecentProject);
+        if (!defaultProject) {
+          // if there isn't a most recent project for the user, just pick the first one
+          defaultProject = projects[0];
+        }
         this.$router.push({
           name: "project",
-          params: { projectId: projects[0].id },
+          params: { projectId: defaultProject.id },
         });
       } else {
         // create a default project

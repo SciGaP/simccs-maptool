@@ -566,6 +566,15 @@ class SimccsProjectViewSet(viewsets.ModelViewSet):
         request = self.request
         return models.SimccsProject.filter_by_user(request)
 
+    def get_object(self):
+        project = super().get_object()
+        # Keep track of most recent project that the user uses
+        models.UserPreference.objects.update_or_create(
+            user=self.request.user,
+            name="most_recent_project",
+            defaults=dict(value=project.id))
+        return project
+
     @action(detail=True, methods=['post'])
     def transfer_ownership(self, request, pk=None):
         simccs_project = self.get_object()
