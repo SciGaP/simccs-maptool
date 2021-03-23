@@ -201,6 +201,7 @@ class DatasetSerializer(serializers.ModelSerializer):
         model = models.Dataset
         fields = "__all__"
 
+    @transaction.atomic
     def create(self, validated_data):
         file = validated_data.pop("file")
         request = self.context["request"]
@@ -214,11 +215,15 @@ class DatasetSerializer(serializers.ModelSerializer):
             owner=request.user,
             original_data_product_uri=original_data_product.productUri,
         )
-        transformed_file = self._transform_file(
-            user_storage.open_file(request, original_data_product),
-            dataset_type=validated_data["type"],
-            content_type=file.content_type
-        )
+        try:
+            transformed_file = self._transform_file(
+                user_storage.open_file(request, original_data_product),
+                dataset_type=validated_data["type"],
+                content_type=file.content_type
+            )
+        except Exception as e:
+            logger.exception(f"Failed to transform file {file.name}")
+            raise serializers.ValidationError({'file': [f'Failed to transform file to GeoJSON: {e}']})
         if transformed_file:
             data_product = user_storage.save(
                 request,
@@ -231,6 +236,7 @@ class DatasetSerializer(serializers.ModelSerializer):
             dataset.save()
         return dataset
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         # TODO: update file?
         instance.name = validated_data["name"]
@@ -243,7 +249,7 @@ class DatasetSerializer(serializers.ModelSerializer):
         if content_type.startswith("text/"):
             return self._transform_text_file(input_file)
         else:
-            raise Exception(f"Unrecognized file type {content_type}")
+            raise Exception(f"Unrecognized file type {content_type}. File must be a plain text CSV file.")
 
     def _transform_text_file(self, input_file):
         # assume the delimiter is "tab"
@@ -273,7 +279,10 @@ class DatasetSerializer(serializers.ModelSerializer):
             return "N/A"
 
     def get_url(self, dataset):
-        return sdk_urls.get_download_url(dataset.data_product_uri)
+        if dataset.data_product_uri:
+            return sdk_urls.get_download_url(dataset.data_product_uri)
+        else:
+            return None
 
     def get_original_url(self, dataset):
         return sdk_urls.get_download_url(dataset.original_data_product_uri)

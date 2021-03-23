@@ -32,7 +32,7 @@
           <a :href="data.item.original_url">{{ data.value }}</a>
         </template>
         <template #cell(url)="data">
-          <a :href="data.value">Download</a>
+          <a v-if="data.value" :href="data.value">Download</a>
         </template>
       </b-table>
     </b-card>

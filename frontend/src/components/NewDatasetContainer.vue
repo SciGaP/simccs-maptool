@@ -33,6 +33,9 @@
         <b-form-invalid-feedback v-if="!$v.dataset.file.required"
           >A file is required.</b-form-invalid-feedback
         >
+        <b-form-invalid-feedback v-if="!$v.dataset.file.serverValidation">{{
+          this.serverValidation.file.join(" ")
+        }}</b-form-invalid-feedback>
       </b-form-group>
       <b-button type="submit" variant="primary" :disabled="$v.$invalid"
         >Submit</b-button
@@ -85,6 +88,10 @@ export default {
         },
         file: {
           required,
+          serverValidation: validateFromServer(
+            () => (this.submittedData ? this.submittedData.get("file") : null),
+            () => (this.serverValidation ? this.serverValidation.file : null)
+          ),
         },
       },
     };
@@ -131,3 +138,9 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.b-form-file.is-invalid ~ .invalid-feedback {
+  display: block;
+}
+</style>
