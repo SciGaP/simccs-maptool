@@ -1,5 +1,10 @@
 <template>
-  <case-editor v-if="aCase" :value="aCase" @submit="onSubmit" />
+  <case-editor
+    v-if="aCase"
+    :value="aCase"
+    :serverValidationErrors="serverValidationErrors"
+    @submit="onSubmit"
+  />
 </template>
 
 <script>
@@ -22,6 +27,7 @@ export default {
   data() {
     return {
       aCase: null,
+      serverValidationErrors: null,
     };
   },
   created() {
@@ -36,13 +42,19 @@ export default {
       utils.FetchUtils.put(
         `/maptool/api/cases/${encodeURIComponent(this.id)}/`,
         updatedCase
-      ).then(() => {
-        // TODO: add a success message
-        this.$router.push({
-          name: "project",
-          params: { projectId: this.projectId },
+      )
+        .then(() => {
+          // TODO: add a success message
+          this.$router.push({
+            name: "project",
+            params: { projectId: this.projectId },
+          });
+        })
+        .catch((e) => {
+          if (e.details && e.details.response) {
+            this.serverValidationErrors = e.details.response;
+          }
         });
-      });
     },
   },
 };

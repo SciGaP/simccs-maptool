@@ -1,5 +1,9 @@
 <template>
-  <project-editor :value="project" @submit="onSubmit" />
+  <project-editor
+    :value="project"
+    :serverValidationErrors="serverValidationErrors"
+    @submit="onSubmit"
+  />
 </template>
 
 <script>
@@ -14,6 +18,7 @@ export default {
         name: "New Project",
         group: null,
       },
+      serverValidationErrors: null,
     };
   },
   methods: {
@@ -26,7 +31,10 @@ export default {
             params: { projectId: result.id },
           });
         })
-        .catch(() => {
+        .catch((e) => {
+          if (e.details && e.details.response) {
+            this.serverValidationErrors = e.details.response;
+          }
           // TODO: display some sort of error message for unexpected error
         });
     },

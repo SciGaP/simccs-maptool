@@ -75,6 +75,10 @@ class SimccsProjectSerializer(serializers.ModelSerializer):
         help_text="Username of new project owner, used with transfer_ownership")
     userHasWriteAccess = serializers.SerializerMethodField()
     userMostRecentProject = serializers.SerializerMethodField()
+    name = serializers.CharField(
+        required=True,
+        validators=[UniqueToUserValidator(models.SimccsProject.objects.all(), "owner")],
+    )
 
     class Meta:
         model = models.SimccsProject
@@ -181,10 +185,7 @@ class DatasetSerializer(serializers.ModelSerializer):
         help_text="Required when creating a new Dataset",
     )
     id = serializers.IntegerField(read_only=True)
-    name = serializers.CharField(
-        required=True,
-        validators=[UniqueToUserValidator(models.Dataset.objects.all(), "owner")],
-    )
+    name = serializers.CharField(required=True)
     owner = serializers.SlugRelatedField(slug_field='username', read_only=True)
     data_product_uri = serializers.CharField(read_only=True)
     original_data_product_uri = serializers.CharField(read_only=True)
@@ -200,6 +201,7 @@ class DatasetSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Dataset
         fields = "__all__"
+        validators = []
 
     @transaction.atomic
     def create(self, validated_data):
@@ -223,7 +225,8 @@ class DatasetSerializer(serializers.ModelSerializer):
             )
         except Exception as e:
             logger.exception(f"Failed to transform file {file.name}")
-            raise serializers.ValidationError({'file': [f'Failed to transform file to GeoJSON: {e}']})
+            raise serializers.ValidationError(
+                {'file': [f'Failed to transform file to GeoJSON: {e}']})
         if transformed_file:
             data_product = user_storage.save(
                 request,
@@ -249,7 +252,8 @@ class DatasetSerializer(serializers.ModelSerializer):
         if content_type.startswith("text/"):
             return self._transform_text_file(input_file)
         else:
-            raise Exception(f"Unrecognized file type {content_type}. File must be a plain text CSV file.")
+            raise Exception(
+                f"Unrecognized file type {content_type}. File must be a plain text CSV file.")
 
     def _transform_text_file(self, input_file):
         # assume the delimiter is "tab"
@@ -290,6 +294,17 @@ class DatasetSerializer(serializers.ModelSerializer):
     def get_userIsProjectOwner(self, instance):
         return self.context['request'].user == instance.simccs_project.owner
 
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        queryset = models.Dataset.objects.filter(
+            simccs_project_id=data['simccs_project'], name=data['name'])
+        if self.instance:
+            queryset = queryset.exclude(pk=self.instance.pk)
+        if queryset.exists():
+            raise serializers.ValidationError(
+                {'name': ["This project already has a dataset with that name."]})
+        return data
+
 
 class MaptoolDataSerializer(serializers.ModelSerializer):
     bbox = BboxField(required=False, allow_null=True)
@@ -312,10 +327,7 @@ class MaptoolConfigSerializer(serializers.ModelSerializer):
 class CaseSerializer(serializers.ModelSerializer):
     maptool = MaptoolConfigSerializer(required=True, allow_null=True)
     owner = serializers.SlugRelatedField(slug_field='username', read_only=True)
-    title = serializers.CharField(
-        required=True,
-        validators=[UniqueToUserValidator(models.Case.objects.all(), "owner")],
-    )
+    title = serializers.CharField(required=True)
     description = serializers.CharField(
         style={"base_template": "textarea.html"}, allow_blank=True
     )
@@ -328,6 +340,7 @@ class CaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Case
         fields = "__all__"
+        validators = []
 
     def create(self, validated_data):
         request = self.context["request"]
@@ -376,6 +389,17 @@ class CaseSerializer(serializers.ModelSerializer):
 
     def get_airavata_project(self, instance):
         return instance.simccs_project.airavata_project
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        queryset = models.Case.objects.filter(
+            simccs_project_id=data['simccs_project'], title=data['title'])
+        if self.instance:
+            queryset = queryset.exclude(pk=self.instance.pk)
+        if queryset.exists():
+            raise serializers.ValidationError(
+                {'title': ["This project already has a case with that title."]})
+        return data
 
 
 class ParametersSerializer(serializers.Serializer):
@@ -585,8 +609,11 @@ class WorkspaceSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
         request = self.context['request']
-        if models.Workspace.objects.exclude(pk=self.instance.pk).filter(
-                case_id=data['case'], owner=request.user, name=data['name']).exists():
+        queryset = models.Workspace.objects.filter(
+            case_id=data['case'], owner=request.user, name=data['name'])
+        if self.instance:
+            queryset.exclude(pk=self.instance.pk)
+        if queryset.exists():
             raise serializers.ValidationError(
-                {'name': "You already have a workspace with that name for this case."})
+                {'name': ["You already have a workspace with that name for this case."]})
         return data

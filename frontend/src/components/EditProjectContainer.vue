@@ -2,6 +2,7 @@
   <project-editor
     v-if="project"
     :value="project"
+    :serverValidationErrors="serverValidationErrors"
     @submit="onSubmit"
     @transferOwnership="onTransferOwnership"
   />
@@ -22,6 +23,7 @@ export default {
   data() {
     return {
       project: null,
+      serverValidationErrors: null,
     };
   },
   created() {
@@ -36,13 +38,19 @@ export default {
       utils.FetchUtils.put(
         `/maptool/api/projects/${encodeURIComponent(this.projectId)}/`,
         updatedProject
-      ).then(() => {
-        // TODO: add a success message
-        this.$router.push({
-          name: "project",
-          params: { projectId: this.projectId },
+      )
+        .then(() => {
+          // TODO: add a success message
+          this.$router.push({
+            name: "project",
+            params: { projectId: this.projectId },
+          });
+        })
+        .catch((e) => {
+          if (e.details && e.details.response) {
+            this.serverValidationErrors = e.details.response;
+          }
         });
-      });
     },
     onTransferOwnership(updatedProject, newOwner) {
       const url = `/maptool/api/projects/${encodeURIComponent(

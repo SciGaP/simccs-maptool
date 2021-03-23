@@ -10,6 +10,9 @@
         <b-form-invalid-feedback v-if="!$v.project.name.required"
           >This field is required.</b-form-invalid-feedback
         >
+        <b-form-invalid-feedback v-if="!$v.project.name.serverValidation">{{
+          serverValidationErrors.name.join(" ")
+        }}</b-form-invalid-feedback>
       </b-form-group>
 
       <b-form-group
@@ -99,6 +102,7 @@
 import { validationMixin } from "vuelidate";
 import { required } from "vuelidate/lib/validators";
 import { validateState } from "../validators/formHelpers";
+import validateFromServer from "../validators/validateFromServer";
 const { services } = AiravataAPI;
 
 export default {
@@ -108,12 +112,18 @@ export default {
       type: Object,
       required: true,
     },
+    // parent component should pass in any server side validation errors that
+    // occur on submission
+    serverValidationErrors: {
+      type: Object,
+    },
   },
   data() {
     return {
       project: JSON.parse(JSON.stringify(this.value)), // clone the value prop
       groups: null,
       newOwner: null,
+      submittedData: null,
     };
   },
   created() {
@@ -162,6 +172,13 @@ export default {
       project: {
         name: {
           required,
+          serverValidation: validateFromServer(
+            () => (this.submittedData ? this.submittedData.name : null),
+            () =>
+              this.serverValidationErrors
+                ? this.serverValidationErrors.name
+                : null
+          ),
         },
       },
     };
@@ -170,6 +187,7 @@ export default {
     validateState,
     onSubmit(event) {
       event.preventDefault();
+      this.submittedData = this.project;
       this.$emit("submit", this.project);
     },
     loadGroups() {

@@ -36,6 +36,9 @@ class SimccsProject(models.Model):
         return SimccsProject.objects.filter(
             Q(owner=request.user) | Q(group__in=group_ids))
 
+    class Meta:
+        unique_together = ["owner", "name"]
+
 
 class Case(models.Model):
     title = models.CharField(max_length=255)
@@ -44,7 +47,7 @@ class Case(models.Model):
     simccs_project = models.ForeignKey(SimccsProject, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ["owner", "title"]
+        unique_together = ["simccs_project", "title"]
 
 
 class Dataset(models.Model):
@@ -63,7 +66,7 @@ class Dataset(models.Model):
     simccs_project = models.ForeignKey(SimccsProject, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ["owner", "name"]
+        unique_together = ["simccs_project", "name"]
 
 
 class MaptoolConfig(models.Model):

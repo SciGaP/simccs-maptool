@@ -70,7 +70,7 @@ export default {
       return this.projects
         ? this.projects.map((p) => {
             return {
-              text: p.name,
+              text: `${p.owner} / ${p.name}`,
               value: p.id,
             };
           })
