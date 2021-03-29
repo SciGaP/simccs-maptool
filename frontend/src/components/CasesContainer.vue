@@ -19,20 +19,30 @@
           </div>
         </template>
         <template #cell(type)="data">
-          <b-badge v-if="data.value === 'source'" variant="success"
-            ><i class="fa fa-arrow-circle-up" aria-hidden="true"></i>
-            Source</b-badge
-          >
-          <b-badge v-else-if="data.value === 'sink'" variant="danger"
-            ><i class="fa fa-arrow-circle-down" aria-hidden="true"></i>
-            Sink</b-badge
-          >
+          <dataset-badge :type="data.value" />
         </template>
-        <template #cell(filename)="data">
+        <template #cell(original_filename)="data">
           <a :href="data.item.original_url">{{ data.value }}</a>
         </template>
         <template #cell(url)="data">
           <a v-if="data.value" :href="data.value">Download</a>
+        </template>
+        <template #cell(actions)="data">
+          <b-button
+            variant="secondary"
+            :to="{ name: 'dataset', params: { id: data.item.id } }"
+            v-if="data.item.userHasWriteAccess"
+          >
+            <i class="fa fa-edit" aria-hidden="true"></i>
+            Edit</b-button
+          >
+        </template>
+        <template #cell(history)="data">
+          <b-link :to="{ name: 'dataset-view', params: { id: data.item.id } }">
+            {{ data.item.versions.length }} version{{
+              data.item.versions.length > 1 ? "s" : ""
+            }}
+          </b-link>
         </template>
       </b-table>
     </b-card>
@@ -89,8 +99,10 @@
 </template>
 
 <script>
+import DatasetBadge from "./DatasetBadge.vue";
 const { utils } = AiravataAPI;
 export default {
+  components: { DatasetBadge },
   name: "cases-container",
   props: {
     projectId: {
@@ -129,24 +141,17 @@ export default {
   },
   computed: {
     datasetFields() {
-      return ["name", "type", "filename", { key: "url", label: "GeoJSON" }];
+      return [
+        "name",
+        "type",
+        { key: "original_filename", label: "Filename" },
+        { key: "url", label: "GeoJSON" },
+        "actions",
+        "history",
+      ];
     },
     datasetItems() {
-      if (!this.datasets) {
-        return [];
-      } else {
-        return this.datasets.map((ds) => {
-          return {
-            name: ds.name,
-            description: ds.description,
-            type: ds.type,
-            filename: ds.original_filename,
-            original_url: ds.original_url,
-            url: ds.url,
-            // actions: null,
-          };
-        });
-      }
+      return this.datasets ? this.datasets : [];
     },
     caseFields() {
       return ["title", "description", "owner", "actions"];

@@ -180,9 +180,38 @@ class SimccsProjectPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
 
 class DatasetVersionSerializer(serializers.ModelSerializer):
 
+    url = serializers.SerializerMethodField()
+    original_url = serializers.SerializerMethodField()
+    original_filename = serializers.SerializerMethodField()
+
     class Meta:
         model = models.DatasetVersion
-        fields = ['version', 'data_product_uri', 'original_data_product_uri', 'created']
+        fields = ['version',
+                  'data_product_uri',
+                  'original_data_product_uri',
+                  'created',
+                  'url',
+                  'original_url',
+                  'original_filename']
+
+    def get_url(self, dataset_version):
+        if dataset_version.data_product_uri:
+            return sdk_urls.get_download_url(dataset_version.data_product_uri)
+        else:
+            return None
+
+    def get_original_url(self, dataset_version):
+        return sdk_urls.get_download_url(dataset_version.original_data_product_uri)
+
+    def get_original_filename(self, dataset):
+        request = self.context["request"]
+        try:
+            data_product = request.airavata_client.getDataProduct(
+                request.authz_token, dataset.original_data_product_uri
+            )
+            return data_product.productName
+        except Exception:
+            return "N/A"
 
 
 class DatasetSerializer(serializers.ModelSerializer):
@@ -206,6 +235,7 @@ class DatasetSerializer(serializers.ModelSerializer):
     userIsProjectOwner = serializers.SerializerMethodField()
     versions = DatasetVersionSerializer(many=True, read_only=True)
     current_version = serializers.SlugRelatedField(slug_field='version', read_only=True)
+    userHasWriteAccess = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Dataset
@@ -237,12 +267,15 @@ class DatasetSerializer(serializers.ModelSerializer):
 
     def _create_dataset_version(self, dataset, file):
         request = self.context["request"]
-        project_dir = os.path.join("ProjectData", f"Project-{dataset.simccs_project.id}")
+        project_dir = os.path.join(
+            "ProjectData",
+            f"Project-{dataset.simccs_project.id}")
         original_data_product = user_storage.save(
             request, project_dir, file, name=file.name, content_type=file.content_type
         )
         dataset_version = models.DatasetVersion.objects.create(
-            version=dataset.current_version.version + 1 if dataset.current_version else 1,
+            version=(dataset.current_version.version +
+                     1 if dataset.current_version else 1),
             original_data_product_uri=original_data_product.productUri,
             dataset=dataset)
         try:
@@ -324,6 +357,9 @@ class DatasetSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {'name': ["This project already has a dataset with that name."]})
         return data
+
+    def get_userHasWriteAccess(self, instance):
+        return self.context['request'].user == instance.owner
 
 
 class MaptoolDataSerializer(serializers.ModelSerializer):

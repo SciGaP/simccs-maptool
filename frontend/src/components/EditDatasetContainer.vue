@@ -1,5 +1,6 @@
 <template>
   <dataset-editor
+    v-if="dataset"
     :value="dataset"
     :server-validation-errors="serverValidationErrors"
     @submit="onSubmit"
@@ -16,6 +17,10 @@ export default {
   mixins: [validationMixin],
   name: "new-dataset-container",
   props: {
+    id: {
+      type: [String, Number],
+      required: true,
+    },
     projectId: {
       type: [String, Number],
       required: true,
@@ -24,21 +29,25 @@ export default {
   components: {
     DatasetEditor,
   },
+  created() {
+    utils.FetchUtils.get(
+      `/maptool/api/datasets/${encodeURIComponent(this.id)}/`
+    ).then((dataset) => {
+      this.dataset = dataset;
+    });
+  },
   data() {
     return {
-      dataset: {
-        name: "",
-        type: "source",
-        description: "",
-        file: null,
-        simccs_project: this.projectId,
-      },
+      dataset: null,
       serverValidationErrors: null,
     };
   },
   methods: {
     onSubmit(formData) {
-      utils.FetchUtils.post("/maptool/api/datasets/", formData)
+      utils.FetchUtils.put(
+        `/maptool/api/datasets/${encodeURIComponent(this.id)}/`,
+        formData
+      )
         .then(() => {
           // TODO: add a success message
           this.$router.push({
