@@ -61,12 +61,37 @@ class Dataset(models.Model):
     description = models.TextField()
     type = models.CharField(max_length=16, choices=TYPE_CHOICES)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    data_product_uri = models.CharField(max_length=64)
-    original_data_product_uri = models.CharField(max_length=64)
     simccs_project = models.ForeignKey(SimccsProject, on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+    current_version = models.ForeignKey(
+        'DatasetVersion', on_delete=models.PROTECT, null=True, related_name="+")
 
     class Meta:
         unique_together = ["simccs_project", "name"]
+
+    @property
+    def data_product_uri(self):
+        return self.current_version.data_product_uri
+
+    @property
+    def original_data_product_uri(self):
+        return self.current_version.original_data_product_uri
+
+
+class DatasetVersion(models.Model):
+
+    # incrementing version number for a given dataset
+    version = models.IntegerField(default=1)
+    data_product_uri = models.CharField(max_length=64)
+    original_data_product_uri = models.CharField(max_length=64)
+    created = models.DateTimeField(auto_now_add=True)
+    dataset = models.ForeignKey(Dataset,
+                                on_delete=models.CASCADE,
+                                related_name="versions")
+
+    class Meta:
+        unique_together = ['dataset', 'version']
 
 
 class MaptoolConfig(models.Model):

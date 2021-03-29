@@ -178,6 +178,13 @@ class SimccsProjectPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
         return models.SimccsProject.filter_by_user(request)
 
 
+class DatasetVersionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.DatasetVersion
+        fields = ['version', 'data_product_uri', 'original_data_product_uri', 'created']
+
+
 class DatasetSerializer(serializers.ModelSerializer):
     file = serializers.FileField(
         write_only=True,
@@ -197,6 +204,8 @@ class DatasetSerializer(serializers.ModelSerializer):
     original_url = serializers.SerializerMethodField()
     simccs_project = SimccsProjectPrimaryKeyRelatedField()
     userIsProjectOwner = serializers.SerializerMethodField()
+    versions = DatasetVersionSerializer(many=True, read_only=True)
+    current_version = serializers.SlugRelatedField(slug_field='version', read_only=True)
 
     class Meta:
         model = models.Dataset
@@ -207,20 +216,39 @@ class DatasetSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         file = validated_data.pop("file")
         request = self.context["request"]
-        simccs_project = validated_data['simccs_project']
-        project_dir = os.path.join("ProjectData", f"Project-{simccs_project.id}")
-        original_data_product = user_storage.save(
-            request, project_dir, file, name=file.name, content_type=file.content_type
-        )
         dataset = models.Dataset.objects.create(
             **validated_data,
             owner=request.user,
-            original_data_product_uri=original_data_product.productUri,
         )
+        current_version = self._create_dataset_version(dataset, file)
+        dataset.current_version = current_version
+        dataset.save()
+        return dataset
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        file = validated_data.pop("file")
+        current_version = self._create_dataset_version(instance, file)
+        instance.current_version = current_version
+        instance.name = validated_data["name"]
+        instance.description = validated_data["description"]
+        instance.save()
+        return instance
+
+    def _create_dataset_version(self, dataset, file):
+        request = self.context["request"]
+        project_dir = os.path.join("ProjectData", f"Project-{dataset.simccs_project.id}")
+        original_data_product = user_storage.save(
+            request, project_dir, file, name=file.name, content_type=file.content_type
+        )
+        dataset_version = models.DatasetVersion.objects.create(
+            version=dataset.current_version.version + 1 if dataset.current_version else 1,
+            original_data_product_uri=original_data_product.productUri,
+            dataset=dataset)
         try:
             transformed_file = self._transform_file(
                 user_storage.open_file(request, original_data_product),
-                dataset_type=validated_data["type"],
+                dataset_type=dataset.type,
                 content_type=file.content_type
             )
         except Exception as e:
@@ -235,17 +263,9 @@ class DatasetSerializer(serializers.ModelSerializer):
                 name=transformed_file.name,
                 content_type="application/geo+json",
             )
-            dataset.data_product_uri = data_product.productUri
-            dataset.save()
-        return dataset
-
-    @transaction.atomic
-    def update(self, instance, validated_data):
-        # TODO: update file?
-        instance.name = validated_data["name"]
-        instance.description = validated_data["description"]
-        instance.save()
-        return instance
+            dataset_version.data_product_uri = data_product.productUri
+            dataset_version.save()
+        return dataset_version
 
     def _transform_file(self, input_file, dataset_type, content_type):
         # transform the file and return the transformed file (GeoJSON)
