@@ -74,7 +74,6 @@
             // has workspace ?
             if (queryParams.has('workspace')) {
                   load_workspace(queryParams.get('workspace'));
-                  return;
             }
             // has case ?
             if (queryParams.has('case')) {
@@ -693,6 +692,19 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                   });
       }
 
+      // recreate scenario
+      function re_create_scenario(scenario_data) {
+            var panelid = scenario_data['scenario_id'];
+            var title = scenario_data['title'];
+            sidebar.addPanel({
+                  id:   panelid,
+                  tab:  '<i class="fa fa-cog" aria-hidden="true"></i>',
+                  title: title,
+                  pane: '<div style="font-size: 125%">' + "data" +"</div>",
+                  });
+                  
+      }
+
       // load workspace id
       async function load_workspace(workspaceId) {
             var workspacejson;
@@ -702,6 +714,11 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             //console.log(case_id);
             // load case first
             set_casedata(case_id);
+            // load scenarios
+            for (const entry of workspacejson["scenarios"]) {
+                  re_create_scenario(entry);
+            }
+
       }
 
 </script>
