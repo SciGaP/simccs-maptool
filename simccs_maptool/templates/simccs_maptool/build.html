@@ -71,9 +71,12 @@
          $(document).ready(function() {
             // set up data
             var queryParams = new URLSearchParams(document.location.search);
+            // has workspace ?
+            if (queryParams.has('workspace')) {
+                  load_workspace(queryParams.get('workspace'));
+            }
+            // 
             set_casedata(queryParams.get('case'));
-            // for debug
-            //set_casedata();
             sidebar.open("home");
 
             //bind slector event
@@ -684,6 +687,13 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                         console.log("workspace save result", result);
                         return result;
                   });
+      }
+
+      // load workspace id
+      async function load_workspace(workspaceId) {
+            var workspacejson;
+            workspacejson = await getdata(`/maptool/api/workspace/${workspaceId}/`);
+            console.log(workspacejson);
       }
 
 </script>
