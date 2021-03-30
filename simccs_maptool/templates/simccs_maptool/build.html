@@ -692,8 +692,10 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
       // load workspace id
       async function load_workspace(workspaceId) {
             var workspacejson;
-            workspacejson = await getdata(`/maptool/api/workspace/${workspaceId}/`);
+            workspacejson = await getdata(`/maptool/api/workspaces/${workspaceId}/`);
             console.log(workspacejson);
+            case_id = workspacejson["case"];
+            console.log(case_id);
       }
 
 </script>
