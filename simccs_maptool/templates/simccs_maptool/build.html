@@ -74,9 +74,13 @@
             // has workspace ?
             if (queryParams.has('workspace')) {
                   load_workspace(queryParams.get('workspace'));
+                  return;
             }
-            // 
-            set_casedata(queryParams.get('case'));
+            // has case ?
+            if (queryParams.has('case')) {
+                  set_casedata(queryParams.get('case')); 
+            }
+
             sidebar.open("home");
 
             //bind slector event
@@ -693,9 +697,11 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
       async function load_workspace(workspaceId) {
             var workspacejson;
             workspacejson = await getdata(`/maptool/api/workspaces/${workspaceId}/`);
-            console.log(workspacejson);
+            //console.log(workspacejson);
             case_id = workspacejson["case"];
-            console.log(case_id);
+            //console.log(case_id);
+            // load case first
+            set_casedata(case_id);
       }
 
 </script>
