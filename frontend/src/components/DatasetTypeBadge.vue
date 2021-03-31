@@ -1,8 +1,8 @@
 <template>
-  <b-badge v-if="type === 'source'" variant="success"
+  <b-badge v-if="type === 'source'" variant="danger"
     ><i class="fa fa-arrow-circle-up" aria-hidden="true"></i> Source</b-badge
   >
-  <b-badge v-else-if="type === 'sink'" variant="danger"
+  <b-badge v-else-if="type === 'sink'" variant="success"
     ><i class="fa fa-arrow-circle-down" aria-hidden="true"></i> Sink</b-badge
   >
 </template>

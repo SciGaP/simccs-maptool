@@ -3,7 +3,7 @@
     <b-card-body>
       <b-card-title>Dataset: {{ dataset.name }} </b-card-title>
       <b-card-sub-title>
-        <dataset-badge :type="dataset.type" />
+        <dataset-type-badge :type="dataset.type" />
       </b-card-sub-title>
       <b-table :items="versions" :fields="fields" class="mt-2">
         <template #cell(version)="data">
@@ -21,12 +21,17 @@
           <a v-if="data.value" :href="data.value">Download</a>
         </template>
       </b-table>
+      <b-button variant="primary" :to="{ name: 'dataset', params: { id: id } }">
+        <i class="fa fa-edit" aria-hidden="true"></i>
+        Edit</b-button
+      >
+      <b-button variant="secondary" :to="{ name: 'project' }"> Back</b-button>
     </b-card-body>
   </b-card>
 </template>
 
 <script>
-import DatasetBadge from "./DatasetBadge.vue";
+import DatasetTypeBadge from "./DatasetTypeBadge.vue";
 const { utils } = AiravataAPI;
 
 export default {
@@ -40,7 +45,7 @@ export default {
       required: true,
     },
   },
-  components: { DatasetBadge },
+  components: { DatasetTypeBadge },
   created() {
     utils.FetchUtils.get(
       `/maptool/api/datasets/${encodeURIComponent(this.id)}/`
@@ -52,10 +57,22 @@ export default {
     versions() {
       const result = this.dataset ? this.dataset.versions : [];
       result.sort((a, b) => b.version - a.version);
+      result.forEach((v) => {
+        const date = new Date(v.created);
+        v.created = date.toLocaleString("en-US", {
+          dateStyle: "short",
+          timeStyle: "short",
+        });
+      });
       return result;
     },
     fields() {
-      return ["version", "original_filename", { key: "url", label: "GeoJSON" }];
+      return [
+        "version",
+        "original_filename",
+        { key: "url", label: "GeoJSON" },
+        "created",
+      ];
     },
   },
   data() {

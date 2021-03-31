@@ -13,19 +13,27 @@
     <b-card>
       <b-table :items="datasetItems" :fields="datasetFields">
         <template #cell(name)="data">
-          {{ data.value }}
+          <span class="text-break">{{ data.value }}</span>
           <div class="text-muted">
             <small>{{ data.item.description }}</small>
           </div>
         </template>
         <template #cell(type)="data">
-          <dataset-badge :type="data.value" />
+          <dataset-type-badge :type="data.value" />
         </template>
-        <template #cell(original_filename)="data">
-          <a :href="data.item.original_url">{{ data.value }}</a>
-        </template>
-        <template #cell(url)="data">
-          <a v-if="data.value" :href="data.value">Download</a>
+        <template #cell(original_filename)="data" style="max-width: 20%">
+          <a
+            class="text-break"
+            :href="data.item.original_url"
+            target="_blank"
+            >{{ data.value }}</a
+          >
+          <br />
+          <small
+            ><a v-if="data.item.url" :href="data.item.url" target="_blank"
+              >Download GeoJSON</a
+            ></small
+          >
         </template>
         <template #cell(actions)="data">
           <b-button
@@ -37,12 +45,24 @@
             Edit</b-button
           >
         </template>
-        <template #cell(history)="data">
-          <b-link :to="{ name: 'dataset-view', params: { id: data.item.id } }">
-            {{ data.item.versions.length }} version{{
-              data.item.versions.length > 1 ? "s" : ""
-            }}
-          </b-link>
+        <template #cell(updated)="data">
+          {{
+            new Date(data.value).toLocaleString("en-US", {
+              dateStyle: "short",
+              timeStyle: "short",
+            })
+          }}
+          <br />
+          <small
+            ><b-link
+              :to="{ name: 'dataset-view', params: { id: data.item.id } }"
+              class="text-muted"
+            >
+              {{ data.item.versions.length }} version{{
+                data.item.versions.length > 1 ? "s" : ""
+              }}
+            </b-link></small
+          >
         </template>
       </b-table>
     </b-card>
@@ -99,10 +119,10 @@
 </template>
 
 <script>
-import DatasetBadge from "./DatasetBadge.vue";
+import DatasetTypeBadge from "./DatasetTypeBadge.vue";
 const { utils } = AiravataAPI;
 export default {
-  components: { DatasetBadge },
+  components: { DatasetTypeBadge },
   name: "cases-container",
   props: {
     projectId: {
@@ -143,11 +163,10 @@ export default {
     datasetFields() {
       return [
         "name",
-        "type",
+        { key: "type", sortable: true },
         { key: "original_filename", label: "Filename" },
-        { key: "url", label: "GeoJSON" },
+        { key: "updated", sortable: true },
         "actions",
-        "history",
       ];
     },
     datasetItems() {
