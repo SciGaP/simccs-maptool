@@ -39,10 +39,18 @@
           <b-button
             variant="secondary"
             :to="{ name: 'dataset', params: { id: data.item.id } }"
-            v-if="data.item.userHasWriteAccess"
+            v-if="data.item.userHasWriteAccess && !data.item.deleted"
           >
             <i class="fa fa-edit" aria-hidden="true"></i>
             Edit</b-button
+          >
+          <b-button
+            variant="secondary"
+            v-if="data.item.userHasWriteAccess && data.item.deleted"
+            @click="undeleteDataset(data.item.id)"
+          >
+            <i class="fa fa-trash-restore" aria-hidden="true"></i>
+            Undelete</b-button
           >
         </template>
         <template #cell(updated)="data">
@@ -53,7 +61,7 @@
             })
           }}
           <br />
-          <small
+          <small v-if="!data.item.deleted"
             ><b-link
               :to="{ name: 'dataset-view', params: { id: data.item.id } }"
               class="text-muted"
@@ -65,6 +73,15 @@
           >
         </template>
       </b-table>
+      <b-button
+        size="sm"
+        variant="secondary"
+        @click="
+          showDeletedDatasets = !showDeletedDatasets;
+          fetchData();
+        "
+        >{{ showDeletedDatasets ? "Hide deleted" : "Show deleted" }}</b-button
+      >
     </b-card>
     <div class="row">
       <div class="col">
@@ -134,6 +151,7 @@ export default {
     return {
       datasets: null,
       cases: null,
+      showDeletedDatasets: false,
     };
   },
   created() {
@@ -142,7 +160,9 @@ export default {
   methods: {
     fetchData() {
       utils.FetchUtils.get(
-        `/maptool/api/datasets/?project=${encodeURIComponent(this.projectId)}`
+        `/maptool/api/datasets/${
+          this.showDeletedDatasets ? "list_deleted/" : ""
+        }?project=${encodeURIComponent(this.projectId)}`
       ).then((datasets) => {
         this.datasets = datasets;
       });
@@ -157,6 +177,10 @@ export default {
         `/maptool/api/cases/${caseId}/claim_ownership/`
       ).then(this.fetchData);
       // TODO: handle failure
+    },
+    undeleteDataset(datasetId) {
+      const url = `/maptool/api/datasets/${datasetId}/undelete/`;
+      utils.FetchUtils.put(url, {}).then(this.fetchData);
     },
   },
   computed: {

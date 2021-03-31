@@ -66,6 +66,7 @@ class Dataset(models.Model):
     updated = models.DateTimeField(auto_now=True)
     current_version = models.ForeignKey(
         'DatasetVersion', on_delete=models.PROTECT, null=True, related_name="+")
+    deleted = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ["simccs_project", "name"]

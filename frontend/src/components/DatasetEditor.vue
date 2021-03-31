@@ -39,7 +39,15 @@
         }}</b-form-invalid-feedback>
       </b-form-group>
       <b-button type="submit" variant="primary" :disabled="$v.$invalid"
-        >Submit</b-button
+        >Save</b-button
+      >
+      <b-button
+        v-if="isEditing"
+        type="button"
+        variant="danger"
+        @click="onDelete"
+      >
+        Delete</b-button
       >
     </b-form>
   </b-card>
@@ -132,6 +140,9 @@ export default {
       const result = JSON.parse(JSON.stringify(this.value));
       result.file = null;
       return result;
+    },
+    onDelete() {
+      this.$emit("delete");
     },
   },
 };

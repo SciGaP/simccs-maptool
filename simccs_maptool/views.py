@@ -631,10 +631,16 @@ class DatasetViewSet(viewsets.ModelViewSet):
         queryset = models.Dataset.objects.filter(
             Q(simccs_project__owner=request.user) |
             Q(simccs_project__group__in=group_ids))
+        if self.action != 'undelete':
+            queryset = queryset.filter(deleted=False)
         simccs_project = self.request.query_params.get('project', None)
         if simccs_project is not None:
             queryset = queryset.filter(simccs_project=simccs_project)
         return queryset
+
+    def perform_destroy(self, instance):
+        instance.deleted = True
+        instance.save()
 
     @action(detail=True,
             methods=['post'],
@@ -645,6 +651,28 @@ class DatasetViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         # update owner field
         serializer.instance.owner = request.user
+        serializer.instance.save()
+        return Response(serializer.data)
+
+    @action(detail=False)
+    def list_deleted(self, request):
+        group_ids = models.get_user_group_membership_ids(request)
+        queryset = models.Dataset.objects.filter(
+            Q(simccs_project__owner=request.user) |
+            Q(simccs_project__group__in=group_ids))
+        queryset = queryset.filter(deleted=True)
+        simccs_project = self.request.query_params.get('project', None)
+        if simccs_project is not None:
+            queryset = queryset.filter(simccs_project=simccs_project)
+        instances = queryset.all()
+        serializer = self.get_serializer(instances, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['put'])
+    def undelete(self, request, pk=None):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        serializer.instance.deleted = False
         serializer.instance.save()
         return Response(serializer.data)
 
