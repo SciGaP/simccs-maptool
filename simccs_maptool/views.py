@@ -626,16 +626,9 @@ class DatasetViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         # only return Datasets that the user is the project's owner or that
         # user is a member of the project's group
-        request = self.request
-        group_ids = models.get_user_group_membership_ids(request)
-        queryset = models.Dataset.objects.filter(
-            Q(simccs_project__owner=request.user) |
-            Q(simccs_project__group__in=group_ids))
+        queryset = self._get_base_queryset()
         if self.action != 'undelete':
             queryset = queryset.filter(deleted=False)
-        simccs_project = self.request.query_params.get('project', None)
-        if simccs_project is not None:
-            queryset = queryset.filter(simccs_project=simccs_project)
         return queryset
 
     def perform_destroy(self, instance):
@@ -656,14 +649,8 @@ class DatasetViewSet(viewsets.ModelViewSet):
 
     @action(detail=False)
     def list_deleted(self, request):
-        group_ids = models.get_user_group_membership_ids(request)
-        queryset = models.Dataset.objects.filter(
-            Q(simccs_project__owner=request.user) |
-            Q(simccs_project__group__in=group_ids))
+        queryset = self._get_base_queryset()
         queryset = queryset.filter(deleted=True)
-        simccs_project = self.request.query_params.get('project', None)
-        if simccs_project is not None:
-            queryset = queryset.filter(simccs_project=simccs_project)
         instances = queryset.all()
         serializer = self.get_serializer(instances, many=True)
         return Response(serializer.data)
@@ -675,6 +662,17 @@ class DatasetViewSet(viewsets.ModelViewSet):
         serializer.instance.deleted = False
         serializer.instance.save()
         return Response(serializer.data)
+
+    def _get_base_queryset(self):
+        request = self.request
+        group_ids = models.get_user_group_membership_ids(request)
+        queryset = models.Dataset.objects.filter(
+            Q(simccs_project__owner=request.user) |
+            Q(simccs_project__group__in=group_ids))
+        simccs_project = self.request.query_params.get('project', None)
+        if simccs_project is not None:
+            queryset = queryset.filter(simccs_project=simccs_project)
+        return queryset
 
 
 class WorkspaceViewSet(viewsets.ModelViewSet):

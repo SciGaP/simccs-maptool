@@ -426,15 +426,10 @@ export default {
       this.$delete(this.layers, datasetId);
     },
     getDataset(datasetId) {
-      const dataset = this.datasets.find((ds) => ds.id === datasetId);
-      if (!dataset) {
-        // may be deleted, check in case's datasets
-        const caseDataset = this.aCase.datasets.find(
-          (ds) => ds.id === datasetId
-        );
-        return caseDataset;
-      }
-      return dataset;
+      // sourceDatasets and sinkDatasets include also a Case's deleted datasets
+      return this.sourceDatasets
+        .concat(this.sinkDatasets)
+        .find((ds) => ds.id === datasetId);
     },
     loadDatasetLayer(dataset) {
       return utils.FetchUtils.get(dataset.url).then((geojson) => {
