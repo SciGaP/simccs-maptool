@@ -4,6 +4,7 @@
     :value="dataset"
     :server-validation-errors="serverValidationErrors"
     @submit="onSubmit"
+    @delete="onDelete"
   />
 </template>
 
@@ -61,6 +62,16 @@ export default {
           }
           // TODO else display some error message for unexpected error
         });
+    },
+    onDelete() {
+      utils.FetchUtils.delete(
+        `/maptool/api/datasets/${encodeURIComponent(this.id)}/`
+      ).then(() => {
+        this.$router.push({
+          name: "project",
+          params: { projectId: this.projectId },
+        });
+      });
     },
     validateState,
   },
