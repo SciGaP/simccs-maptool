@@ -240,34 +240,28 @@ export default {
     },
     sourceDatasets() {
       if (this.datasets) {
-        return this.datasets.filter((ds) => ds.type === "source");
+        const sources = this.datasets.filter((ds) => ds.type === "source");
+        // Add deleted sources that are used by the case to the list
+        this.aCase.datasets
+          .filter((ds) => ds.type === "source" && ds.deleted)
+          .forEach((ds) => {
+            sources.push(ds);
+          });
+        return sources;
       } else {
         return [];
       }
     },
-    datasetOptions() {
-      const sourceOptions = this.sourceDatasets.map((ds) => {
-        return {
-          text: ds.name,
-          value: ds.id,
-        };
-      });
-      utils.StringUtils.sortIgnoreCase(sourceOptions, (o) => o.text);
-      const sinkOptions = this.sinkDatasets.map((ds) => {
-        return {
-          text: ds.name,
-          value: ds.id,
-        };
-      });
-      utils.StringUtils.sortIgnoreCase(sinkOptions, (o) => o.text);
-      return [
-        { label: "Sources", options: sourceOptions },
-        { label: "Sinks", options: sinkOptions },
-      ];
-    },
     sinkDatasets() {
       if (this.datasets) {
-        return this.datasets.filter((ds) => ds.type === "sink");
+        const sinks = this.datasets.filter((ds) => ds.type === "sink");
+        // Add deleted sources that are used by the case to the list
+        this.aCase.datasets
+          .filter((ds) => ds.type === "sink" && ds.deleted)
+          .forEach((ds) => {
+            sinks.push(ds);
+          });
+        return sinks;
       } else {
         return [];
       }
@@ -336,19 +330,19 @@ export default {
       };
       const sourceOptions = this.sourceDatasets.map((ds) => {
         return {
-          text: ds.name,
+          text: `${ds.name}${ds.deleted ? " (deleted)" : ""}`,
           value: ds.id,
           // NOTE: disable, don't filter, already selected options.
           // Dynamically removing options messes up the selected one.
-          disabled: !notAlreadySelected(ds),
+          disabled: !notAlreadySelected(ds) || ds.deleted,
         };
       });
       utils.StringUtils.sortIgnoreCase(sourceOptions, (o) => o.text);
       const sinkOptions = this.sinkDatasets.map((ds) => {
         return {
-          text: ds.name,
+          text: `${ds.name}${ds.deleted ? " (deleted)" : ""}`,
           value: ds.id,
-          disabled: !notAlreadySelected(ds),
+          disabled: !notAlreadySelected(ds) || ds.deleted,
         };
       });
       utils.StringUtils.sortIgnoreCase(sinkOptions, (o) => o.text);
@@ -432,7 +426,15 @@ export default {
       this.$delete(this.layers, datasetId);
     },
     getDataset(datasetId) {
-      return this.datasets.find((ds) => ds.id === datasetId);
+      const dataset = this.datasets.find((ds) => ds.id === datasetId);
+      if (!dataset) {
+        // may be deleted, check in case's datasets
+        const caseDataset = this.aCase.datasets.find(
+          (ds) => ds.id === datasetId
+        );
+        return caseDataset;
+      }
+      return dataset;
     },
     loadDatasetLayer(dataset) {
       return utils.FetchUtils.get(dataset.url).then((geojson) => {

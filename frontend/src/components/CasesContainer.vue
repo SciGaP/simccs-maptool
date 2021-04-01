@@ -73,15 +73,20 @@
           >
         </template>
       </b-table>
-      <b-button
-        size="sm"
-        variant="secondary"
-        @click="
-          showDeletedDatasets = !showDeletedDatasets;
-          fetchData();
-        "
-        >{{ showDeletedDatasets ? "Hide deleted" : "Show deleted" }}</b-button
-      >
+      <small v-if="deletedDatasets.length > 0">
+        <b-link
+          class="text-muted"
+          @click="showDeletedDatasets = !showDeletedDatasets"
+        >
+          {{
+            showDeletedDatasets
+              ? "Hide deleted datasets"
+              : `Show ${deletedDatasets.length} deleted dataset${
+                  deletedDatasets.length > 1 ? "s" : ""
+                }`
+          }}
+        </b-link>
+      </small>
     </b-card>
     <div class="row">
       <div class="col">
@@ -150,6 +155,7 @@ export default {
   data() {
     return {
       datasets: null,
+      deletedDatasets: null,
       cases: null,
       showDeletedDatasets: false,
     };
@@ -160,11 +166,19 @@ export default {
   methods: {
     fetchData() {
       utils.FetchUtils.get(
-        `/maptool/api/datasets/${
-          this.showDeletedDatasets ? "list_deleted/" : ""
-        }?project=${encodeURIComponent(this.projectId)}`
+        `/maptool/api/datasets/?project=${encodeURIComponent(this.projectId)}`
       ).then((datasets) => {
         this.datasets = datasets;
+      });
+      utils.FetchUtils.get(
+        `/maptool/api/datasets/list_deleted/?project=${encodeURIComponent(
+          this.projectId
+        )}`
+      ).then((datasets) => {
+        this.deletedDatasets = datasets;
+        if (this.deletedDatasets.length === 0) {
+          this.showDeletedDatasets = false;
+        }
       });
       utils.FetchUtils.get(
         `/maptool/api/cases/?project=${encodeURIComponent(this.projectId)}`
@@ -194,7 +208,11 @@ export default {
       ];
     },
     datasetItems() {
-      return this.datasets ? this.datasets : [];
+      if (this.datasets && this.deletedDatasets) {
+        return this.showDeletedDatasets ? this.deletedDatasets : this.datasets;
+      } else {
+        return [];
+      }
     },
     caseFields() {
       return ["title", "description", "owner", "actions"];
