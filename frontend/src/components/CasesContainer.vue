@@ -73,7 +73,7 @@
           >
         </template>
       </b-table>
-      <small v-if="deletedDatasets.length > 0">
+      <small v-if="deletedDatasets && deletedDatasets.length > 0">
         <b-link
           class="text-muted"
           @click="showDeletedDatasets = !showDeletedDatasets"
