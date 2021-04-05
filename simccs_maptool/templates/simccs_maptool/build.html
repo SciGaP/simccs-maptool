@@ -116,7 +116,6 @@ var candidatenetwork_panel = {}; // panelid: network layer
 var candidatenetwork_cached = {} // panelid: network data 
 // panelid: "Sources": data.sources, "Sinks": data.sinks,"Cplex-input-file": data.mps, "Dataset-id": current_dataset_id
 // "capacityTarget":capacityTarget,"projectPeriod":numYears,"capitalRecoveryRate":crf
-var cplexInputValues_panel = {} 
 var current_dataset_id = "Lower48US";
 
 async function set_casedata(caseId) {
@@ -291,8 +290,6 @@ function displayselecteddata(panelid) {
       div.innerHTML += mp_div;
       div.innerHTML += "<br>";
       div.innerHTML += '<button type="button" id="bn_generatecandidatenetwork_'+ panelid +'" class="btn btn-primary btn-sm btn-block" onclick=generatecandidatenetwork("'+ panelid +'")>Generate Candidate Network</button>';
-      div.innerHTML += '<button type="button" id="bn_generatemps_' + panelid + '" class="btn btn-primary btn-sm btn-block" onclick=generatempsfile("'+ panelid + '")>Generate MPS file</button>';
-      div.innerHTML +=  '<a target="_blank" download="cap.mps" href="" id="mps_download_' + panelid + '" style="display: none;">Download MPS file</a>';
       div.innerHTML += "<br>";
       div.innerHTML += '<input class="form-control input-sm" id="experiment_name_'+panelid+'" name="" placeholder="Experiment Name (optional)" type="text">';
       div.innerHTML += '<button type="button" class="btn btn-primary btn-sm btn-block" onclick=case_submitexperiment("'+ panelid +'")><strong>Create a New Experiment</strong></button>';
@@ -417,20 +414,14 @@ function generatempsfile(panelid,showmodal=1,paras=[]) {
     m_html = m_html.replace("sinks_input_file", data["sinks"]);
 $('body').append(m_html);
 
-cplexInputValues_panel[panelid] = {"Sources": data["sources"], "Sinks": data["sinks"],"Cplex-input-file": data["mps"], "Dataset-id": current_dataset_id,"capacityTarget":capacityTarget,"projectPeriod":numYears,"capitalRecoveryRate":crf};
-
-// Create a link to download mps file
-var mpsDownloadLink = document.getElementById("mps_download_" + panelid);
-mpsDownloadLink.setAttribute("href",'');
-mpsDownloadLink.setAttribute("href", '/api/download?data-product-uri='+ data["mps"]);
-document.getElementById("mps_download_" + panelid).style.display = 'inline';
-
 //console.log(showmodal);
 if (showmodal == 1) {
       //$("#dynamicModal").modal();
       //$("#dynamicModal").modal('show'); 
       alert("MPS file was generated successfully.");
 }
+return {"Sources": data["sources"], "Sinks": data["sinks"],"Cplex-input-file": data["mps"], "Dataset-id": current_dataset_id,"capacityTarget":capacityTarget,"projectPeriod":numYears,"capitalRecoveryRate":crf};
+
           }).catch(display_error_modal);
     });
 }
@@ -441,17 +432,11 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
       var cplexInputValues;
       var mpsRequest = null;
       if (batchmode == 0) {
-            if (cplexInputValues_panel.hasOwnProperty(panelid)) {
-            cplexInputValues = cplexInputValues_panel[panelid];
-            mpsRequest = Promise.resolve(cplexInputValues);
-            } else {
-            //generatempsfile(panelid,showmodal=false);
-            mpsRequest = generatempsfile(panelid,showmodal=0).then(() => {cplexInputValues = cplexInputValues_panel[panelid]});
-            }
+            mpsRequest = generatempsfile(panelid,showmodal=0).then((result) => {cplexInputValues = result});
       }
       // force regenerate mps for batch mode
       if (batchmode == 1) {
-            mpsRequest = generatempsfile(panelid,showmodal=0,paras).then(() => {cplexInputValues = cplexInputValues_panel[panelid]});
+            mpsRequest = generatempsfile(panelid,showmodal=0,paras).then((result) => {cplexInputValues = result});
       }
 
       mpsRequest.then(() => {     
