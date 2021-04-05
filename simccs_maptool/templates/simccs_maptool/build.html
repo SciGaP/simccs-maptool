@@ -332,7 +332,7 @@ function create_scenario() {
 
 
 //generate MPS file
-function generatempsfile(panelid,showmodal=1,paras=[]) {
+function generatempsfile(panelid,showmodal=1,paras=[], filename=null) {
     // get the data from panelid
     //var source_selection = sourceselection_panel[panelid];
     //var sink_selection = sinkselection_panel[panelid];
@@ -376,6 +376,9 @@ function generatempsfile(panelid,showmodal=1,paras=[]) {
     formData.set('sources', sourcedata);
     formData.set('sinks', sinkdata);
     formData.set('dataset', current_dataset_id);
+    if (filename) {
+          formData.set('mpsFilename', filename);
+    }
 
     // check if needs run candidate network _cached
     // Use the cachedCandidateNetwork if the selected sources and sinks are the same
@@ -431,12 +434,14 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
       //console.log(panelid);
       var cplexInputValues;
       var mpsRequest = null;
+      // Name the mps file based on the scenario name
+      var filename = scenario_title_panel[panelid] + ".mps";
       if (batchmode == 0) {
-            mpsRequest = generatempsfile(panelid,showmodal=0).then((result) => {cplexInputValues = result});
+            mpsRequest = generatempsfile(panelid,showmodal=0,[],filename).then((result) => {cplexInputValues = result});
       }
       // force regenerate mps for batch mode
       if (batchmode == 1) {
-            mpsRequest = generatempsfile(panelid,showmodal=0,paras).then((result) => {cplexInputValues = result});
+            mpsRequest = generatempsfile(panelid,showmodal=0,paras,filename).then((result) => {cplexInputValues = result});
       }
 
       mpsRequest.then(() => {     

@@ -113,6 +113,7 @@ def generate_mps(request):
     sinks = request.POST["sinks"]
     dataset_id = request.POST["dataset"]
     candidate_network = request.POST.get("candidateNetwork", None)
+    mps_filename = request.POST.get("mpsFilename", None)
 
     with tempfile.TemporaryDirectory() as datasets_basepath:
         dataset_dir = datasets.get_dataset_dir(dataset_id)
@@ -142,6 +143,7 @@ def generate_mps(request):
                 capital_recovery_rate=capital_recovery_rate,
                 num_years=num_years,
                 capacity_target=capacity_target,
+                filename=mps_filename,
             )
             with open(
                 simccs_helper.get_sources_file(scenario_dir)

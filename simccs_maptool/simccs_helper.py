@@ -1,6 +1,8 @@
+import glob
 import io
 import logging
 import os
+import re
 import shutil
 
 logger = logging.getLogger(__name__)
@@ -85,7 +87,7 @@ def get_sinks_file(scenario_dir):
 
 
 def get_mps_file(scenario_dir):
-    return os.path.join(scenario_dir, "MIP", "cap.mps")
+    return next(glob.iglob(os.path.join(scenario_dir, "MIP", "*.mps")), None)
 
 
 def get_candidate_network_file(scenario_dir):
@@ -135,9 +137,11 @@ def _get_scenario_path_components(scenario_dir):
 
 
 def write_mps_file(
-    scenario_dir, capital_recovery_rate=0.1, num_years=10, capacity_target=5
+    scenario_dir, capital_recovery_rate=0.1, num_years=10, capacity_target=5, filename=None
 ):
 
+    if filename is not None and not filename.endswith(".mps"):
+        raise Exception(f"Invalid filename {filename}: must end with .mps")
     try:
         basepath, dataset_dirname, scenario = _get_scenario_path_components(
             scenario_dir
@@ -166,6 +170,11 @@ def write_mps_file(
             scenario,
             "c",  # modelVersion = "c" for capture
         )
+        if filename is not None:
+            mps_fullpath = get_mps_file(scenario_dir)
+            normalized_filename = re.sub(r'[^\w.]+', '_', filename)
+            os.rename(mps_fullpath,
+                      os.path.join(os.path.dirname(mps_fullpath), normalized_filename))
     except Exception as e:
         logger.exception(
             "Error occurred when calling writeCapPriceMPS: " + str(e.stacktrace)
