@@ -320,7 +320,7 @@ function create_scenario() {
       if (sname != null) { title = sname;} else {return;}
       sidebar.addPanel({
             id:   panelid,
-            tab:  '<i class="fa fa-cog" aria-hidden="true"></i>',
+            tab:  '<i class="fas fa-layer-group" aria-hidden="true"></i>',
             title: title,
             pane: '<div style="font-size: 125%">' + panediv.innerHTML +"</div>",
       });
@@ -731,7 +731,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             
             sidebar.addPanel({
                   id:   panelid,
-                  tab:  '<i class="fa fa-cog" aria-hidden="true"></i>',
+                  tab:  '<i class="fas fa-layer-group" aria-hidden="true"></i>',
                   title: title,
                   pane: '<div style="font-size: 125%">' + panediv.innerHTML +"</div>",
                   });
