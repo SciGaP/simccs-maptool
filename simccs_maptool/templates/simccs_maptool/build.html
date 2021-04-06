@@ -713,7 +713,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             // collect all selected sinks
             for (const entry of scenario_data['sinks']) {
                   datalayerid = entry['dataset'];
-                  selected_ids.push(entry['source_id']);
+                  selected_ids.push(entry['sink_id']);
             }
             var sinkLayer = maplayers[datalayerid];
             sinkLayer.eachLayer(function(layer) {
