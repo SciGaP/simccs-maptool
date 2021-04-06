@@ -716,12 +716,15 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                   selected_ids.push(entry['sink_id']);
             }
             var sinkLayer = maplayers[datalayerid];
+            console.log(sinkLayer);
+            console.log(selected_ids);
             sinkLayer.eachLayer(function(layer) {
                   feature_id = layer.feature.properties['Sink_ID'].toString();
                   if (selected_ids.includes(feature_id)) {
                         sinkselection.push(layer);  
                   }
             });
+            console.log(sinkselection);
             var panediv = displayselecteddata(panelid);
             sidebar.addPanel({
                   id:   panelid,
