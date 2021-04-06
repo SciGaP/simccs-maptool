@@ -719,7 +719,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             console.log(sinkLayer);
             console.log(selected_ids);
             sinkLayer.eachLayer(function(layer) {
-                  feature_id = layer.feature.properties['Sink_ID'].toString();
+                  feature_id = layer.feature.properties['ID'].toString();
                   console.log(feature_id);
                   if (selected_ids.includes(feature_id)) {
                         sinkselection.push(layer);  
