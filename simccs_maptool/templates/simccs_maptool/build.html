@@ -744,9 +744,10 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             console.log(list_view_experiment);
             for (const entry of scenario_data['experiments']) {
                   var a = document.createElement('a');
-                  a.href = '/workspace/experiments/'+ entry['experiment_id']+'/';
+                  a.href = entry['experiment_url'];
                   a.target = "_blank";
                   a.innerHTML ="view: " + "<strong>" + entry['experiment_name'] + "</strong>";
+                  console.log(a);
                   var li = document.createElement('li');
                   li.appendChild(a);
                   list_view_experiment.appendChild(li);
