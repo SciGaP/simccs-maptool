@@ -719,7 +719,6 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             var sinkLayer = maplayers[datalayerid];
             sinkLayer.eachLayer(function(layer) {
                   feature_id = layer.feature.properties['ID'].toString();
-                  console.log(feature_id);
                   if (selected_ids.includes(feature_id)) {
                         sinkselection.push(layer);  
                   }
@@ -742,6 +741,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             
             // add experiments data
             var list_view_experiment = document.getElementById("list_view_experiment_" + panelid);
+            console.log(list_view_experiment);
             for (const entry of scenario_data['experiments']) {
                   var a = document.createElement('a');
                   a.href = '/workspace/experiments/'+ entry['experiment_id']+'/';
