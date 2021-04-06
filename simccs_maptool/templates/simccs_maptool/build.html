@@ -701,7 +701,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             }
             var sourceLayer = maplayers[datalayerid];
             console.log(datalayerid);
-            console.log(maplayers[datalayerid]);
+            console.log(maplayers);
             var feature_id;
             sourceLayer.eachLayer(function(layer) {
                   feature_id = layer.feature.properties['ID'].toString();
@@ -741,7 +741,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             case_id = workspacejson["case"];
             //console.log(case_id);
             // load case first
-            set_casedata(case_id);
+            await set_casedata(case_id);
             // load scenarios
             for (const entry of workspacejson["scenarios"]) {
                   re_create_scenario(entry);
