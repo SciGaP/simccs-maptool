@@ -700,6 +700,8 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                   selected_ids.push(entry['source_id']);
             }
             var sourceLayer = maplayers[datalayerid];
+            console.log(datalayerid);
+            console.log(maplayers[datalayerid]);
             var feature_id;
             sourceLayer.eachLayer(function(layer) {
                   feature_id = layer.feature.properties['ID'].toString();
