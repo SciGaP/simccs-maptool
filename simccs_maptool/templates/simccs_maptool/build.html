@@ -701,8 +701,6 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                   selected_ids.push(entry['source_id']);
             }
             var sourceLayer = maplayers[datalayerid];
-            console.log(datalayerid);
-            console.log(maplayers);
             var feature_id;
             sourceLayer.eachLayer(function(layer) {
                   feature_id = layer.feature.properties['ID'].toString();
@@ -719,7 +717,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             }
             var sinkLayer = maplayers[datalayerid];
             sinkLayer.eachLayer(function(layer) {
-                  feature_id = layer.feature.properties['ID'].toString();
+                  feature_id = layer.feature.properties['Sink_ID'].toString();
                   if (selected_ids.includes(feature_id)) {
                         sinkselection.push(layer);  
                   }
