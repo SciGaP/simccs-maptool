@@ -686,13 +686,49 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
       function re_create_scenario(scenario_data) {
             var panelid = scenario_data['scenario_id'];
             var title = scenario_data['title'];
+            
+            // displayselecteddata(panelid)
+            // sourceselection
+            // sinkselection
+            sourceselection = [];
+            sinkselection = [];
+            var datalayerid;
+            var selected_ids = [];
+            // collect all selected ids
+            for (const entry of scenario_data['sources']) {
+                  datalayerid = entry['dataset'];
+                  selected_ids.push(entry['source_id']);
+            }
+            var sourceLayer = mplayers[datalayerid];
+            var feature_id;
+            sourceLayer.eachLayer(function(layer) {
+                  feature_id = layer.feature.properties['ID'].toString();
+                  if (selected_ids.includes(feature_id)) {
+                        sourceselection.push(layer);  
+                  }
+            });
+            
+            selected_ids = [];
+            // collect all selected sinks
+            for (const entry of scenario_data['sinks']) {
+                  datalayerid = entry['dataset'];
+                  selected_ids.push(entry['source_id']);
+            }
+            var sinkLayer = mylayers[datalayerid];
+            sinkLayer.eachLayer(function(layer) {
+                  feature_id = layer.feature.properties['ID'].toString();
+                  if (selected_ids.includes(feature_id)) {
+                        sinkselection.push(layer);  
+                  }
+            });
+            var panediv = displayselecteddata(panelid);
             sidebar.addPanel({
                   id:   panelid,
                   tab:  '<i class="fa fa-cog" aria-hidden="true"></i>',
                   title: title,
-                  pane: '<div style="font-size: 125%">' + "data" +"</div>",
+                  pane: '<div style="font-size: 125%">' + panediv.innerHTML +"</div>",
                   });
-                  
+                 
       }
 
       // load workspace id
