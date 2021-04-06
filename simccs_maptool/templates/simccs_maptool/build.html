@@ -699,7 +699,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                   datalayerid = entry['dataset'];
                   selected_ids.push(entry['source_id']);
             }
-            var sourceLayer = mplayers[datalayerid];
+            var sourceLayer = maplayers[datalayerid];
             var feature_id;
             sourceLayer.eachLayer(function(layer) {
                   feature_id = layer.feature.properties['ID'].toString();
@@ -714,7 +714,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                   datalayerid = entry['dataset'];
                   selected_ids.push(entry['source_id']);
             }
-            var sinkLayer = mylayers[datalayerid];
+            var sinkLayer = maplayers[datalayerid];
             sinkLayer.eachLayer(function(layer) {
                   feature_id = layer.feature.properties['ID'].toString();
                   if (selected_ids.includes(feature_id)) {
