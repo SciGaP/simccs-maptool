@@ -296,7 +296,8 @@ function displayselecteddata(panelid) {
       div.innerHTML += '<button type="button" class="btn btn-primary btn-sm btn-block" onclick=case_submitexperiment("'+ panelid +'")><strong>Create a New Experiment</strong></button>';
       div.innerHTML += '<button type="button" class="btn btn-primary btn-sm btn-block" onclick=case_submitmultipleexperiments("'+ panelid +'")><strong>Create Multiple Experiments</strong></button>';
       //div.innerHTML +=  '<a target="_blank" href="" id="case_view_experiment_' + panelid+ '" style="display: none;">View Experiment Summary</a>';
-      div.innerHTML += '<ul id="list_view_experiment_' + panelid +'"> </ul>';
+      div.innerHTML += '<ul id="list_view_experiment_' + panelid +'"> </ul>';}
+
       return div;
 }
 
@@ -738,7 +739,18 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             
             // simple show the data
             sidebar.open(panelid);
-  
+            
+            // add experiments data
+            var list_view_experiment = document.getElementById("list_view_experiment_" + panelid);
+            for (const entry of scenario_data['experiments']) {
+                  var a = document.createElement('a');
+                  a.href = '/workspace/experiments/'+ entry['experiment_id']+'/';
+                  a.target = "_blank";
+                  a.innerHTML ="view: " + "<strong>" + entry['experiment_name'] + "</strong>";
+                  var li = document.createElement('li');
+                  li.appendChild(a);
+                  list_view_experiment.appendChild(li);
+            }
       }
 
       // load workspace id
