@@ -742,11 +742,11 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             case_id = workspacejson["case"];
             //console.log(case_id);
             // load case first
-            let waitcase = await set_casedata(case_id);
+            await set_casedata(case_id) => {
             // load scenarios
             for (const entry of workspacejson["scenarios"]) {
                   re_create_scenario(entry);
-            }
+            } };
 
       }
 
