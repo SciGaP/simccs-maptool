@@ -716,8 +716,6 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                   selected_ids.push(entry['sink_id']);
             }
             var sinkLayer = maplayers[datalayerid];
-            console.log(sinkLayer);
-            console.log(selected_ids);
             sinkLayer.eachLayer(function(layer) {
                   feature_id = layer.feature.properties['ID'].toString();
                   console.log(feature_id);
@@ -725,15 +723,22 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                         sinkselection.push(layer);  
                   }
             });
-            console.log(sinkselection);
             var panediv = displayselecteddata(panelid);
+            
+            // record data
+            sourceselection_panel[panelid] = sourceselection.concat();
+            sinkselection_panel[panelid] = sinkselection.concat();
+            
             sidebar.addPanel({
                   id:   panelid,
                   tab:  '<i class="fa fa-cog" aria-hidden="true"></i>',
                   title: title,
                   pane: '<div style="font-size: 125%">' + panediv.innerHTML +"</div>",
                   });
-                 
+            
+            // simple show the data
+            //sidebar.open(panelid);
+  
       }
 
       // load workspace id
