@@ -41,7 +41,8 @@ export default {
     onSubmit(updatedCase) {
       utils.FetchUtils.put(
         `/maptool/api/cases/${encodeURIComponent(this.id)}/`,
-        updatedCase
+        updatedCase,
+        { ignoreErrors: true }
       )
         .then(() => {
           // TODO: add a success message
@@ -51,8 +52,11 @@ export default {
           });
         })
         .catch((e) => {
-          if (e.details && e.details.response) {
+          if (errors.ErrorUtils.isValidationError(e)) {
             this.serverValidationErrors = e.details.response;
+          } else {
+            // otherwise it is some unexpected error
+            utils.FetchUtils.reportError(e);
           }
         });
     },

@@ -38,7 +38,9 @@ export default {
   },
   methods: {
     onSubmit(formData) {
-      utils.FetchUtils.post("/maptool/api/datasets/", formData)
+      utils.FetchUtils.post("/maptool/api/datasets/", formData, "", {
+        ignoreErrors: true,
+      })
         .then(() => {
           // TODO: add a success message
           this.$router.push({
@@ -47,10 +49,12 @@ export default {
           });
         })
         .catch((e) => {
-          if (e.details.response) {
+          if (errors.ErrorUtils.isValidationError(e)) {
             this.serverValidationErrors = e.details.response;
+          } else {
+            // otherwise it is some unexpected error
+            utils.FetchUtils.reportError(e);
           }
-          // TODO else display some error message for unexpected error
         });
     },
     validateState,

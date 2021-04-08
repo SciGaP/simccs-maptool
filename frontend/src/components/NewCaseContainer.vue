@@ -9,7 +9,7 @@
 <script>
 import CaseEditor from "./CaseEditor.vue";
 
-const { utils } = AiravataAPI;
+const { errors, utils } = AiravataAPI;
 export default {
   components: { CaseEditor },
   name: "new-case-container",
@@ -37,7 +37,9 @@ export default {
     onSubmit(newCase) {
       // reset any validation errors
       this.serverValidationErrors = null;
-      utils.FetchUtils.post("/maptool/api/cases/", newCase)
+      utils.FetchUtils.post("/maptool/api/cases/", newCase, "", {
+        ignoreErrors: true,
+      })
         .then(() => {
           // TODO: add a success message
           this.$router.push({
@@ -46,10 +48,12 @@ export default {
           });
         })
         .catch((e) => {
-          if (e.details && e.details.response) {
+          if (errors.ErrorUtils.isValidationError(e)) {
             this.serverValidationErrors = e.details.response;
+          } else {
+            // otherwise it is some unexpected error
+            utils.FetchUtils.reportError(e);
           }
-          // TODO: else: display some sort of error message for unexpected error
         });
     },
   },

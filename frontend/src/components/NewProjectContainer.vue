@@ -23,7 +23,9 @@ export default {
   },
   methods: {
     onSubmit(newProject) {
-      utils.FetchUtils.post("/maptool/api/projects/", newProject)
+      utils.FetchUtils.post("/maptool/api/projects/", newProject, "", {
+        ignoreErrors: true,
+      })
         .then((result) => {
           // TODO: add a success message
           this.$router.push({
@@ -32,10 +34,12 @@ export default {
           });
         })
         .catch((e) => {
-          if (e.details && e.details.response) {
+          if (errors.ErrorUtils.isValidationError(e)) {
             this.serverValidationErrors = e.details.response;
+          } else {
+            // otherwise it is some unexpected error
+            utils.FetchUtils.reportError(e);
           }
-          // TODO: display some sort of error message for unexpected error
         });
     },
   },
