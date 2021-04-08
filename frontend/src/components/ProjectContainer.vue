@@ -1,5 +1,6 @@
 <template>
   <div>
+    <notifications-display />
     <div class="row">
       <div class="col-auto">
         <h1 class="h3 mb-0">Project: {{ name }}</h1>
@@ -41,6 +42,9 @@
 
 <script>
 const { utils } = AiravataAPI;
+
+const { NotificationsDisplay } = window.CommonUI || {};
+
 export default {
   props: {
     projectId: {
@@ -48,7 +52,9 @@ export default {
       required: true,
     },
   },
-  components: {},
+  components: {
+    NotificationsDisplay,
+  },
   data() {
     return {
       project: null,

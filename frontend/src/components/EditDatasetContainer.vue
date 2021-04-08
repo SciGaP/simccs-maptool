@@ -47,7 +47,8 @@ export default {
     onSubmit(formData) {
       utils.FetchUtils.put(
         `/maptool/api/datasets/${encodeURIComponent(this.id)}/`,
-        formData
+        formData,
+        { ignoreErrors: true }
       )
         .then(() => {
           // TODO: add a success message
@@ -57,10 +58,12 @@ export default {
           });
         })
         .catch((e) => {
-          if (e.details.response) {
+          if (errors.ErrorUtils.isValidationError(e)) {
             this.serverValidationErrors = e.details.response;
+          } else {
+            // otherwise it is some unexpected error
+            utils.FetchUtils.reportError(e);
           }
-          // TODO else display some error message for unexpected error
         });
     },
     onDelete() {

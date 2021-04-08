@@ -47,7 +47,8 @@
     },
     "rules": {},
     "globals": {
-      "AiravataAPI": "readonly"
+      "AiravataAPI": "readonly",
+      "CommonUI": "readonly"
     }
   },
   "postcss": {
