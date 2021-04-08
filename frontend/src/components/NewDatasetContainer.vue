@@ -7,7 +7,7 @@
 </template>
 
 <script>
-const { utils } = AiravataAPI;
+const { errors, utils } = AiravataAPI;
 import { validationMixin } from "vuelidate";
 import { validateState } from "../validators/formHelpers";
 import DatasetEditor from "./DatasetEditor.vue";

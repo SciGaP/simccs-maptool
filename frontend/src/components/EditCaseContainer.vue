@@ -10,7 +10,7 @@
 <script>
 import CaseEditor from "./CaseEditor.vue";
 
-const { utils } = AiravataAPI;
+const { errors, utils } = AiravataAPI;
 export default {
   components: { CaseEditor },
   name: "edit-case-container",

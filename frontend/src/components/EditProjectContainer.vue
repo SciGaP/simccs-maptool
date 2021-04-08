@@ -11,7 +11,7 @@
 <script>
 import ProjectEditor from "./ProjectEditor.vue";
 
-const { utils } = AiravataAPI;
+const { errors, utils } = AiravataAPI;
 export default {
   components: { ProjectEditor },
   props: {
