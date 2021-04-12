@@ -253,7 +253,7 @@ function displayselecteddata(panelid) {
       // source
       var sourcetxt = generatesourcedata(sourceselection);
       div.innerHTML += '<button type="button" class="btn btn-light btn-sm" onclick=toggle_table_visibility("div_source_'+ panelid +'")><i class="fas fa-plus"></i></button>';
-      div.innerHTML +="<Strong>Sources selected: " + sourceselection.length + "</Strong>";
+      div.innerHTML +="<Strong>Sources: " + sourceselection.length + "</Strong>";
       // create a subdiv: div_source_panelid
       var div_source = document.createElement("div");
       div_source.id = "div_source_" + panelid;
@@ -266,19 +266,25 @@ function displayselecteddata(panelid) {
       div_source.innerHTML += '<div id='+ table_id +' style="overflow: auto;height: 200px; width: 95%; display: none" >'+arrayToTable(sourcetxt)+"</div>";
       // add source div to div
       div.appendChild(div_source);
+      
       // sinks
       var sinktxt = generatesinkdata(sinkselection);
       div.innerHTML += "<br>";
-      div.innerHTML +="<Strong>Sink selected: " + sinkselection.length + "</Strong>";
+      div.innerHTML += '<button type="button" class="btn btn-light btn-sm" onclick=toggle_table_visibility("div_sink_'+ panelid +'")><i class="fas fa-plus"></i></button>';
+      div.innerHTML +="<Strong>Sinks: " + sinkselection.length + "</Strong>";
+      // create a subdiv: div_sink_panelid
+      var div_sink = document.createElement("div");
+      div_sink.id = "div_sink_" + panelid;
+      div_sink.setAttribute('style', 'display: none');
       downloadlink = createdownloadlink("sink.txt",sinktxt,"Download Sinks.txt");
-      div.appendChild(downloadlink);
+      div_sink.appendChild(downloadlink);
       //div.innerHTML += "<p>" + sinktxt + "</p>";
       table_id = "sink_table_" + panelid;
-      div.innerHTML+='<a href="#" onclick=toggle_table_visibility("' + table_id + '")>Show/hide sink data</a>';
+      div_sink.innerHTML+='<a href="#" onclick=toggle_table_visibility("' + table_id + '")>Show/hide sink data</a>';
+      div_sink.innerHTML += "<br>";
+      div_sink.innerHTML += '<div id='+ table_id +' style="overflow: auto;height: 200px; width: 95%; display: none">'+arrayToTable(sinktxt)+"</div>";
+      div.appendChild(div_sink);
       div.innerHTML += "<br>";
-      div.innerHTML += '<div id='+ table_id +' style="overflow: auto;height: 200px; width: 95%; display: none">'+arrayToTable(sinktxt)+"</div>";
-      div.innerHTML += "<br>";
-      
 
       // grab model parameters
       mp_list = ["Capital_Recovery_Rate","Project_Period","Capture_Target"]; 
