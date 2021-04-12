@@ -249,16 +249,24 @@ function toggle_table_visibility(tableid) {
 function displayselecteddata(panelid) {
 
       var div = document.createElement("div");
+
+      // source
       var sourcetxt = generatesourcedata(sourceselection);
+      div.innerHTML += '<button type="button" class="btn btn-light btn-sm" data-toggle="collapse" aria-expanded="false" data-target=div_source_"'+ panelid +'">+</button>';
       div.innerHTML +="<Strong>Sources selected: " + sourceselection.length + "</Strong>";
+      // create a subdiv: div_source_panelid
+      var div_source = document.createElement("div");
+      div_source.id = "div_source_" + panelid;
+      div_source.setAttribute('class', 'collapse');
       var downloadlink = createdownloadlink("source.txt",sourcetxt,"Download Sources.txt");
-      div.appendChild(downloadlink);
-      //div.innerHTML += "<br>";
-      //div.innerHTML += "<p>" + sourcetxt + "</p>";
+      div_source.appendChild(downloadlink);
       var table_id = "source_table_" + panelid;
-      div.innerHTML+='<a href="#" onclick=toggle_table_visibility("' + table_id + '")>Show/hide source data</a>';
-      div.innerHTML += "<br>";
-      div.innerHTML += '<div id='+ table_id +' style="overflow: auto;height: 200px; width: 95%; display: none" >'+arrayToTable(sourcetxt)+"</div>";
+      div_source.innerHTML+='<a href="#" onclick=toggle_table_visibility("' + table_id + '")>Show/hide source data</a>';
+      div_source.innerHTML += "<br>";
+      div_source.innerHTML += '<div id='+ table_id +' style="overflow: auto;height: 200px; width: 95%; display: none" >'+arrayToTable(sourcetxt)+"</div>";
+      // add source div to div
+      div.appendChild(div_source);
+      // sinks
       var sinktxt = generatesinkdata(sinkselection);
       div.innerHTML += "<br>";
       div.innerHTML +="<Strong>Sink selected: " + sinkselection.length + "</Strong>";
