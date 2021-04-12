@@ -252,7 +252,7 @@ function displayselecteddata(panelid) {
 
       // source
       var sourcetxt = generatesourcedata(sourceselection);
-      div.innerHTML += '<button type="button" class="btn btn-info btn-sm" onclick=toggle_table_visibility("div_source_'+ panelid +'")><stong>&plus;</strong></button>';
+      div.innerHTML += '<button type="button" class="btn btn-light btn-sm" onclick=toggle_table_visibility("div_source_'+ panelid +'")><strong>&plus;</strong></button>';
       div.innerHTML +="<Strong>Sources selected: " + sourceselection.length + "</Strong>";
       // create a subdiv: div_source_panelid
       var div_source = document.createElement("div");
