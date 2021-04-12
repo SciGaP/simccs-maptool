@@ -252,12 +252,12 @@ function displayselecteddata(panelid) {
 
       // source
       var sourcetxt = generatesourcedata(sourceselection);
-      div.innerHTML += '<button type="button" class="btn btn-light btn-sm" data-toggle="collapse" aria-expanded="false" data-target="div_source_'+ panelid +'">+</button>';
+      div.innerHTML += '<button type="button" class="btn btn-light btn-sm" onclick=toggle_table_visibility("div_source_'+ panelid +'">+</button>';
       div.innerHTML +="<Strong>Sources selected: " + sourceselection.length + "</Strong>";
       // create a subdiv: div_source_panelid
       var div_source = document.createElement("div");
       div_source.id = "div_source_" + panelid;
-      div_source.setAttribute('class', 'collapse');
+      div_source.setAttribute('style', 'display: none');
       var downloadlink = createdownloadlink("source.txt",sourcetxt,"Download Sources.txt");
       div_source.appendChild(downloadlink);
       var table_id = "source_table_" + panelid;
