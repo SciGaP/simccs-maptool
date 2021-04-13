@@ -1,9 +1,11 @@
 <template>
-  <dataset-editor
-    :value="dataset"
-    :server-validation-errors="serverValidationErrors"
-    @submit="onSubmit"
-  />
+  <b-card title="New Dataset">
+    <dataset-editor
+      :value="dataset"
+      :server-validation-errors="serverValidationErrors"
+      @submit="onSubmit"
+    />
+  </b-card>
 </template>
 
 <script>
