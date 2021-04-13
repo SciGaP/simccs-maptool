@@ -1,12 +1,12 @@
 <template>
-  <b-card v-if="dataset" :title="dataset.name">
+  <b-modal ref="modal" :title="title" hide-footer>
     <dataset-editor
       :value="dataset"
       :server-validation-errors="serverValidationErrors"
+      :type-disabled="true"
       @submit="onSubmit"
-      @delete="onDelete"
     />
-  </b-card>
+  </b-modal>
 </template>
 
 <script>
@@ -17,26 +17,18 @@ import DatasetEditor from "./DatasetEditor.vue";
 
 export default {
   mixins: [validationMixin],
-  name: "new-dataset-container",
   props: {
-    id: {
-      type: [String, Number],
-      required: true,
-    },
     projectId: {
       type: [String, Number],
       required: true,
     },
+    datasetType: {
+      type: String,
+      default: "source",
+    },
   },
   components: {
     DatasetEditor,
-  },
-  created() {
-    utils.FetchUtils.get(
-      `/maptool/api/datasets/${encodeURIComponent(this.id)}/`
-    ).then((dataset) => {
-      this.dataset = dataset;
-    });
   },
   data() {
     return {
@@ -44,19 +36,19 @@ export default {
       serverValidationErrors: null,
     };
   },
+  computed: {
+    title() {
+      return `Create a new ${this.datasetType}`;
+    },
+  },
   methods: {
     onSubmit(formData) {
-      utils.FetchUtils.put(
-        `/maptool/api/datasets/${encodeURIComponent(this.id)}/`,
-        formData,
-        { ignoreErrors: true }
-      )
-        .then(() => {
-          // TODO: add a success message
-          this.$router.push({
-            name: "project",
-            params: { projectId: this.projectId },
-          });
+      utils.FetchUtils.post("/maptool/api/datasets/", formData, "", {
+        ignoreErrors: true,
+      })
+        .then((dataset) => {
+          this.$emit("created", dataset);
+          this.hide();
         })
         .catch((e) => {
           if (errors.ErrorUtils.isValidationError(e)) {
@@ -67,17 +59,28 @@ export default {
           }
         });
     },
-    onDelete() {
-      utils.FetchUtils.delete(
-        `/maptool/api/datasets/${encodeURIComponent(this.id)}/`
-      ).then(() => {
-        this.$router.push({
-          name: "project",
-          params: { projectId: this.projectId },
-        });
-      });
-    },
     validateState,
+    show() {
+      this.$refs["modal"].show();
+      // reset form
+      this.dataset = {
+        name: "",
+        type: this.datasetType,
+        description: "",
+        file: null,
+        simccs_project: this.projectId,
+      };
+    },
+    hide() {
+      this.$refs["modal"].hide();
+    },
+  },
+  watch: {
+    datasetType() {
+      if (this.dataset) {
+        this.dataset.type = this.datasetType;
+      }
+    },
   },
 };
 </script>

@@ -1,56 +1,49 @@
 <template>
-  <b-card :title="title">
-    <b-form @submit="onSubmit">
-      <b-form-group label="Name" label-class="required">
-        <b-form-input
-          v-model="$v.dataset.name.$model"
-          :state="validateState($v.dataset.name)"
-          required
-        ></b-form-input>
-        <b-form-invalid-feedback v-if="!$v.dataset.name.required"
-          >This field is required.</b-form-invalid-feedback
-        >
-        <b-form-invalid-feedback v-if="!$v.dataset.name.serverValidation">{{
-          this.serverValidationErrors.name.join(" ")
-        }}</b-form-invalid-feedback>
-      </b-form-group>
-      <b-form-group label="Description">
-        <b-form-input v-model="dataset.description"></b-form-input>
-      </b-form-group>
-      <b-form-group label="Type" label-class="required">
-        <b-form-select
-          v-model="dataset.type"
-          :options="typeOptions"
-          :disabled="isEditing"
-          required
-        ></b-form-select>
-      </b-form-group>
-      <b-form-group label="File" label-class="required">
-        <b-form-file
-          v-model="$v.dataset.file.$model"
-          :state="validateState($v.dataset.file)"
-          required
-        />
-        <b-form-invalid-feedback v-if="!$v.dataset.file.required"
-          >A file is required.</b-form-invalid-feedback
-        >
-        <b-form-invalid-feedback v-if="!$v.dataset.file.serverValidation">{{
-          this.serverValidationErrors.file.join(" ")
-        }}</b-form-invalid-feedback>
-      </b-form-group>
-      <b-button type="submit" variant="primary" :disabled="$v.$invalid"
-        >Save</b-button
+  <b-form @submit="onSubmit">
+    <b-form-group label="Name" label-class="required">
+      <b-form-input
+        v-model="$v.dataset.name.$model"
+        :state="validateState($v.dataset.name)"
+        required
+      ></b-form-input>
+      <b-form-invalid-feedback v-if="!$v.dataset.name.required"
+        >This field is required.</b-form-invalid-feedback
       >
-      <b-button
-        v-if="isEditing"
-        type="button"
-        variant="danger"
-        @click="onDelete"
+      <b-form-invalid-feedback v-if="!$v.dataset.name.serverValidation">{{
+        this.serverValidationErrors.name.join(" ")
+      }}</b-form-invalid-feedback>
+    </b-form-group>
+    <b-form-group label="Description">
+      <b-form-input v-model="dataset.description"></b-form-input>
+    </b-form-group>
+    <b-form-group label="Type" label-class="required">
+      <b-form-select
+        v-model="dataset.type"
+        :options="typeOptions"
+        :disabled="isEditing || typeDisabled"
+        required
+      ></b-form-select>
+    </b-form-group>
+    <b-form-group label="File" label-class="required">
+      <b-form-file
+        v-model="$v.dataset.file.$model"
+        :state="validateState($v.dataset.file)"
+        required
+      />
+      <b-form-invalid-feedback v-if="!$v.dataset.file.required"
+        >A file is required.</b-form-invalid-feedback
       >
-        Delete</b-button
-      >
-    </b-form>
-  </b-card>
+      <b-form-invalid-feedback v-if="!$v.dataset.file.serverValidation">{{
+        this.serverValidationErrors.file.join(" ")
+      }}</b-form-invalid-feedback>
+    </b-form-group>
+    <b-button type="submit" variant="primary" :disabled="$v.$invalid"
+      >Save</b-button
+    >
+    <b-button v-if="isEditing" type="button" variant="danger" @click="onDelete">
+      Delete</b-button
+    >
+  </b-form>
 </template>
 
 <script>
@@ -70,6 +63,10 @@ export default {
     // occur on submission
     serverValidationErrors: {
       type: Object,
+    },
+    typeDisabled: {
+      type: Boolean,
+      default: false,
     },
   },
   data() {
@@ -115,9 +112,6 @@ export default {
         { value: "costsurface", text: "Cost Surface", disabled: true },
       ];
     },
-    title() {
-      return this.dataset.name ? this.dataset.name : "New Dataset";
-    },
     isEditing() {
       return "id" in this.dataset;
     },
@@ -143,6 +137,11 @@ export default {
     },
     onDelete() {
       this.$emit("delete");
+    },
+  },
+  watch: {
+    dataset() {
+      this.dataset = this.cloneValue();
     },
   },
 };

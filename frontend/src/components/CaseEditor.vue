@@ -25,88 +25,120 @@
               :key="datasetSelection.dataset"
               :title="getDatasetSelectionTitle(datasetSelection)"
               title-tag="h5"
+              no-body
             >
-              <b-form-group>
-                <b-form-select
-                  v-model="datasetSelection.dataset"
-                  :options="getDatasetOptions(datasetSelection)"
-                >
-                  <template #first>
-                    <b-form-select-option :value="null" disabled
-                      >-- Please select a dataset --</b-form-select-option
-                    >
-                  </template>
-                </b-form-select>
-              </b-form-group>
-              <b-form-group label="Style" v-if="datasetSelection.dataset">
-                <b-form-select
-                  v-model="datasetSelection.style"
-                  :options="getStyleOptions(datasetSelection.dataset)"
-                >
-                  <template #first>
-                    <b-form-select-option :value="null"
-                      >-- Select a property to style --</b-form-select-option
-                    >
-                  </template>
-                </b-form-select>
-              </b-form-group>
-              <b-form-group
-                label="Popup Fields"
-                v-if="datasetSelection.dataset"
-              >
-                <b-form-tags
-                  v-model="datasetSelection.popup"
-                  size="lg"
-                  add-on-change
-                  no-outer-focus
-                  class="mb-2"
-                >
-                  <template
-                    v-slot="{
-                      tags,
-                      inputAttrs,
-                      inputHandlers,
-                      disabled,
-                      removeTag,
-                    }"
-                  >
-                    <ul
-                      v-if="tags.length > 0"
-                      class="list-inline d-inline-block mb-2"
-                    >
-                      <li
-                        v-for="tag in tags"
-                        :key="tag"
-                        class="list-inline-item"
+              <b-card-body>
+                <b-card-title title-tag="div">
+                  <h5 class="mb-0">
+                    {{ getDatasetSelectionTitle(datasetSelection) }}
+
+                    <small
+                      ><dataset-type-badge
+                        v-if="getDatasetSelectionType(datasetSelection)"
+                        :type="getDatasetSelectionType(datasetSelection)"
+                    /></small>
+                  </h5>
+                </b-card-title>
+                <b-form-group>
+                  <b-form-select v-model="datasetSelection.dataset">
+                    <template #first>
+                      <b-form-select-option :value="null" disabled
+                        >-- Please select a dataset --</b-form-select-option
                       >
-                        <b-form-tag
-                          @remove="removeTag(tag)"
-                          :title="tag"
-                          :disabled="disabled"
-                          variant="info"
-                          >{{ tag }}</b-form-tag
-                        >
-                      </li>
-                    </ul>
-                    <b-form-select
-                      v-bind="inputAttrs"
-                      v-on="inputHandlers"
-                      :disabled="
-                        disabled ||
-                        datasetPopupFieldOptions(datasetSelection).length === 0
-                      "
-                      :options="datasetPopupFieldOptions(datasetSelection)"
+                    </template>
+                    <b-form-select-option-group
+                      label="Sources"
+                      :options="getSourceDatasetOptions(datasetSelection)"
                     >
-                      <template #first>
-                        <!-- This is required to prevent bugs with Safari -->
-                        <option disabled value="">
-                          Choose a popup field ...
-                        </option>
-                      </template>
-                    </b-form-select>
-                  </template>
-                </b-form-tags>
-              </b-form-group>
+                      <b-form-select-option
+                        :value="null"
+                        @click="createDataset('source')"
+                        >Create a new source dataset ...</b-form-select-option
+                      >
+                    </b-form-select-option-group>
+                    <b-form-select-option-group
+                      label="Sinks"
+                      :options="getSinkDatasetOptions(datasetSelection)"
+                    >
+                      <b-form-select-option
+                        :value="null"
+                        @click="createDataset('sink')"
+                        >Create a new sink dataset ...</b-form-select-option
+                      >
+                    </b-form-select-option-group>
+                  </b-form-select>
+                </b-form-group>
+                <b-form-group label="Style" v-if="datasetSelection.dataset">
+                  <b-form-select
+                    v-model="datasetSelection.style"
+                    :options="getStyleOptions(datasetSelection.dataset)"
+                  >
+                    <template #first>
+                      <b-form-select-option :value="null"
+                        >-- Select a property to style --</b-form-select-option
+                      >
+                    </template>
+                  </b-form-select>
+                </b-form-group>
+                <b-form-group
+                  label="Popup Fields"
+                  v-if="datasetSelection.dataset"
+                >
+                  <b-form-tags
+                    v-model="datasetSelection.popup"
+                    size="lg"
+                    add-on-change
+                    no-outer-focus
+                    class="mb-2"
+                  >
+                    <template
+                      v-slot="{
+                        tags,
+                        inputAttrs,
+                        inputHandlers,
+                        disabled,
+                        removeTag,
+                      }"
+                    >
+                      <ul
+                        v-if="tags.length > 0"
+                        class="list-inline d-inline-block mb-2"
+                      >
+                        <li
+                          v-for="tag in tags"
+                          :key="tag"
+                          class="list-inline-item"
+                        >
+                          <b-form-tag
+                            @remove="removeTag(tag)"
+                            :title="tag"
+                            :disabled="disabled"
+                            variant="info"
+                            >{{ tag }}</b-form-tag
+                          >
+                        </li>
+                      </ul>
+                      <b-form-select
+                        v-bind="inputAttrs"
+                        v-on="inputHandlers"
+                        :disabled="
+                          disabled ||
+                          datasetPopupFieldOptions(datasetSelection).length ===
+                            0
+                        "
+                        :options="datasetPopupFieldOptions(datasetSelection)"
+                      >
+                        <template #first>
+                          <!-- This is required to prevent bugs with Safari -->
+                          <option disabled value="">
+                            Choose a popup field ...
+                          </option>
+                        </template>
+                      </b-form-select>
+                    </template>
+                  </b-form-tags>
+                </b-form-group>
+              </b-card-body>
               <template #footer>
                 <b-button
                   variant="secondary"
@@ -123,6 +155,12 @@
             :disabled="!addDatasetEnabled"
             >Add Dataset</b-button
           >
+          <new-dataset-modal
+            ref="newDatasetModal"
+            :datasetType="newDatasetType"
+            :projectId="projectId"
+            @created="newDatasetCreated"
+          />
           <div>
             <b-button
               type="submit"
@@ -156,9 +194,12 @@ import { validationMixin } from "vuelidate";
 import { required } from "vuelidate/lib/validators";
 import validateFromServer from "../validators/validateFromServer";
 import { validateState } from "../validators/formHelpers";
+import NewDatasetModal from "./NewDatasetModal.vue";
+import DatasetTypeBadge from "./DatasetTypeBadge.vue";
 
 const { utils } = AiravataAPI;
 export default {
+  components: { NewDatasetModal, DatasetTypeBadge },
   mixins: [validationMixin],
   name: "case-editor",
   props: {
@@ -182,6 +223,7 @@ export default {
       mapBounds: null,
       submittedData: null,
       geojson: {},
+      newDatasetType: null,
     };
   },
   validations() {
@@ -321,7 +363,7 @@ export default {
     destroyMap() {
       this.map.remove();
     },
-    getDatasetOptions(datasetSelection) {
+    getSourceDatasetOptions(datasetSelection) {
       const notAlreadySelected = (ds) => {
         const alreadySelected = this.aCase.maptool.data.find(
           (d) => d.dataset === ds.id
@@ -338,6 +380,15 @@ export default {
         };
       });
       utils.StringUtils.sortIgnoreCase(sourceOptions, (o) => o.text);
+      return sourceOptions;
+    },
+    getSinkDatasetOptions(datasetSelection) {
+      const notAlreadySelected = (ds) => {
+        const alreadySelected = this.aCase.maptool.data.find(
+          (d) => d.dataset === ds.id
+        );
+        return !alreadySelected || alreadySelected === datasetSelection;
+      };
       const sinkOptions = this.sinkDatasets.map((ds) => {
         return {
           text: `${ds.name}${ds.deleted ? " (deleted)" : ""}`,
@@ -346,10 +397,7 @@ export default {
         };
       });
       utils.StringUtils.sortIgnoreCase(sinkOptions, (o) => o.text);
-      return [
-        { label: "Sources", options: sourceOptions },
-        { label: "Sinks", options: sinkOptions },
-      ];
+      return sinkOptions;
     },
     datasetPopupFieldOptions(datasetSelection) {
       if (!this.datasets || !datasetSelection.dataset) {
@@ -453,17 +501,47 @@ export default {
       const datasetId = datasetSelection.dataset;
       if (datasetId) {
         const dataset = this.getDataset(datasetId);
-        switch (dataset.type) {
-          case "source":
-            return "Source: " + dataset.name;
-          case "sink":
-            return "Sink: " + dataset.name;
-          default:
-            return dataset.name;
+        if (dataset) {
+          return dataset.name;
+        } else {
+          return null;
         }
       } else {
         return null;
       }
+    },
+    getDatasetSelectionType(datasetSelection) {
+      const datasetId = datasetSelection.dataset;
+      if (datasetId) {
+        const dataset = this.getDataset(datasetId);
+        if (dataset) {
+          return dataset.type;
+        } else {
+          return null;
+        }
+      } else {
+        return null;
+      }
+    },
+    createDataset(datasetType) {
+      this.newDatasetType = datasetType;
+      this.$refs["newDatasetModal"].show();
+    },
+    newDatasetCreated(dataset) {
+      this.datasets.push(dataset);
+      // If there is a null datasetSelection, remove it
+      const nullIndex = this.aCase.maptool.data.findIndex(
+        (d) => d.dataset === null
+      );
+      if (nullIndex) {
+        this.aCase.maptool.data.splice(nullIndex, 1);
+      }
+      this.aCase.maptool.data.push({
+        dataset: dataset.id,
+        style: null,
+        bbox: null,
+        popup: [],
+      });
     },
   },
   watch: {
