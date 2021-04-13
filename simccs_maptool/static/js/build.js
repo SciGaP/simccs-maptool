@@ -237,11 +237,9 @@ function addcostsurface(bbox) {
         allvectorlayers.push(value); }
     var vectorGroup = L.featureGroup(allvectorlayers);
     var vecb = vectorGroup.getBounds();
-    console.log(vectorbounds);
     //"BBOX": [-89.91, 38.1, -87.7, 40.9]}}
     // BBOX: [west, south, east, north]
     bbox = [vecb.getWest(),vecb.getSouth(),vecb.getEast(),vecb.getNorth()];
-    
     allvectorlayers = null;
     vectorGroup = null;
     cost_image_url += "&subset=Lat(" +(bbox[1]-0.2) +","+(bbox[3]+0.2) +")";
