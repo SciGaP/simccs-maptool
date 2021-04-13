@@ -232,6 +232,15 @@ function addcostsurface(bbox) {
     var cost_image_url="https://simccs.org/geoserver/ows?service=WCS&version=2.0.0&request=GetCoverage&coverageId=SimCCS__cost&format=png";
     // &subset=Lat(29.920588,33.381122)&subset=Long(-89.251876,-83.277539)";
     //"BBOX": [-89.91, 38.1, -87.7, 40.9]}}
+    // get bounds from feature group
+    var allvectorlayers = [];
+    for (let [key, value] of Object.entries(maplayers)) {
+        allvectorlayers.push(value); }
+    var vectorGroup = L.featureGroup(allvectorlayers);
+    var vectorbounds = vectorGroup.getBounds();
+    console.log(vectorbounds);
+    allvectorlayers = null;
+    vectorGroup = null;
     cost_image_url += "&subset=Lat(" +(bbox[1]-0.2) +","+(bbox[3]+0.2) +")";
     cost_image_url += "&subset=Long("+(bbox[0]-0.2) + ","+(bbox[2]+0.2) + ")";
     var cost_image_bounds = [[bbox[1]-0.2,bbox[0]-0.2],[bbox[3]+0.2,bbox[2]+0.2]];
