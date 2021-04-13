@@ -219,7 +219,8 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
 
     newLayer.addTo(map);
     maplayers[datadesc['dataid']] = newLayer;
-    if (datastyle) {       // generate legend
+    // ignore the source style for now
+    if (datastyle && datadesc['type'] != 'source') {       // generate legend
             var legend = createLegend(datastyle);
             document.getElementById("layercontrol").appendChild(legend);   
         } 
