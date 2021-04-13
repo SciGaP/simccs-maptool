@@ -51,7 +51,7 @@ class MapToolConfig(AppConfig):
             "label": "Build",
             "icon": "fa fa-tools",
             "url": "simccs_maptool:projects",
-            "active_prefixes": ["build/projects"],
+            "active_prefixes": ["build"],
         },
         {
             "label": "Documentation Links",
