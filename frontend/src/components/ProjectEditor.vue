@@ -21,12 +21,12 @@
       >
         <template #description>
           Select a group of users to share this project with. Or
-          <b-link href="/groups/create/" target="_blank"
+          <b-link
+            :href="`/groups/create/?next=${encodeURIComponent(
+              currentFullPath
+            )}`"
             >create a new group</b-link
-          >
-          and then
-          <b-link @click="refreshGroups">refresh the list of groups</b-link> to
-          select it.
+          >, after which you'll return here and you can select it.
         </template>
         <b-input-group>
           <b-form-select v-model="project.group" :options="groupOptions">
@@ -41,8 +41,7 @@
               variant="outline-secondary"
               :href="`/groups/edit/${encodeURIComponent(
                 selectedGroup && selectedGroup.id
-              )}/`"
-              target="_blank"
+              )}/?next=${encodeURIComponent(currentFullPath)}`"
               :disabled="!selectedGroupEditable"
               >Edit</b-button
             >
@@ -165,6 +164,9 @@ export default {
         this.selectedGroup &&
         (this.selectedGroup.isOwner || this.selectedGroup.isAdmin)
       );
+    },
+    currentFullPath() {
+      return this.$router.options.base + this.$route.path;
     },
   },
   validations() {
