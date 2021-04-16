@@ -36,6 +36,15 @@
       <b-form-invalid-feedback v-if="!$v.dataset.file.serverValidation">{{
         this.serverValidationErrors.file.join(" ")
       }}</b-form-invalid-feedback>
+      <template #description>
+        Please use the
+        <a
+          href="/static/simccs_maptool/SimCCS_Gateway_Sources_and_Sinks_Template.xlsx"
+          >Excel template</a
+        >
+        to create your source and sink dataset files, then "save as" each
+        worksheet as tab delimited text.
+      </template>
     </b-form-group>
     <b-button type="submit" variant="primary" :disabled="$v.$invalid"
       >Save</b-button

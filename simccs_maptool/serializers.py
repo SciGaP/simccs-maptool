@@ -306,7 +306,7 @@ class DatasetSerializer(serializers.ModelSerializer):
             return self._transform_text_file(input_file)
         else:
             raise Exception(
-                f"Unrecognized file type {content_type}. File must be a plain text CSV file.")
+                f"Unrecognized file type {content_type}. File must be a plain text tab delimited file.")
 
     def _transform_text_file(self, input_file):
         # assume the delimiter is "tab"
