@@ -284,11 +284,13 @@ export default {
       if (this.datasets) {
         const sources = this.datasets.filter((ds) => ds.type === "source");
         // Add deleted sources that are used by the case to the list
-        this.aCase.datasets
-          .filter((ds) => ds.type === "source" && ds.deleted)
-          .forEach((ds) => {
-            sources.push(ds);
-          });
+        if (this.aCase.datasets) {
+          this.aCase.datasets
+            .filter((ds) => ds.type === "source" && ds.deleted)
+            .forEach((ds) => {
+              sources.push(ds);
+            });
+        }
         return sources;
       } else {
         return [];
@@ -297,12 +299,14 @@ export default {
     sinkDatasets() {
       if (this.datasets) {
         const sinks = this.datasets.filter((ds) => ds.type === "sink");
-        // Add deleted sources that are used by the case to the list
-        this.aCase.datasets
-          .filter((ds) => ds.type === "sink" && ds.deleted)
-          .forEach((ds) => {
-            sinks.push(ds);
-          });
+        // Add deleted sinks that are used by the case to the list
+        if (this.aCase.datasets) {
+          this.aCase.datasets
+            .filter((ds) => ds.type === "sink" && ds.deleted)
+            .forEach((ds) => {
+              sinks.push(ds);
+            });
+        }
         return sinks;
       } else {
         return [];
