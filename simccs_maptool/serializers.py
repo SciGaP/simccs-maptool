@@ -310,7 +310,7 @@ class DatasetSerializer(serializers.ModelSerializer):
 
     def _transform_text_file(self, input_file):
         # assume the delimiter is "tab"
-        rawdata = pd.read_csv(input_file, sep="\t")
+        rawdata = pd.read_csv(input_file, sep="\t",index_col=False)
         # convert to a geopandas object
         geodata = gpd.GeoDataFrame(
             rawdata, geometry=gpd.points_from_xy(rawdata.LON, rawdata.LAT)
