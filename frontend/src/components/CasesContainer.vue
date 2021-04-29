@@ -1,168 +1,167 @@
 <template>
-  <div>
-    <div class="row">
-      <div class="col">
-        <h1 class="h4 mb-4">Datasets</h1>
-      </div>
-      <div class="col-auto">
-        <b-button to="datasets/new" variant="primary"
-          ><i class="fa fa-plus" aria-hidden="true"></i> New Dataset</b-button
-        >
-      </div>
-    </div>
-    <b-card>
-      <b-table :items="datasetItems" :fields="datasetFields">
-        <template #cell(name)="data">
-          <span class="text-break">{{ data.value }}</span>
-          <div class="text-muted">
-            <small>{{ data.item.description }}</small>
-          </div>
-        </template>
-        <template #cell(type)="data">
-          <dataset-type-badge :type="data.value" />
-        </template>
-        <template #cell(original_filename)="data" style="max-width: 20%">
-          <a
-            class="text-break"
-            :href="data.item.original_url"
-            target="_blank"
-            >{{ data.value }}</a
-          >
-          <br />
-          <small
-            ><a v-if="data.item.url" :href="data.item.url" target="_blank"
-              >Download GeoJSON</a
-            ></small
-          >
-        </template>
-        <template #cell(actions)="data">
-          <b-button
-            variant="secondary"
-            :to="{ name: 'dataset', params: { id: data.item.id } }"
-            v-if="data.item.userHasWriteAccess && !data.item.deleted"
-          >
-            <i class="fa fa-edit" aria-hidden="true"></i>
-            Edit</b-button
-          >
-          <b-button
-            variant="secondary"
-            v-if="data.item.userHasWriteAccess && data.item.deleted"
-            @click="undeleteDataset(data.item.id)"
-          >
-            <i class="fa fa-trash-restore" aria-hidden="true"></i>
-            Undelete</b-button
-          >
-        </template>
-        <template #cell(updated)="data">
-          {{
-            new Date(data.value).toLocaleString("en-US", {
-              dateStyle: "short",
-              timeStyle: "short",
-            })
-          }}
-          <br />
-          <small v-if="!data.item.deleted"
-            ><b-link
-              :to="{ name: 'dataset-view', params: { id: data.item.id } }"
-              class="text-muted"
+  <b-card>
+    <b-tabs>
+      <b-tab title="Cases">
+        <div class="row my-2">
+          <div class="ml-auto col-auto">
+            <b-button to="cases/new" variant="primary"
+              ><i class="fa fa-plus" aria-hidden="true"></i> New Case</b-button
             >
-              {{ data.item.versions.length }} version{{
-                data.item.versions.length > 1 ? "s" : ""
-              }}
-            </b-link></small
-          >
-        </template>
-      </b-table>
-      <small v-if="deletedDatasets && deletedDatasets.length > 0">
-        <b-link
-          class="text-muted"
-          @click="showDeletedDatasets = !showDeletedDatasets"
-        >
-          {{
-            showDeletedDatasets
-              ? "Hide deleted datasets"
-              : `Show ${deletedDatasets.length} deleted dataset${
-                  deletedDatasets.length > 1 ? "s" : ""
-                }`
-          }}
-        </b-link>
-      </small>
-    </b-card>
-    <div class="row">
-      <div class="col">
-        <h1 class="h4 mb-4">Cases</h1>
-      </div>
-      <div class="col-auto">
-        <b-button to="cases/new" variant="primary"
-          ><i class="fa fa-plus" aria-hidden="true"></i> New Case</b-button
-        >
-      </div>
-    </div>
-    <b-card>
-      <b-table :items="caseItems" :fields="caseFields">
-        <template #cell(title)="data">
-          <span class="text-break">{{ data.value }}</span>
-          <div class="text-muted">
-            <small>{{ data.item.description }}</small>
           </div>
-        </template>
-        <template #cell(actions)="data">
-          <b-button
-            variant="secondary"
-            :to="{ name: 'case', params: { id: data.item.id } }"
-            v-if="data.item.userHasWriteAccess"
-          >
-            <i class="fa fa-edit" aria-hidden="true"></i>
-            Edit</b-button
-          >
-          <b-button
-            variant="secondary"
-            :to="{ name: 'case-copy', params: { id: data.item.id } }"
-            v-if="!data.item.userHasWriteAccess"
-          >
-            <i class="fa fa-copy" aria-hidden="true"></i>
-            Copy</b-button
-          >
-          <b-button
-            variant="warning"
-            @click="claimCase(data.item.id)"
-            title="Claim ownership of this case"
-            v-if="!data.item.userHasWriteAccess && data.item.userIsProjectOwner"
-          >
-            <i class="fa fa-hand-paper" aria-hidden="true"></i>
-            Claim
-          </b-button>
-        </template>
-        <template #row-details="row">
-          <b-card
-            class="my-workspaces-card"
-            title="My Workspaces"
-            title-tag="h6"
-            v-if="getWorkspacesForCase(row.item).length > 0"
-          >
-            <my-workspaces :workspaces="getWorkspacesForCase(row.item)" />
+        </div>
+        <b-table :items="caseItems" :fields="caseFields">
+          <template #cell(title)="data">
+            <span class="text-break">{{ data.value }}</span>
+            <div class="text-muted">
+              <small>{{ data.item.description }}</small>
+            </div>
+          </template>
+          <template #cell(actions)="data">
             <b-button
+              variant="secondary"
+              :to="{ name: 'case', params: { id: data.item.id } }"
+              v-if="data.item.userHasWriteAccess"
+            >
+              <i class="fa fa-edit" aria-hidden="true"></i>
+              Edit</b-button
+            >
+            <b-button
+              variant="secondary"
+              :to="{ name: 'case-copy', params: { id: data.item.id } }"
+              v-if="!data.item.userHasWriteAccess"
+            >
+              <i class="fa fa-copy" aria-hidden="true"></i>
+              Copy</b-button
+            >
+            <b-button
+              variant="warning"
+              @click="claimCase(data.item.id)"
+              title="Claim ownership of this case"
+              v-if="
+                !data.item.userHasWriteAccess && data.item.userIsProjectOwner
+              "
+            >
+              <i class="fa fa-hand-paper" aria-hidden="true"></i>
+              Claim
+            </b-button>
+          </template>
+          <template #row-details="row">
+            <b-card
+              class="my-workspaces-card"
+              :title="`My ${row.item.title} Workspaces`"
+              title-tag="h6"
+              v-if="getWorkspacesForCase(row.item).length > 0"
+            >
+              <my-workspaces :workspaces="getWorkspacesForCase(row.item)" />
+              <b-button
+                @click="newWorkspace(row.item)"
+                variant="primary"
+                :title="`Create new workspace using the ${row.item.title} case`"
+              >
+                <i class="fa fa-map" aria-hidden="true"></i>
+                New Workspace</b-button
+              >
+            </b-card>
+            <b-button
+              v-else
               @click="newWorkspace(row.item)"
               variant="primary"
               :title="`Create new workspace using the ${row.item.title} case`"
             >
               <i class="fa fa-map" aria-hidden="true"></i>
-              New Workspace</b-button
+              Create New Workspace</b-button
             >
-          </b-card>
-          <b-button
-            v-else
-            @click="newWorkspace(row.item)"
-            variant="primary"
-            :title="`Create new workspace using the ${row.item.title} case`"
+          </template>
+        </b-table>
+      </b-tab>
+      <b-tab title="Datasets">
+        <div class="row my-2">
+          <div class="ml-auto col-auto">
+            <b-button to="datasets/new" variant="primary"
+              ><i class="fa fa-plus" aria-hidden="true"></i> New
+              Dataset</b-button
+            >
+          </div>
+        </div>
+        <b-table :items="datasetItems" :fields="datasetFields">
+          <template #cell(name)="data">
+            <span class="text-break">{{ data.value }}</span>
+            <div class="text-muted">
+              <small>{{ data.item.description }}</small>
+            </div>
+          </template>
+          <template #cell(type)="data">
+            <dataset-type-badge :type="data.value" />
+          </template>
+          <template #cell(original_filename)="data" style="max-width: 20%">
+            <a
+              class="text-break"
+              :href="data.item.original_url"
+              target="_blank"
+              >{{ data.value }}</a
+            >
+            <br />
+            <small
+              ><a v-if="data.item.url" :href="data.item.url" target="_blank"
+                >Download GeoJSON</a
+              ></small
+            >
+          </template>
+          <template #cell(actions)="data">
+            <b-button
+              variant="secondary"
+              :to="{ name: 'dataset', params: { id: data.item.id } }"
+              v-if="data.item.userHasWriteAccess && !data.item.deleted"
+            >
+              <i class="fa fa-edit" aria-hidden="true"></i>
+              Edit</b-button
+            >
+            <b-button
+              variant="secondary"
+              v-if="data.item.userHasWriteAccess && data.item.deleted"
+              @click="undeleteDataset(data.item.id)"
+            >
+              <i class="fa fa-trash-restore" aria-hidden="true"></i>
+              Undelete</b-button
+            >
+          </template>
+          <template #cell(updated)="data">
+            {{
+              new Date(data.value).toLocaleString("en-US", {
+                dateStyle: "short",
+                timeStyle: "short",
+              })
+            }}
+            <br />
+            <small v-if="!data.item.deleted"
+              ><b-link
+                :to="{ name: 'dataset-view', params: { id: data.item.id } }"
+                class="text-muted"
+              >
+                {{ data.item.versions.length }} version{{
+                  data.item.versions.length > 1 ? "s" : ""
+                }}
+              </b-link></small
+            >
+          </template>
+        </b-table>
+        <small v-if="deletedDatasets && deletedDatasets.length > 0">
+          <b-link
+            class="text-muted"
+            @click="showDeletedDatasets = !showDeletedDatasets"
           >
-            <i class="fa fa-map" aria-hidden="true"></i>
-            Create New Workspace</b-button
-          >
-        </template>
-      </b-table>
-    </b-card>
-  </div>
+            {{
+              showDeletedDatasets
+                ? "Hide deleted datasets"
+                : `Show ${deletedDatasets.length} deleted dataset${
+                    deletedDatasets.length > 1 ? "s" : ""
+                  }`
+            }}
+          </b-link>
+        </small>
+      </b-tab>
+    </b-tabs>
+  </b-card>
 </template>
 
 <script>
