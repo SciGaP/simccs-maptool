@@ -692,4 +692,7 @@ class WorkspaceViewSet(viewsets.ModelViewSet):
         simccs_project = self.request.query_params.get('project', None)
         if simccs_project is not None:
             queryset = queryset.filter(case__simccs_project=simccs_project)
+        owner = self.request.query_params.get('owner', None)
+        if owner is not None:
+            queryset = queryset.filter(owner__username=owner)
         return queryset

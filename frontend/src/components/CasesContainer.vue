@@ -100,15 +100,13 @@
     </div>
     <b-card>
       <b-table :items="caseItems" :fields="caseFields">
+        <template #cell(title)="data">
+          <span class="text-break">{{ data.value }}</span>
+          <div class="text-muted">
+            <small>{{ data.item.description }}</small>
+          </div>
+        </template>
         <template #cell(actions)="data">
-          <b-link
-            class="btn btn-primary"
-            role="button"
-            :href="`/maptool/build?case=${data.item.id}`"
-          >
-            <i class="fa fa-map" aria-hidden="true"></i>
-            Use</b-link
-          >
           <b-button
             variant="secondary"
             :to="{ name: 'case', params: { id: data.item.id } }"
@@ -135,6 +133,33 @@
             Claim
           </b-button>
         </template>
+        <template #row-details="row">
+          <b-card
+            class="my-workspaces-card"
+            title="My Workspaces"
+            title-tag="h6"
+            v-if="getWorkspacesForCase(row.item).length > 0"
+          >
+            <my-workspaces :workspaces="getWorkspacesForCase(row.item)" />
+            <b-button
+              @click="newWorkspace(row.item)"
+              variant="primary"
+              :title="`Create new workspace using the ${row.item.title} case`"
+            >
+              <i class="fa fa-map" aria-hidden="true"></i>
+              New Workspace</b-button
+            >
+          </b-card>
+          <b-button
+            v-else
+            @click="newWorkspace(row.item)"
+            variant="primary"
+            :title="`Create new workspace using the ${row.item.title} case`"
+          >
+            <i class="fa fa-map" aria-hidden="true"></i>
+            Create New Workspace</b-button
+          >
+        </template>
       </b-table>
     </b-card>
   </div>
@@ -142,9 +167,10 @@
 
 <script>
 import DatasetTypeBadge from "./DatasetTypeBadge.vue";
-const { utils } = AiravataAPI;
+import MyWorkspaces from "./MyWorkspaces.vue";
+const { session, utils } = AiravataAPI;
 export default {
-  components: { DatasetTypeBadge },
+  components: { DatasetTypeBadge, MyWorkspaces },
   name: "cases-container",
   props: {
     projectId: {
@@ -158,6 +184,7 @@ export default {
       deletedDatasets: null,
       cases: null,
       showDeletedDatasets: false,
+      userWorkspaces: null,
     };
   },
   created() {
@@ -185,6 +212,13 @@ export default {
       ).then((cases) => {
         this.cases = cases;
       });
+      utils.FetchUtils.get(
+        `/maptool/api/workspaces/?project=${encodeURIComponent(
+          this.projectId
+        )}&owner=${encodeURIComponent(session.Session.username)}`
+      ).then((workspaces) => {
+        this.userWorkspaces = workspaces;
+      });
     },
     claimCase(caseId) {
       utils.FetchUtils.post(
@@ -195,6 +229,32 @@ export default {
     undeleteDataset(datasetId) {
       const url = `/maptool/api/datasets/${datasetId}/undelete/`;
       utils.FetchUtils.put(url, {}).then(this.fetchData);
+    },
+    getWorkspacesForCase(aCase) {
+      if (this.userWorkspaces) {
+        return this.userWorkspaces.filter((w) => w.case === aCase.id);
+      } else {
+        return [];
+      }
+    },
+    newWorkspace(aCase) {
+      const workspace = {
+        name: `Workspace for ${aCase.title}, ${new Date().toLocaleString(
+          "en-US",
+          {
+            dateStyle: "short",
+            timeStyle: "short",
+          }
+        )}`,
+        description: "",
+        case: aCase.id,
+        scenarios: [],
+      };
+      utils.FetchUtils.post("/maptool/api/workspaces/", workspace).then(
+        (ws) => {
+          window.location = `/maptool/build?workspace=${ws.id}`;
+        }
+      );
     },
   },
   computed: {
@@ -215,7 +275,7 @@ export default {
       }
     },
     caseFields() {
-      return ["title", "description", "owner", "actions"];
+      return ["title", "owner", "actions"];
     },
     caseItems() {
       if (!this.cases) {
@@ -230,6 +290,7 @@ export default {
             userHasWriteAccess: aCase.userHasWriteAccess,
             userIsProjectOwner: aCase.userIsProjectOwner,
             actions: null,
+            _showDetails: true,
           };
         });
       }
@@ -241,4 +302,8 @@ export default {
 };
 </script>
 
-<style></style>
+<style scoped>
+.my-workspaces-card {
+  margin-bottom: 0px;
+}
+</style>
