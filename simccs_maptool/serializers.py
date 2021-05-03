@@ -15,6 +15,7 @@ from airavata.model.group.ttypes import ResourcePermissionType
 from airavata.model.status.ttypes import ExperimentState
 from collections import defaultdict
 from django.urls import reverse
+from functools import partial
 
 logger = logging.getLogger(__name__)
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
@@ -303,15 +304,16 @@ class DatasetSerializer(serializers.ModelSerializer):
     def _transform_file(self, input_file, dataset_type, content_type):
         # transform the file and return the transformed file (GeoJSON)
         if content_type.startswith("text/"):
-            return self._transform_text_file(input_file)
+            return self._transform_text_file(input_file, dataset_type)
         else:
             raise Exception(
                 f"Unrecognized file type {content_type}. File must be a plain text tab delimited file.")
 
-    def _transform_text_file(self, input_file):
+    def _transform_text_file(self, input_file, dataset_type):
         # assume the delimiter is "tab"
         rawdata = pd.read_csv(input_file, sep="\t", index_col=False)
-        rawdata.rename(columns=self._map_column_names, inplace=True)
+        rawdata.rename(columns=partial(self._map_column_names, dataset_type=dataset_type), inplace=True)
+        self._verify_all_columns_exist(rawdata, dataset_type)
         # convert to a geopandas object
         geodata = gpd.GeoDataFrame(
             rawdata, geometry=gpd.points_from_xy(rawdata.LON, rawdata.LAT)
@@ -326,14 +328,18 @@ class DatasetSerializer(serializers.ModelSerializer):
         f.name = outputfile
         return f
 
-    def _map_column_names(self, name):
+    def _map_column_names(self, name, dataset_type):
         """Convert column names to standard names."""
         if name.lower().startswith("id"):
             return "ID"
         elif name.lower().startswith("costfix"):
             return "costFix ($M)"
         elif name.lower().startswith("fixo&m") or name.lower().startswith("fixom"):
-            return "fixO&M ($M/y)"
+            # Source files want "fixO&M ($M/y)" but sink files want "fixO&M ($M/yr)"
+            if dataset_type == 'source':
+                return "fixO&M ($M/y)"
+            else:
+                return "fixO&M ($M/yr)"
         elif name.lower().startswith("varo&m") or name.lower().startswith("varom"):
             return "varO&M ($/tCO2)"
         elif name.lower().startswith("capmax"):
@@ -352,11 +358,44 @@ class DatasetSerializer(serializers.ModelSerializer):
             return "wellFixO&M ($M/yr)"
         elif name.lower().startswith("sink_id"):
             return "Sink_ID"
-        # Source files want "NAME" but sink files want "Name"
-        # elif name.lower().startswith("name"):
-        #     return "NAME"
+        elif name.lower().startswith("name"):
+            # Source files want "NAME" but sink files want "Name"
+            if dataset_type == 'source':
+                return "NAME"
+            else:
+                return "Name"
         else:
             return name
+
+    def _verify_all_columns_exist(self, df, dataset_type):
+
+        if dataset_type == 'source':
+            expected_columns = ['ID',
+                                'costFix ($M)',
+                                'fixO&M ($M/y)',
+                                'varO&M ($/tCO2)',
+                                'capMax (MtCO2/y)',
+                                'N/A',
+                                'LON',
+                                'LAT',
+                                'NAME']
+        elif dataset_type == 'sink':
+            expected_columns = ['ID',
+                                'Sink_ID',
+                                'fieldCap (MtCO2)',
+                                'costFix ($M)',
+                                'fixO&M ($M/yr)',
+                                'wellCap (MtCO2/yr)',
+                                'wellCostFix ($M)',
+                                'wellFixO&M ($M/yr)',
+                                'varO&M ($/tCO2)',
+                                'LON',
+                                'LAT',
+                                'Name']
+        for expected_column in expected_columns:
+            if expected_column not in df:
+                raise Exception(
+                    f"Missing column '{expected_column}' in {dataset_type} file")
 
     def get_original_filename(self, dataset):
         request = self.context["request"]
