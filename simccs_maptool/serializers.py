@@ -310,7 +310,8 @@ class DatasetSerializer(serializers.ModelSerializer):
 
     def _transform_text_file(self, input_file):
         # assume the delimiter is "tab"
-        rawdata = pd.read_csv(input_file, sep="\t",index_col=False)
+        rawdata = pd.read_csv(input_file, sep="\t", index_col=False)
+        rawdata.rename(columns=self._map_column_names, inplace=True)
         # convert to a geopandas object
         geodata = gpd.GeoDataFrame(
             rawdata, geometry=gpd.points_from_xy(rawdata.LON, rawdata.LAT)
@@ -324,6 +325,38 @@ class DatasetSerializer(serializers.ModelSerializer):
         f.seek(0)
         f.name = outputfile
         return f
+
+    def _map_column_names(self, name):
+        """Convert column names to standard names."""
+        if name.lower().startswith("id"):
+            return "ID"
+        elif name.lower().startswith("costfix"):
+            return "costFix ($M)"
+        elif name.lower().startswith("fixo&m") or name.lower().startswith("fixom"):
+            return "fixO&M ($M/y)"
+        elif name.lower().startswith("varo&m") or name.lower().startswith("varom"):
+            return "varO&M ($/tCO2)"
+        elif name.lower().startswith("capmax"):
+            return "capMax (MtCO2/y)"
+        elif name.lower().startswith("lon"):
+            return "LON"
+        elif name.lower().startswith("lat"):
+            return "LAT"
+        elif name.lower().startswith("fieldcap"):
+            return "fieldCap (MtCO2)"
+        elif name.lower().startswith("wellcap"):
+            return "wellCap (MtCO2/yr)"
+        elif name.lower().startswith("wellcostfix"):
+            return "wellCostFix ($M)"
+        elif name.lower().startswith("wellfixo&m") or name.lower().startswith("wellfixom"):
+            return "wellFixO&M ($M/yr)"
+        elif name.lower().startswith("sink_id"):
+            return "Sink_ID"
+        # Source files want "NAME" but sink files want "Name"
+        # elif name.lower().startswith("name"):
+        #     return "NAME"
+        else:
+            return name
 
     def get_original_filename(self, dataset):
         request = self.context["request"]
