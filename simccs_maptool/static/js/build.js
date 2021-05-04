@@ -403,8 +403,12 @@ function generatecandidatenetwork(panelid) {
         //Maptool.cachedCandidateNetworkSinkIds = sinkIds;
         //document.dispatchEvent(new CustomEvent("candidate-network-loaded", {detail: data}));
         // disbale button bn_generatecandidatenetwork_'+ panelid
+        // create a temp download link
         document.getElementById('bn_generatecandidatenetwork_'+ panelid).disabled = true; 
-        
+        var download_div = document.getElementById('download_candidatenetwork_'+ panelid);
+        var downloadlink = createdownloadlink("candidatenetwork.geojson",data["Network"],"Download Candidatenetwork");
+        download_div.appendChild(downloadlink);
+
         return data;
   }).catch(display_error_modal);
 }
