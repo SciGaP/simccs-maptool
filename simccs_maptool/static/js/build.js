@@ -406,7 +406,7 @@ function generatecandidatenetwork(panelid) {
         // create a temp download link
         document.getElementById('bn_generatecandidatenetwork_'+ panelid).disabled = true; 
         var download_div = document.getElementById('download_candidatenetwork_'+ panelid);
-        var downloadlink = createdownloadlink("candidatenetwork.geojson",candidateNetworkLayer.toGeoJSON(),"Download Candidatenetwork");
+        var downloadlink = createdownloadlink("candidatenetwork.geojson",JSON.stringify(candidateNetworkLayer.toGeoJSON()),"Download Candidatenetwork");
         download_div.appendChild(downloadlink);
 
         return data;
