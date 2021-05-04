@@ -194,20 +194,28 @@ def experiment_result(request, experiment_id):
         geojson_dir = os.path.join(results_dir, "geojson")
         if not os.path.exists(shapefiles_dir):
             _create_shapefiles_for_result(request, experiment, results_dir)
+        # check if the candidate network shapefiles exist in shapeFiles/CandidateNetwork.shp
+        if not os.path.exists(os.path.join(shapefiles_dir, 'CandidateNetwork.shp')):
+            _create_shapefiles_for_candidate_network(request, experiment, results_dir)
         if not os.path.exists(geojson_dir):
             _create_geojson_for_result(results_dir)
+        if not os.path.exists(os.path.join(geojson_dir, 'CandidateNetwork.geojson')):
+            _create_geojson_for_candidate_network(results_dir)
         with open(
             os.path.join(results_dir, "geojson", "Network.geojson")
         ) as network_geojson, open(
             os.path.join(results_dir, "geojson", "Sources.geojson")
         ) as sources_geojson, open(
             os.path.join(results_dir, "geojson", "Sinks.geojson")
-        ) as sinks_geojson:
+        ) as sinks_geojson, open(
+            os.path.join(results_dir, "geojson", "CandidateNetwork.geojson")
+        ) as candnet_geojson:
             return JsonResponse(
                 {
                     "Network": json.load(network_geojson),
                     "Sources": json.load(sources_geojson),
                     "Sinks": json.load(sinks_geojson),
+                    "CandidateNetwork": json.load(candnet_geojson),
                 }
             )
     except Exception as e:
@@ -308,6 +316,50 @@ def _create_shapefiles_for_result(request, experiment, results_dir):
         simccs_helper.make_shapefiles(scenario_dir, results_dir)
 
 
+def _create_shapefiles_for_candidate_network(request, experiment, results_dir):
+
+    sources = _get_experiment_file(request, experiment, "Sources", input_file=True)
+    sinks = _get_experiment_file(request, experiment, "Sinks", input_file=True)
+    dataset_id = _get_experiment_value(experiment, "Dataset-id")
+    with tempfile.TemporaryDirectory() as datasets_basepath:
+        dataset_dir = datasets.get_dataset_dir(dataset_id)
+        # Create the scenario directory
+        # TODO: add the candidatenetwork file too
+        scenario_dir = simccs_helper.create_scenario_dir(
+            datasets_basepath,
+            dataset_dir,
+            sources=sources,
+            sinks=sinks,
+            # Technically we don't even need these, they are loaded by
+            # make_shapefiles
+            # mps=mps,
+            # solution=solution,
+        )
+        simccs_helper.make_candidate_network_shapefiles(scenario_dir)
+        if not user_storage.dir_exists(request, os.path.join(results_dir, 'shapeFiles')):
+            user_storage.create_user_dir(request, results_dir, ('shapeFiles',))
+        # Copy the candidate network shapefiles from the temp directory into the
+        # experiment results_dir, renaming from Network.(dbf|prj|shp|shx) ->
+        # CandidateNetwork.(dbf|prj|shp|shx)
+        with open(
+            os.path.join(scenario_dir, 'Network', 'CandidateNetwork', 'shapeFiles', 'Network.dbf'), 'rb'
+        ) as dbf, open(
+            os.path.join(scenario_dir, 'Network', 'CandidateNetwork', 'shapeFiles', 'Network.prj'), 'rb'
+        ) as prj, open(
+            os.path.join(scenario_dir, 'Network', 'CandidateNetwork', 'shapeFiles', 'Network.shp'), 'rb'
+        ) as shp, open(
+            os.path.join(scenario_dir, 'Network', 'CandidateNetwork', 'shapeFiles', 'Network.shx'), 'rb'
+        ) as shx:
+            user_storage.save(request, os.path.join(results_dir, "shapeFiles"),
+                              dbf, name="CandidateNetwork.dbf")
+            user_storage.save(request, os.path.join(results_dir, "shapeFiles"),
+                              prj, name="CandidateNetwork.prj")
+            user_storage.save(request, os.path.join(results_dir, "shapeFiles"),
+                              shp, name="CandidateNetwork.shp")
+            user_storage.save(request, os.path.join(results_dir, "shapeFiles"),
+                              shx, name="CandidateNetwork.shx")
+
+
 # TODO: this would be a good candidate to add to SDK
 def _get_experiment_file(request, experiment, name, input_file=False):
     data_product_uri = None
@@ -369,13 +421,21 @@ def _create_geojson_for_result(results_dir):
     sinks_sf = shapefile.Reader(os.path.join(results_dir, "shapeFiles", "Sinks"))
     sources_sf = shapefile.Reader(os.path.join(results_dir, "shapeFiles", "Sources"))
     geojson_dir = os.path.join(results_dir, "geojson")
-    os.mkdir(geojson_dir)
+    os.makedirs(geojson_dir, exist_ok=True)
     with open(os.path.join(geojson_dir, "Network.geojson"), "w") as network_geojson_f:
         _write_shapefile_to_geojson(network_sf, network_geojson_f)
     with open(os.path.join(geojson_dir, "Sinks.geojson"), "w") as sinks_geojson_f:
         _write_shapefile_to_geojson(sinks_sf, sinks_geojson_f)
     with open(os.path.join(geojson_dir, "Sources.geojson"), "w") as sources_geojson_f:
         _write_shapefile_to_geojson(sources_sf, sources_geojson_f)
+
+
+def _create_geojson_for_candidate_network(results_dir):
+    candidate_network_sf = shapefile.Reader(os.path.join(results_dir, 'shapeFiles', 'CandidateNetwork'))
+    geojson_dir = os.path.join(results_dir, "geojson")
+    os.makedirs(geojson_dir, exist_ok=True)
+    with open(os.path.join(geojson_dir, "CandidateNetwork.geojson"), "w") as candnet_geojson_f:
+        _write_shapefile_to_geojson(candidate_network_sf, candnet_geojson_f)
 
 
 def _write_shapefile_to_geojson(shapefile, geojson_f):
