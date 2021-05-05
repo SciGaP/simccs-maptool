@@ -40,7 +40,10 @@
                   </h5>
                 </b-card-title>
                 <b-form-group>
-                  <b-form-select v-model="datasetSelection.dataset">
+                  <b-form-select
+                    :value="datasetSelection.dataset"
+                    @input="onInputDatasetSelection(datasetSelection, $event)"
+                  >
                     <template #first>
                       <b-form-select-option :value="null" disabled
                         >-- Please select a dataset --</b-form-select-option
@@ -50,9 +53,7 @@
                       label="Sources"
                       :options="getSourceDatasetOptions(datasetSelection)"
                     >
-                      <b-form-select-option
-                        :value="null"
-                        @click="createDataset('source')"
+                      <b-form-select-option :value="'create-source'"
                         >Create a new source dataset ...</b-form-select-option
                       >
                     </b-form-select-option-group>
@@ -60,9 +61,7 @@
                       label="Sinks"
                       :options="getSinkDatasetOptions(datasetSelection)"
                     >
-                      <b-form-select-option
-                        :value="null"
-                        @click="createDataset('sink')"
+                      <b-form-select-option :value="'create-sink'"
                         >Create a new sink dataset ...</b-form-select-option
                       >
                     </b-form-select-option-group>
@@ -546,6 +545,17 @@ export default {
         bbox: null,
         popup: [],
       });
+    },
+    onInputDatasetSelection(datasetSelection, value) {
+      // 'create-source' and 'create-sink' are special values for triggering
+      // display of the NewDatasetModal
+      if (value === "create-source") {
+        this.createDataset("source");
+      } else if (value === "create-sink") {
+        this.createDataset("sink");
+      } else {
+        datasetSelection.dataset = value;
+      }
     },
   },
   watch: {
