@@ -424,6 +424,8 @@
             document.getElementById("sink_saline_div").appendChild(legend); 
             var linebreak = document.createElement("br");
             document.getElementById("sink_saline_div").appendChild(linebreak);
+            legend = createLegendbyList("CO2 Volumes",[["red","Low"],["yellow","Med"],["green","High"]]);
+            document.getElementById("sink_OG_div").appendChild(legend);
 
          }); // end of document ready function
          
@@ -2361,6 +2363,20 @@
             return div;
             }
 
+            function createLegendbyList(fieldname,colorlist) {
+                  // [[color,label]]
+                  var div = L.DomUtil.create('div', 'info legend'),
+                  labels = [];
+                  var i;
+                  for (i = 0; i < colorlist.length; i++) {
+                     labels.push('<i style="background:' + colorlist[i][0] + '"></i> ' +
+                  '&nbsp;&nbsp;' + colorlist[i][1]);
+                  } 
+                  div.innerHTML = fieldname + "<br>";
+                  div.innerHTML += labels.join('<br>');
+                  return div;
+            }
+
 </script>
 {% endblock scripts %}
 
@@ -2564,7 +2580,9 @@
                                  <input class="form-check-input" type="radio" id="sink_oil_reservoir" >
                                  <label style="font-size: 100%;" class="form-check-label" for="sink_oil_reservoir"><strong>Oil/Gas Reservoir</strong></label>
                                  <br><small>(NATCARB_OG_082819)</small>
-                                 <div><img src="/static/images/OG_legend.jpg" alt="saline_legend" width="114px" height="96px" style="border:1px solidblack"> </div>
+                                 <div id="sink_OG_div" >
+                                 <!-- <div><img src="/static/images/OG_legend.jpg" alt="saline_legend" width="114px" height="96px" style="border:1px solidblack"> </div> -->
+                                </div>
                               </div>
                               <!--
                               <div class="form-check">
