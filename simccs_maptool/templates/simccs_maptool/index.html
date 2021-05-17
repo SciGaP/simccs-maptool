@@ -463,10 +463,9 @@
          
          function sinkOnEachFeature(feature, layer) {
          //bind click
-         //layer.bindTooltip("<strong>CO2_Low(t):"+feature.properties.CO2_Low__t.toString()+"<strong>");
-         //layer.bindTooltip("<strong>Name: "+feature.properties.Resource_N+"<br>"+"Min Total Sink Cost: "+feature.properties['Min_Total_'].toString()+"<strong>");
-         layer.bindTooltip("<strong>Saline Sink: <br>Name: "+feature.properties['name']+"<br>"+"fieldCap(MtCO2): "+feature.properties['fieldcap_mtco2'].toString()+"<br>"+"varO&M($/tCO2): "+feature.properties['varom_d_tco2'].toString()+"<strong>");
-            layer.on('click', function (e) {
+         //layer.bindTooltip("<strong>Saline Sink: <br>Name: "+feature.properties['name']+"<br>"+"fieldCap(MtCO2): "+feature.properties['fieldcap_mtco2'].toString()+"<br>"+"varO&M($/tCO2): "+feature.properties['varom_d_tco2'].toString()+"<strong>");
+         layer.bindTooltip("<strong>Saline Sink: <br>Name: "+feature.properties['Name']+"<br>"+"CO2 Capacity(MtCO2): "+feature.properties['fieldCap_M'].toString()+"<br>"+"Cost($/tCO2): "+feature.properties['varOM_d_tC'].toString()+"<strong>");
+         layer.on('click', function (e) {
            var target_id = sinkselection.indexOf(e.target)
            if (target_id >=0 ) {e.target.setStyle({weight:1,color:'grey',fillOpacity:0.4});sinkselection.splice(target_id,1);}
            else {e.target.setStyle({weight:2,color:"black",fillOpacity:0.7});
@@ -499,10 +498,10 @@
          });
          
          var sinkLayer = new L.geoJSON('',{style: function(feature){
-           var co2 = feature.properties['varom_d_tco2'];
+           var co2 = feature.properties['varOM_d_tC'];
            var fillcolor = ''; 
            if (co2 > 25.0) {fillcolor = 'red';} 
-           else if (co2 >= 5.0 && co2 <= 25.0) {fillcolor ='yellow'}
+           else if (co2 > 5.0 && co2 <= 25.0) {fillcolor ='yellow'}
            else {fillcolor = 'green'}
            return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.6,pane: "polygonsPane"};
          },
@@ -602,7 +601,7 @@
                  // loop through geojson
                  var entry;
                  var cost_array=[]
-                 for (entry of data['features']) {cost_array.push(entry['properties']['varom_d_tco2']);}
+                 for (entry of data['features']) {cost_array.push(entry['properties']['varOM_d_tC']);}
                  var cost_min = Math.min(...cost_array);
                  var cost_max = Math.max(...cost_array);
                  // slider min,max,values,step
@@ -1470,29 +1469,29 @@
                   }
                   else {
                         // field 0-1: ID
-                        tempstr += sinkselection[i].feature.properties['objectid'] + "\t";
-                        tempstr += sinkselection[i].feature.properties['id'] + "\t";
+                        tempstr += sinkselection[i].feature.properties['ID'] + "\t";
+                        tempstr += sinkselection[i].feature.properties['Sink_ID'] + "\t";
 
                         //2: Capacity "fieldCap__"
-                        tempstr += sinkselection[i].feature.properties['fieldcap_mtco2'] + "\t";
+                        tempstr += sinkselection[i].feature.properties['fieldCap_M'] + "\t";
                         //3: OpeningCost "costFix___"
-                        tempstr += sinkselection[i].feature.properties['costfix_m'] + "\t";
+                        tempstr += sinkselection[i].feature.properties['costFix_M'] + "\t";
                         //4: OMCost "fixO_M___M"
-                        tempstr += sinkselection[i].feature.properties['fixom_m_yr'] + "\t";
+                        tempstr += sinkselection[i].feature.properties['fixOM_M_yr'] + "\t";
                         //5: WellCapacity "wellCap__M"
-                        tempstr += sinkselection[i].feature.properties['wellcap_mtco2_yr'] + "\t";
+                        tempstr += sinkselection[i].feature.properties['wellCap_Mt'] + "\t";
                         //6: WellOpeningCost "wellCostFi"
-                        tempstr += sinkselection[i].feature.properties['wellcostfix_m'] + "\t";
+                        tempstr += sinkselection[i].feature.properties['wellCostFi'] + "\t";
                         //7: WellOMCost "wellFixO_M"
-                        tempstr += sinkselection[i].feature.properties['wellfixom_m_yr'] + "\t";
+                        tempstr += sinkselection[i].feature.properties['wellFixOM_'] + "\t";
                         //8: InjectionCost "varO_M____"
-                        tempstr += sinkselection[i].feature.properties['varom_d_tco2'] + "\t";
+                        tempstr += sinkselection[i].feature.properties['varOM_d_tC'] + "\t";
                         //9: 0
                         tempstr += '0' + "\t";
                         //10: Lon "LON"
-                        tempstr += sinkselection[i].feature.properties['lon'] + "\t";
+                        tempstr += sinkselection[i].feature.properties['LON'] + "\t";
                         //11: Lat "LAT"
-                        tempstr += sinkselection[i].feature.properties['lat'] + "\t";
+                        tempstr += sinkselection[i].feature.properties['LAT'] + "\t";
                         //12: 0 
                         tempstr += '0' + "\t";
                         //13: 0
@@ -1502,7 +1501,7 @@
                         //15: 0
                         tempstr += '0' + "\t";
                         //16: NAME "NAME"
-                        tempstr += sinkselection[i].feature.properties['name'];
+                        tempstr += sinkselection[i].feature.properties['Name'];
                   }
 
                   //caculate lon lat
@@ -1962,9 +1961,9 @@
             var sinkcapacity_1 = $("#slider-range-sinkcapacity").slider("values", 1);
             var cqlfilter_str = "";
             cqlfilter_str = "((";
-            cqlfilter_str += "varom_d_tco2 Between " + fixedcost_0.toString() + " AND "+ fixedcost_1.toString();
+            cqlfilter_str += "varOM_d_tC Between " + fixedcost_0.toString() + " AND "+ fixedcost_1.toString();
             cqlfilter_str += ") AND (";
-            cqlfilter_str += "fieldcap_mtco2 Between " + sinkcapacity_0.toString() + " AND "+ sinkcapacity_1.toString();
+            cqlfilter_str += "fieldCap_M Between " + sinkcapacity_0.toString() + " AND "+ sinkcapacity_1.toString();
             cqlfilter_str += "))";
             //alert(cqlfilter_str);
             // remove sink_sco2t_layer
@@ -1975,7 +1974,7 @@
             format: 'image/png',
             transparent: true,
             attribution: "SimCCS",
-            propertyName: 'name,fieldcap_mtco2,costfix_m,wellcostfix_m,varom_d_tco2',
+            propertyName: 'Name,fieldCap_M,costFix_M,wellCostFi,varOM_d_tC',
             cql_filter:cqlfilter_str,
             zIndex:2
             });
@@ -2172,7 +2171,7 @@
             sinkselection = [];   
             var sinkcost;
             sinkLayer.eachLayer(function(layer) {
-                  sinkcost = layer.feature.properties['varom_d_tco2'];
+                  sinkcost = layer.feature.properties['varOM_d_tC'];
                   if (sinkcost>=fixedcost_0 && sinkcost<=fixedcost_1) {
                         layer.setStyle({weight:2,color:"black",fillOpacity:0.7});
                         sinkselection.push(layer);
@@ -2540,7 +2539,7 @@
                               <div class="form-check">
                                  <input class="form-check-input" type="radio" id="sink_saline_formation">
                                  <label style="font-size: 100%;" class="form-check-label" for="sink_saline_formation"><strong>Saline Formation</strong></label>
-                                 <br> <small>(SCO2T_National_v1_10k)</small>
+                                 <br> <small>(SCO2T_National_v1_10k_rounded)</small>
                                  <div id="sink_saline_div" >
                                     <label>Capture Cost ($/tCO2): 
                                     <input type="text" id="amount-sinkcost" style="border: 0; font-weight: bold;" size="10"/>
