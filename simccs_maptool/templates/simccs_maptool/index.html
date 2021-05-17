@@ -420,8 +420,10 @@
 
             });
 
-            var legend = createLegend('varO&M ($/tCO2)');
+            var legend = createLegend('Capture Cost($/tCO2)');
             document.getElementById("sink_saline_div").appendChild(legend); 
+            var linebreak = document.createElement("br");
+            document.getElementById("sink_saline_div").appendChild(linebreak);
 
          }); // end of document ready function
          
@@ -2467,7 +2469,7 @@
                         -->                           
                         <div class="form-check form-check-inline">
                               <input class="form-check-input" type="radio" id="source_all_test" autocomplete="off">
-                              <label style="font-size: 100%;" class="form-check-label" for="source_all_test"><strong>Sources for Testing</strong></label>
+                              <label style="font-size: 100%;" class="form-check-label" for="source_all_test"><strong>Sources</strong></label>
                         </div>
                         <br><small>(Sources_082819_SimCCS_Format)</small>
                         <div class="btn-toolbar mb-3" role="toolbar" aria-label="Toolbar with button groups">
@@ -2540,14 +2542,14 @@
                                  <label style="font-size: 100%;" class="form-check-label" for="sink_saline_formation"><strong>Saline Formation</strong></label>
                                  <br> <small>(SCO2T_National_v1_10k)</small>
                                  <div id="sink_saline_div" >
-                                    <label>varO&M ($/tCO2): 
+                                    <label>Capture Cost ($/tCO2): 
                                     <input type="text" id="amount-sinkcost" style="border: 0; font-weight: bold;" size="10"/>
                               </label>
                               <table style="width:100%"><tr>
                                    <td width="80%"> <div id="slider-range-sinkcost"></div></td><td width="5%"></td><td width="15%"><button type="button" class="btn btn-sm btn-light" onclick=refresh_saline()><i class="fas fa-redo"></i></span></button></td>
                               </tr>
                               </table>
-                              <label>fieldCap (MtCO2): 
+                              <label>Storage Capacity (MtCO2): 
                                     <input type="text" id="amount-sinkcapacity" style="border: 0; font-weight: bold;" size="10"/>
                               </label>
                               <table style="width:100%"><tr>
@@ -2620,7 +2622,7 @@
                                           <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
                                     </div>
                                     <div>
-                                          <label>varO&M ($/tCO2): 
+                                          <label>Capture Cost($/tCO2): 
                                                 <input type="text" id="amount-user-sinkcost" style="border: 0; font-weight: bold;" size="10"/>
                                           </label>
                                           <table style="width:100%"><tr>
@@ -2636,7 +2638,7 @@
                                           <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
                                     </div>
                                     <div>
-                                          <label>SinkCapacity: 
+                                          <label>Storage Capacity(MtCO2): 
                                                 <input type="text" id="amount-user-sinkcapacity" style="border: 0; font-weight: bold;" size="10"/>
                                           </label>
                                           <table style="width:100%"><tr>
