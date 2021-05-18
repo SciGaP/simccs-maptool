@@ -420,7 +420,8 @@
 
             });
 
-            var legend = createLegend('Capture Cost($/tCO2)');
+            //var legend = createLegend('Capture Cost($/tCO2)');
+            var legend = createLegendbyList('Capture Cost($/tCO2)',[["green","0 - 5"],["yellow","5 - 25"],["red","25 +"]]);
             document.getElementById("sink_saline_div").appendChild(legend); 
             var linebreak = document.createElement("br");
             document.getElementById("sink_saline_div").appendChild(linebreak);
