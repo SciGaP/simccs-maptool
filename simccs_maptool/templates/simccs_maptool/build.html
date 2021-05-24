@@ -299,7 +299,7 @@ function displayselecteddata(panelid) {
             //get the value
             p_value = $('#'+entry).val();
             entry_newid = entry + "_" + panelid;
-            tb_entry = '<tr><td>'+entry+'</td><td><input id="'+entry_newid+ '" name="'+entry_newid+'" type="text" size=8 value='+  p_value +' required></td></tr>';
+            tb_entry = '<tr><td>'+entry+'</td><td><input id="'+entry_newid+ '" name="'+entry_newid+'" type="number" min="0" class="form-control" size=8 value='+  p_value +' required></td></tr>';
             //tb_entry = tb_entry.replace(new RegExp(entry, 'g'), entry +"_"+ panelid);
             tb_new += tb_entry;
       }
@@ -350,6 +350,65 @@ function create_scenario() {
 
 }
 
+function get_max_capture_target(source_selection) {
+      let capTotal = 0;
+      for (const source of source_selection) {
+            const capMax = source.feature.properties["capMax (MtCO2/y)"];
+            capTotal += capMax;
+      }
+      return capTotal;
+}
+
+function get_max_project_period(sink_selection, numYears, captureTarget) {
+
+      let fieldCapTotal = 0;
+      for (const sink of sink_selection) {
+            const fieldCap = sink.feature.properties["fieldCap (MtCO2)"];
+            fieldCapTotal += fieldCap;
+      }
+      return fieldCapTotal / captureTarget;
+}
+
+function update_model_parameter_constraints(panelid, source_selection, sink_selection, numYears, captureTarget) {
+      const max_capture_target = get_max_capture_target(source_selection);
+      document.getElementById('Capture_Target_' + panelid).setAttribute('max', max_capture_target);
+
+      const max_project_period = get_max_project_period(sink_selection, numYears, captureTarget);
+      document.getElementById('Project_Period_' + panelid).setAttribute('max', max_project_period);
+}
+
+function check_validity_of_model_parameters(panelid) {
+      const captureTargetEl = document.getElementById('Capture_Target_' + panelid);
+      // Trigger bootstrap styling of validation state
+      captureTargetEl.parentElement.classList.add("was-validated");
+      if (captureTargetEl.validity.rangeOverflow) {
+            captureTargetEl.setCustomValidity(
+                  "Annual capture target exceeds total capMax of sources (" 
+                  + captureTargetEl.getAttribute('max') + ")");
+      } else {
+            captureTargetEl.setCustomValidity('');
+      }
+      const projectPeriodEl = document.getElementById('Project_Period_' + panelid);
+      // Trigger bootstrap styling of validation state
+      projectPeriodEl.parentElement.classList.add("was-validated");
+      if (projectPeriodEl.validity.rangeOverflow) {
+            projectPeriodEl.setCustomValidity(
+                  "Project duration exceeds total fieldCap of sources (" 
+                  + projectPeriodEl.getAttribute('max') + ") for selected capture target");
+      } else {
+            projectPeriodEl.setCustomValidity('');
+      }
+      if (!captureTargetEl.validity.valid) {
+            captureTargetEl.reportValidity();
+            // Only report one element's validity at a time
+            return false;
+      } else if (!projectPeriodEl.validity.valid) {
+            projectPeriodEl.reportValidity()
+            // Only report one element's validity at a time
+            return false;
+      }
+      return true;
+}
 
 //generate MPS file
 function generatempsfile(panelid,showmodal=1,paras=[], filename=null) {
@@ -386,6 +445,11 @@ function generatempsfile(panelid,showmodal=1,paras=[], filename=null) {
       crf = paras[0];
       numYears = paras[1];
       capacityTarget = paras[2];
+    }
+    update_model_parameter_constraints(panelid, source_selection, sink_selection, numYears, capacityTarget);
+    if (!check_validity_of_model_parameters(panelid)) {
+          // Return a promise rejection of 'invalid'
+          return Promise.reject("invalid");
     }
     // generate formdata
     var formData = new FormData();
