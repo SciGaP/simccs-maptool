@@ -1043,6 +1043,16 @@
       function loadworkingarea(layer) {
             //layer-coordinates
             //alert(layer.toGeoJSON()['geometry']['coordinates']);
+            var selecteddata = L.layerGroup();
+            var searchlayerflag = false;
+            if (map.hasLayer(searchlayer)) { 
+                  searchlayerflag = true;
+                  searchlayer.eachLayer(function(elayer) {
+                  var contains = turf.inside(elayer.toGeoJSON(), layer.toGeoJSON());
+                  if (contains){ 
+                        selecteddata.addLayer(elayer);
+                  }});}
+            // then clean map
             map.removeControl(drawControl);
             drawControl = 0;
             map.eachLayer(function (layer) {
@@ -1055,15 +1065,19 @@
             var geom_str = coordstr.join(',');
             //callback:loadjson
             //load sources layer
-            // load cost surface
-            $.getJSON("/maptool/get-data",{geom:geom_str,method:'data',layer:'source'})
-            .done(function(data){loadjson(data)});
+            if (searchlayerflag) { 
+                  loadjson(selecteddata.toGeoJSON());
+
+            } else {
+                  $.getJSON("/maptool/get-data",{geom:geom_str,method:'data',layer:'source'})
+                  .done(function(data){loadjson(data)}); 
+            }
             // load loadsinklayer
             $.getJSON("/maptool/get-data",{geom:geom_str,method:'data',layer:'sink_saline'})
             .done(function(data){loadsinklayer(data)});
             $.getJSON("/maptool/get-data",{geom:geom_str,method:'data',layer:'sink_og'})
             .done(function(data){loadsinklayer2(data)});
-
+            // load cost surface
             var lbounds=layer.getBounds().pad(0.2);
             var cost_image_url="https://simccs.org/geoserver/ows?service=WCS&version=2.0.0&request=GetCoverage&coverageId=SimCCS__cost&format=png";
             // &subset=Lat(29.920588,33.381122)&subset=Long(-89.251876,-83.277539)";
@@ -1135,6 +1149,7 @@
             var geom_str = coordstr.join(',');
             var totalsource=0;
             var totalcapturable = 0;
+            // use seachlayer if presented on map
             if (map.hasLayer(searchlayer)) {
                   searchlayer.eachLayer(function(elayer) {
                   var contains = turf.inside(elayer.toGeoJSON(), layer.toGeoJSON());
