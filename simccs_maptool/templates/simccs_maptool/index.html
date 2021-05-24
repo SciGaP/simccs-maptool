@@ -1133,6 +1133,15 @@
             for (i = 0, len = geom[0].length; i < len; i++) {
              coordstr[i]= (geom[0][i].toString()).replace(',',' ');} 
             var geom_str = coordstr.join(',');
+            var totalsource=0;
+            var totalcapturable = 0;
+            if (map.hasLayer(searchlayer)) {
+                  searchlayer.eachLayer(function(elayer) {
+                  var contains = turf.inside(elayer.toGeoJSON(), layer.toGeoJSON());
+                     if (contains){
+                      totalsource += 1;
+                      totalcapturable += elayer.feature.properties['Capturable'];};
+            });}
             $.getJSON("/maptool/get-data",{geom:geom_str,method:'count'})
             .done(function(json){
                   //var popup = layer.getPopup();
@@ -1143,8 +1152,13 @@
                   var pop_str='';
                   pop_str+='<p style="font-size:14px">';
                   pop_str += "Area: "+ (area/1000000.0).toFixed(2) + " km2" + '<br>';
-                  pop_str += "No. of Sources: " + json.totalsource.toString() + "<br>";
-                  pop_str += "Capturable CO2: " + json.capturable.toFixed(2) + " MtCO2/yr<br>";
+                  if (map.hasLayer(searchlayer)) { 
+                        pop_str += "No. of Sources: " + totalsource.toString() + "<br>";
+                        pop_str += "Capturable CO2: " + totalcapturable.toFixed(2) + " MtCO2/yr<br>";
+                  } else {
+                        pop_str += "No. of Sources: " + json.totalsource.toString() + "<br>";
+                        pop_str += "Capturable CO2: " + json.capturable.toFixed(2) + " MtCO2/yr<br>";
+                  }
                   pop_str += "No. of Saline Sinks: " + json.totalsink_saline.toString() + "<br>";
                   pop_str += "Saline Sink Capacity: " + json.sinkcapacity_saline.toFixed(2) + " MtCO2<br>";
                   pop_str += "No. of Oil/Gas Sinks: " + json.totalsink_og.toString() + "<br>";
@@ -1177,11 +1191,14 @@
                   querylayers = get_selectedsourcelayers();
                  //if (querylayers == ''){alert("Please select at least one source!"); return;} 
                  // load source layer if not selected
-                 if (querylayers == '') {
-                    // load source layer
-                    map.addLayer(source_all_test_layer_1);
-                    querylayers = 'Sources_082819_SimCCS_Format';
-                 }
+                 if (map.hasLayer(searchlayer)) { querylayers = "searchlayer";} 
+                 else {
+                        if (querylayers == '') {
+                              // load source layer
+                              map.addLayer(source_all_test_layer_1);
+                              querylayers = 'Sources_082819_SimCCS_Format';
+                        }
+                  }
                  // Initialise the FeatureGroup to store editable layers
                  var editableLayers = new L.FeatureGroup();
                  map.addLayer(editableLayers);
@@ -2520,7 +2537,7 @@
                               <input type="text" id="amount-cost" style="border: 0; font-weight: bold;" size="20"/><br>
                               <div id="slider-range-cost"></div><br>
                                     <div>
-                                      <input type="checkbox" id="searchinmap-option">
+                                      <input type="checkbox" id="searchinmap-option" checked="checked">
                                       <label >Search in the current map extent</label>
                               </div>
                         <button type="button" class="btn btn-primary btn-sm btn-block" onclick="apply_filters('source_all_test')">Apply Filters</button>
