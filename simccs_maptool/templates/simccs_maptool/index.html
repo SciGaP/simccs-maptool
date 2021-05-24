@@ -130,6 +130,17 @@
       }
     });
 
+    $( "#slider-range-user-sinkcapacity" ).slider({
+      range: true,
+      min: 0.0,
+      max: 20.0,
+      values:[0,20.0],
+      step: 0.5,
+      slide: function( event, ui ) {
+        $( "#amount-user-sinkcapacity" ).val( ui.values[0].toFixed(1) + " - " + ui.values[1].toFixed(2));
+      }
+    });
+
     $( "#slider-range-sinkcapacity" ).slider({
       range: true,
       min: 0.0,
@@ -140,7 +151,18 @@
         $( "#amount-sinkcapacity" ).val( ui.values[0].toFixed(1) + " - " + ui.values[1].toFixed(2));
       }
     });
-  
+
+    $( "#slider-range-og-sinkcapacity" ).slider({
+      range: true,
+      min: 0.0,
+      max: 300,
+      values:[0,300.0],
+      step: 1,
+      slide: function( event, ui ) {
+        $( "#og-amount-sinkcapacity" ).val( ui.values[0].toFixed(1) + " - " + ui.values[1].toFixed(2));
+      }
+    });
+
          $('input:radio').bind('click mousedown', (function() {
              var isChecked;
              return function(event) {
@@ -425,7 +447,7 @@
             document.getElementById("sink_saline_div").appendChild(legend); 
             var linebreak = document.createElement("br");
             document.getElementById("sink_saline_div").appendChild(linebreak);
-            legend = createLegendbyList("CO2 Volumes",[["red","Low"],["yellow","Med"],["green","High"]]);
+            legend = createLegendbyList("CO2 Storage",[["red","Low"],["yellow","Med"],["green","High"]]);
             document.getElementById("sink_OG_div").appendChild(legend);
 
          }); // end of document ready function
@@ -2016,6 +2038,27 @@
             map.addLayer(sink_sco2t_layer);
       }
 
+      function refresh_og() {
+            var sinkcapacity_0 = $("#slider-range-og-sinkcapacity").slider("values", 0);
+            var sinkcapacity_1 = $("#slider-range-og-sinkcapacity").slider("values", 1);
+            var cqlfilter_str = "";
+            cqlfilter_str = "(";
+            cqlfilter_str += "VOL_LOW Between " + sinkcapacity_0.toString() + " AND "+ sinkcapacity_1.toString();
+            cqlfilter_str += ")";
+            //alert(cqlfilter_str);
+            // remove sink_sco2t_layer
+            if (map.hasLayer(sink_oil_eor_layer)) {map.removeLayer(sink_oil_eor_layer);}
+            // define a sink_sco2t_layer
+            sink_oil_eor_layer = L.tileLayer.betterWms("https://simccs.org/geoserver/SimCCS/wms?", {
+            layers: 'NATCARB_OG_Test',
+            format: 'image/png',
+            transparent: true,
+            attribution: "SimCCS",
+            cql_filter:cqlfilter_str,
+            zIndex:1
+            });
+            map.addLayer(sink_oil_eor_layer);
+      }
       //reset filter
       function clear_filters(){
             $('#search-name-value').val("");
@@ -2614,6 +2657,13 @@
                                  <label style="font-size: 100%;" class="form-check-label" for="sink_oil_reservoir"><strong>Oil/Gas Reservoir</strong></label>
                                  <br><small>(NATCARB_OG_082819)</small>
                                  <div id="sink_OG_div" >
+                                    <label>Storage Capacity (MtCO2): 
+                                          <input type="text" id="og-amount-sinkcapacity" style="border: 0; font-weight: bold;" size="10"/>
+                                    </label>
+                                    <table style="width:100%"><tr>
+                                          <td width="80%"> <div id="slider-range-og-sinkcapacity"></div></td><td width="5%"></td><td width="15%"><button type="button" class="btn btn-sm btn-light" onclick=refresh_og()><i class="fas fa-redo"></i></span></button></td>
+                                     </tr>
+                                     </table>
                                  <!-- <div><img src="/static/images/OG_legend.jpg" alt="saline_legend" width="114px" height="96px" style="border:1px solidblack"> </div> -->
                                 </div>
                               </div>
