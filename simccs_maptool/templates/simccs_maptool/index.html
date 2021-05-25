@@ -1095,9 +1095,13 @@
                   .done(function(data){loadjson(data)}); 
             }
             // load loadsinklayer
-            $.getJSON("/maptool/get-data",{geom:geom_str,method:'data',layer:'sink_saline'})
+            var ex_cql_filter = "";
+            if (sink_sco2t_layer.options.hasOwnProperty('cql_filter')) {ex_cql_filter = sink_sco2t_layer.options.cql_filter;}
+            $.getJSON("/maptool/get-data",{geom:geom_str,method:'data',layer:'sink_saline',cql_filter:ex_cql_filter})
             .done(function(data){loadsinklayer(data)});
-            $.getJSON("/maptool/get-data",{geom:geom_str,method:'data',layer:'sink_og'})
+            ex_cql_filter = "";
+            if (sink_oil_eor_layer.options.hasOwnProperty('cql_filter')) {ex_cql_filter = sink_oil_eor_layer.options.cql_filter;}
+            $.getJSON("/maptool/get-data",{geom:geom_str,method:'data',layer:'sink_og',cql_filter:ex_cql_filter})
             .done(function(data){loadsinklayer2(data)});
             // load cost surface
             var lbounds=layer.getBounds().pad(0.2);
@@ -1179,6 +1183,7 @@
                       totalsource += 1;
                       totalcapturable += elayer.feature.properties['Capturable'];};
             });}
+
             $.getJSON("/maptool/get-data",{geom:geom_str,method:'count'})
             .done(function(json){
                   //var popup = layer.getPopup();

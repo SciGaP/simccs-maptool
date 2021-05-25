@@ -20,9 +20,16 @@ def get_data(request):
     # TODO return JsonResponse(...)
     geom = request.GET["geom"]
     method = request.GET["method"]
+    if "cql_filter"  in request.GET:
+        ex_filter = request.GET['cql_filter']
+        ex_filter = ex_filter.replace("%20"," ")
+    else:
+        ex_filter = ''
     geom = geom.replace("%20"," ")
     geom = geom.replace("%2C",",")
     cqlfilter = 'Intersects(the_geom,Polygon((' + geom + ")))"
+    if len(ex_filter)>0:
+        cqlfilter = "(" + cqlfilter+ ") AND " + ex_filter
     #geoserver_url = "https://simccs.org/geoserver/SimCCS/ows"
     #service=WFS&version=1.0.0&request=GetFeature&maxFeatures=500&outputFormat=text%2Fjavascript&format_options=callback:loadjson';
     # PARAMS = {'service':'WFS','version':'1.0.0','request':'GetFeature',
@@ -54,12 +61,12 @@ def get_data(request):
     if method == "data":
         layer = request.GET["layer"]
         if layer == 'source': 
-            cqlfilter = 'Intersects(the_geom,Polygon((' + geom + ")))"
+            #cqlfilter = 'Intersects(the_geom,Polygon((' + geom + ")))"
             data = wfs_call('Sources_082819_SimCCS_Format',cqlfilter)
         if layer == 'sink_saline':
-            cqlfilter = 'Intersects(the_geom,Polygon((' + geom + ")))"
+            #cqlfilter = 'Intersects(the_geom,Polygon((' + geom + ")))"
             data = wfs_call('sco2t_national_v1_10k',cqlfilter)
         if layer == 'sink_og':
-            cqlfilter = 'Intersects(the_geom,Polygon((' + geom + ")))"
+            #cqlfilter = 'Intersects(the_geom,Polygon((' + geom + ")))"
             data = wfs_call('NATCARB_OG_Test',cqlfilter)
         return JsonResponse(data)
