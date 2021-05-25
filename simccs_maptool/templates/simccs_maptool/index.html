@@ -1986,7 +1986,40 @@
                         content_str +="<strong>"+"costVar($/tCO2): " + feature.properties["costVar___"] +"</strong><br>";
                         content_str +="<strong>"+"Capturable(MtCO2/y): " + feature.properties["Capturable"] +"</strong>";
                         //var mypopup = L.popup().setContent(content_str);
-                        var mymarker = L.marker(latlng);
+                        var fill_color;
+                        switch (feature.properties["Type"]) {
+                              case "Ammonia/fertilizer":
+                                    fill_color = "#eb320d";
+                                    break;
+                              case "Cement/concrete":
+                                    fill_color = "#4667e0";
+                                    break;
+                              case "Chemical manufacturing":
+                                    fill_color = "#f03784";
+                                    break;
+                              case "Electricity (Coal)":
+                                    fill_color = "#23ea98";
+                                    break;
+                              case "Electricity (Gas)":
+                                    fill_color = "#15df0e";
+                                    break;
+                              case "Ethanol":
+                                    fill_color = "#c8ea8d";
+                                    break;
+                              case "Iron/steel":
+                                    fill_color = "#35b9d6";
+                                    break;
+                              case "Petroleum Refineries":
+                                    fill_color = "#c644c8";
+                                    break;
+                              case "Pulp, paperboard, and saw mills":
+                                    fill_color = "#865dc8";
+                                    break;
+                              
+                              default:
+                                    fill_color = "grey";
+                        }
+                        var mymarker = L.circleMarker(latlng,{"fillColor":fill_color,"fillOpacity":0.8,"radius":7,"color":"black","weight":2,"opacity":1.0});
                         //mymarker.bindPopup(mypopup);
                         mymarker.bindTooltip(content_str);
                         return mymarker;       
