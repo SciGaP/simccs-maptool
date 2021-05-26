@@ -79,6 +79,14 @@
                     </template>
                   </b-form-select>
                 </b-form-group>
+                <b-form-group label="Symbol" v-if="datasetSelection.dataset">
+                  <b-form-select
+                    v-model="datasetSelection.symbol"
+                    :options="symbolOptions"
+                    @change="updateSymbol(datasetSelection)"
+                  >
+                  </b-form-select>
+                </b-form-group>
                 <b-form-group
                   label="Popup Fields"
                   v-if="datasetSelection.dataset"
@@ -189,6 +197,7 @@
 <script>
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import "leaflet-svg-shape-markers";
 import { validationMixin } from "vuelidate";
 import { required } from "vuelidate/lib/validators";
 import validateFromServer from "../validators/validateFromServer";
@@ -331,6 +340,18 @@ export default {
       }
       return this.bboxArray.map((c) => c.toFixed(2)).join(", ");
     },
+    symbolOptions() {
+      return [
+        "diamond",
+        "square",
+        "triangle-up",
+        "triangle-down",
+        "arrowhead-up",
+        "arrowhead-down",
+        "circle",
+        "x",
+      ];
+    },
   },
   methods: {
     onSubmit(event) {
@@ -418,6 +439,7 @@ export default {
         style: null,
         bbox: null,
         popup: [],
+        symbol: "circle",
       });
     },
     removeDataset(datasetSelection) {
@@ -427,9 +449,11 @@ export default {
     validateState,
     addDatasetLayer(dataset, geojson) {
       const fillColor = this.getDatasetLayerColor(dataset);
+      const shape = this.getDatasetLayerShape(dataset);
       const layer = new L.geoJSON(geojson, {
         pointToLayer: function (feature, latlng) {
-          const marker = L.circleMarker(latlng, {
+          const marker = L.shapeMarker(latlng, {
+            shape: shape,
             radius: 8,
             fillColor: fillColor,
             color: "#000",
@@ -470,11 +494,24 @@ export default {
     getDatasetLayerColor(dataset) {
       return dataset.type === "source" ? "red" : "green";
     },
+    getDatasetLayerShape(dataset) {
+      const data = this.aCase.maptool.data.find(
+        (d) => d.dataset === dataset.id
+      );
+      return data.symbol;
+    },
     removeDatasetLayer(datasetId) {
       const layer = this.layers[datasetId];
       this.layercontrol.removeLayer(layer);
       layer.remove();
       this.$delete(this.layers, datasetId);
+    },
+    updateSymbol(datasetSelection) {
+      const datasetId = datasetSelection.dataset;
+      const layer = this.layers[datasetId];
+      layer.eachLayer(function (layer) {
+        layer.setStyle({ shape: datasetSelection.symbol });
+      });
     },
     getDataset(datasetId) {
       // sourceDatasets and sinkDatasets include also a Case's deleted datasets

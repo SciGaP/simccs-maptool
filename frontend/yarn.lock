@@ -5292,6 +5292,11 @@ launch-editor@^2.2.1:
     chalk "^2.3.0"
     shell-quote "^1.6.1"
 
+leaflet-svg-shape-markers@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/leaflet-svg-shape-markers/-/leaflet-svg-shape-markers-1.3.0.tgz#f70914d93ff1956e9159ddb96da06ddf40b4abd5"
+  integrity sha512-Lb2ZpdjkHQfxaqY5E9e/typiM19TnaLLAV/16FyOxflSC0g47my3vfNbeq0wpzJQl+CMjjqM/KHrSe1oTTCb7w==
+
 leaflet@^1.7.1:
   version "1.7.1"
   resolved "https://registry.yarnpkg.com/leaflet/-/leaflet-1.7.1.tgz#10d684916edfe1bf41d688a3b97127c0322a2a19"

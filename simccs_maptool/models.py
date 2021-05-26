@@ -108,6 +108,7 @@ class MaptoolData(models.Model):
     style = models.TextField(null=True)
     bbox = models.CharField(max_length=128, null=True, validators=[bbox_validator])
     popup = models.CharField(max_length=128, null=True, validators=[csv_validator])
+    symbol = models.CharField(max_length=32, default="circle")
 
 
 class Workspace(models.Model):

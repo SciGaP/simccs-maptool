@@ -440,7 +440,7 @@ class MaptoolDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.MaptoolData
-        fields = ["bbox", "style", "dataset", "popup"]
+        fields = ["bbox", "style", "dataset", "popup", "symbol"]
 
 
 class MaptoolConfigSerializer(serializers.ModelSerializer):
