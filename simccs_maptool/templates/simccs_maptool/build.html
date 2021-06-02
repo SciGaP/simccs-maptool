@@ -299,7 +299,7 @@ function displayselecteddata(panelid) {
             //get the value
             p_value = $('#'+entry).val();
             entry_newid = entry + "_" + panelid;
-            tb_entry = '<tr><td>'+entry+'</td><td><input id="'+entry_newid+ '" name="'+entry_newid+'" type="number" min="0" class="form-control" size=8 value='+  p_value +' required></td></tr>';
+            tb_entry = '<tr><td>'+entry+'</td><td><input id="'+entry_newid+ '" name="'+entry_newid+'" type="text" class="form-control" size=8 value='+  p_value +' required></td></tr>';
             //tb_entry = tb_entry.replace(new RegExp(entry, 'g'), entry +"_"+ panelid);
             tb_new += tb_entry;
       }
@@ -369,45 +369,64 @@ function get_max_project_period(sink_selection, numYears, captureTarget) {
       return fieldCapTotal / captureTarget;
 }
 
-function update_model_parameter_constraints(panelid, source_selection, sink_selection, numYears, captureTarget) {
+function validate_model_parameters(panelid, numYears, captureTarget) {
+      let valid = true;
+      const source_selection = get_source_selection(panelid);
+      const sink_selection = get_sink_selection(panelid);
       const max_capture_target = get_max_capture_target(source_selection);
-      document.getElementById('Capture_Target_' + panelid).setAttribute('max', max_capture_target);
-
       const max_project_period = get_max_project_period(sink_selection, numYears, captureTarget);
-      document.getElementById('Project_Period_' + panelid).setAttribute('max', max_project_period);
+
+      const captureTargetEl = document.getElementById('Capture_Target_' + panelid);
+      clear_invalid_feedback(captureTargetEl);
+      if (captureTarget > max_capture_target) {
+            add_invalid_feedback(captureTargetEl, 
+                  `Annual capture target exceeds total capMax of sources (${max_capture_target})`);
+            valid = false;
+      }
+
+      const projectPeriodEl = document.getElementById('Project_Period_' + panelid);
+      clear_invalid_feedback(projectPeriodEl);
+      if (numYears > max_project_period) {
+            add_invalid_feedback(projectPeriodEl, 
+                  `Project duration exceeds total fieldCap of sources (${max_project_period}) for selected capture target`);
+            valid = false;
+      }
+      return valid;
 }
 
-function check_validity_of_model_parameters(panelid) {
-      const captureTargetEl = document.getElementById('Capture_Target_' + panelid);
-      // Trigger bootstrap styling of validation state
-      captureTargetEl.parentElement.classList.add("was-validated");
-      if (captureTargetEl.validity.rangeOverflow) {
-            captureTargetEl.setCustomValidity(
-                  "Annual capture target exceeds total capMax of sources (" 
-                  + captureTargetEl.getAttribute('max') + ")");
-      } else {
-            captureTargetEl.setCustomValidity('');
+function clear_invalid_feedback(elem) {
+      const invalidFeedbackEl = elem.parentElement.querySelector('.invalid-feedback');
+      if (invalidFeedbackEl) {
+            invalidFeedbackEl.remove();
       }
-      const projectPeriodEl = document.getElementById('Project_Period_' + panelid);
-      // Trigger bootstrap styling of validation state
-      projectPeriodEl.parentElement.classList.add("was-validated");
-      if (projectPeriodEl.validity.rangeOverflow) {
-            projectPeriodEl.setCustomValidity(
-                  "Project duration exceeds total fieldCap of sources (" 
-                  + projectPeriodEl.getAttribute('max') + ") for selected capture target");
-      } else {
-            projectPeriodEl.setCustomValidity('');
-      }
-      if (!captureTargetEl.validity.valid) {
-            captureTargetEl.reportValidity();
-            // Only report one element's validity at a time
-            return false;
-      } else if (!projectPeriodEl.validity.valid) {
-            projectPeriodEl.reportValidity()
-            // Only report one element's validity at a time
-            return false;
-      }
-      return true;
+      elem.classList.remove('is-invalid');
+}
+
+function add_invalid_feedback(elem, message) {
+
+      const invalidFeedbackEl = document.createElement('div');
+      invalidFeedbackEl.classList.add('invalid-feedback');
+      invalidFeedbackEl.textContent = message;
+      elem.parentNode.insertBefore(invalidFeedbackEl, elem.nextSibling);
+      elem.classList.add('is-invalid');
+}
+
+function get_source_selection(panelid) {
+    var source_selection = [];
+    // check selected sources
+    for (entry of sourceselection_panel[panelid]) {
+          if (entry.options.radius > 8) {source_selection.push(entry);}
+    }
+    return source_selection;
+}
+
+function get_sink_selection(panelid) {
+    var sink_selection = [];
+    // check selected sinks
+    for (entry of sinkselection_panel[panelid]) {
+         if (entry.options.color == 'black') {sink_selection.push(entry);}
+    }
+    return sink_selection;
 }
 
 //generate MPS file
@@ -416,17 +435,8 @@ function generatempsfile(panelid,showmodal=1,paras=[], filename=null) {
     //var source_selection = sourceselection_panel[panelid];
     //var sink_selection = sinkselection_panel[panelid];
     // extract any changes
-    var source_selection = [];
-    var sink_selection = [];
-    // check selected sources
-    for (entry of sourceselection_panel[panelid]) {
-          if (entry.options.radius > 8) {source_selection.push(entry);}
-    }
-
-    // check selected sinks
-    for (entry of sinkselection_panel[panelid]) {
-         if (entry.options.color == 'black') {sink_selection.push(entry);}
-    }
+    var source_selection = get_source_selection(panelid);
+    var sink_selection = get_sink_selection(panelid);
     
     //console.log(source_selection);
     //console.log(sink_selection);
@@ -445,11 +455,6 @@ function generatempsfile(panelid,showmodal=1,paras=[], filename=null) {
       crf = paras[0];
       numYears = paras[1];
       capacityTarget = paras[2];
-    }
-    update_model_parameter_constraints(panelid, source_selection, sink_selection, numYears, capacityTarget);
-    if (!check_validity_of_model_parameters(panelid)) {
-          // Return a promise rejection of 'invalid'
-          return Promise.reject("invalid");
     }
     // generate formdata
     var formData = new FormData();
@@ -514,6 +519,7 @@ return {"Sources": data["sources"], "Sinks": data["sinks"],"Cplex-input-file": d
 }
 
 function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],nameprefix='') {
+      // TODO: prevalidate before generating mps file
       //debug info
       //console.log(panelid);
       var cplexInputValues;
@@ -521,10 +527,19 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
       // Name the mps file based on the scenario name
       var filename = scenario_title_panel[panelid] + ".mps";
       if (batchmode == 0) {
+            var numYears = $("#Project_Period_" + panelid).val();
+            var capacityTarget = $("#Capture_Target_" + panelid).val();
+            if (!validate_model_parameters(panelid, numYears, capacityTarget)) {
+                  return;
+            }
             mpsRequest = generatempsfile(panelid,showmodal=0,[],filename).then((result) => {cplexInputValues = result});
       }
       // force regenerate mps for batch mode
       if (batchmode == 1) {
+            const [crf, numYears, capacityTarget] = paras;
+            if (!validate_model_parameters(panelid, numYears, capacityTarget)) {
+                  return;
+            }
             mpsRequest = generatempsfile(panelid,showmodal=0,paras,filename).then((result) => {cplexInputValues = result});
       }
 
@@ -677,6 +692,11 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             if (capacities.includes(",")) { capacityArr = capacities.split(','); }
             else {
                   alert("Please input value,value,.. in Capture_Target.");
+                  return;
+            }
+
+            const maxCapacity = Math.max(...capacityArr);
+            if (!validate_model_parameters(panelid, numYears, maxCapacity)) {
                   return;
             }
 
