@@ -359,13 +359,18 @@ function get_max_capture_target(source_selection) {
       return capTotal;
 }
 
-function get_max_project_period(sink_selection, numYears, captureTarget) {
-
+function get_total_field_cap(sink_selection) {
       let fieldCapTotal = 0;
       for (const sink of sink_selection) {
             const fieldCap = sink.feature.properties["fieldCap (MtCO2)"];
             fieldCapTotal += fieldCap;
       }
+      return fieldCapTotal;
+}
+
+function get_max_project_period(sink_selection, captureTarget) {
+
+      const fieldCapTotal = get_total_field_cap(sink_selection);
       return fieldCapTotal / captureTarget;
 }
 
@@ -374,21 +379,25 @@ function validate_model_parameters(panelid, numYears, captureTarget) {
       const source_selection = get_source_selection(panelid);
       const sink_selection = get_sink_selection(panelid);
       const max_capture_target = get_max_capture_target(source_selection);
-      const max_project_period = get_max_project_period(sink_selection, numYears, captureTarget);
+      const max_project_period = get_max_project_period(sink_selection, captureTarget);
 
       const captureTargetEl = document.getElementById('Capture_Target_' + panelid);
       clear_invalid_feedback(captureTargetEl);
       if (captureTarget > max_capture_target) {
             add_invalid_feedback(captureTargetEl, 
-                  `Annual capture target exceeds total capMax of sources (${max_capture_target})`);
+                  `Annual capture target exceeds total capMax of sources
+                  (${max_capture_target.toFixed(2)})`);
             valid = false;
       }
 
       const projectPeriodEl = document.getElementById('Project_Period_' + panelid);
       clear_invalid_feedback(projectPeriodEl);
       if (numYears > max_project_period) {
+            const fieldCapTotal = get_total_field_cap(sink_selection);
             add_invalid_feedback(projectPeriodEl, 
-                  `Project duration exceeds total fieldCap of sources (${max_project_period}) for selected capture target`);
+                  `Total project storage exceeds available storage
+                  (${fieldCapTotal.toFixed(2)}) of the sinks using current
+                  project period and annual capture target`);
             valid = false;
       }
       return valid;
