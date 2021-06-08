@@ -2361,7 +2361,7 @@
         drawnItems.clearLayers();
         map.addLayer(drawnItems);
 
-        map.on('draw:created', function (e) {
+        map.once('draw:created', function (e) {
             var draw_type = e.layerType,draw_layer = e.layer;
             //drawnItems.addLayer(layer);
                   selection = [];
@@ -2409,7 +2409,7 @@
             drawnItems1.clearLayers();
             map.addLayer(drawnItems1);
 
-            map.on('draw:created', function (e) {
+            map.once('draw:created', function (e) {
             var draw_type = e.layerType,draw_layer = e.layer;
             //drawnItems.addLayer(layer);
             if (type == "case_study") {
