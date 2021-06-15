@@ -74,20 +74,46 @@ function getColor(d) {
 }
 
 // create a legend for coloring field
-function createLegend(fieldname)
+function createLegend(fieldname,symbol)
 {
-    var div = L.DomUtil.create('div', 'info legend'),
+    //var div = L.DomUtil.create('div', 'info legend'),
+    var div = L.DomUtil.create('div'),
     grades = [0, 5, 10],
     labels = [],
     from, to;
-
+    var symbolsvg;
+    console.log(symbol);
+    switch(symbol) {
+        case 'square':
+            symbolsvg='<svg width="19" height="19"><rect width="19" height="19" style="fill:#3388ff;stroke:black;stroke-width:3;fill-opacity:0.6;stroke-opacity:1" /></svg>';
+            break;
+        case 'triangle-up':
+            symbolsvg='<svg width="20" height="20"><polygon points="0,20 10,0 20,20" style="fill:#3388ff;stroke:black;stroke-width:2;fill-opacity:0.6;stroke-opacity:1" /></svg>';
+            break;
+        case 'triangle-down':
+            symbolsvg='<svg width="20" height="20"><polygon points="0,0 20,0 10,20" style="fill:#3388ff;stroke:black;stroke-width:2;fill-opacity:0.6;stroke-opacity:1" /></svg>';
+            break;
+        case 'diamond':
+            symbolsvg='<svg width="20" height="20"><polygon points="10,0 0,10 10,20 20,10" style="fill:#3388ff;stroke:black;stroke-width:2;fill-opacity:0.6;stroke-opacity:1" /></svg>';
+            break;
+        case 'arrowhead-down':
+            symbolsvg='<svg width="20" height="20"><polygon points="0,0 10,5 20,0 10,20" style="fill:#3388ff;stroke:black;stroke-width:2;fill-opacity:0.6;stroke-opacity:1" /></svg>';
+            break;
+        case 'arrowhead-up':
+            symbolsvg='<svg width="20" height="20"><polygon points="0,20 10,0 20,20 10,15" style="fill:#3388ff;stroke:black;stroke-width:2;fill-opacity:0.6;stroke-opacity:1" /></svg>';
+            break;       
+        default:
+            // circle
+            symbolsvg = '<svg width="20" height="20"><circle cx="10" cy="10" r="9" style="fill:#3388ff;stroke:black;stroke-width:2;fill-opacity:0.6;stroke-opacity:1" /></svg>';
+    };
+    var fillc;
     for (var i = 0; i < grades.length; i++) {
     from = grades[i];
     to = grades[i + 1];
-
+    fillc = getColor(from + 1);
     labels.push(
-        '<i style="background:' + getColor(from + 1) + '"></i> ' +
-        from + (to ? '&nbsp;&ndash;&nbsp;' + to : '+'));}
+        symbolsvg.replace('#3388ff',fillc) + ' ' + from + (to ? '&nbsp;&ndash;&nbsp;' + to : '+'));
+    }
 
     div.innerHTML = fieldname + "<br>";
     div.innerHTML += labels.join('<br>');
@@ -249,7 +275,7 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
     maplayers[datadesc['dataid']] = newLayer;
     // ignore the source style for now
     if (datastyle && datadesc['type'] != 'source') {       // generate legend
-            var legend = createLegend(datastyle);
+            var legend = createLegend(datastyle,datasymbol);
             document.getElementById("layercontrol").appendChild(legend);   
         } 
        
