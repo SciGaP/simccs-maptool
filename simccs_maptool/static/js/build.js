@@ -505,3 +505,8 @@ function display_error_modal(error, message) {
           .find(".error-message")
           .text(message);
 }
+
+function sswindowpicker_build() {
+    // select sources and sinks by drawing
+    return;
+}
