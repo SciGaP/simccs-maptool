@@ -349,7 +349,7 @@ export default {
         "arrowhead-up",
         "arrowhead-down",
         "circle",
-        "x",
+        //"x",
       ];
     },
   },
