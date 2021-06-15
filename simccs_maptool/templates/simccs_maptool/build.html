@@ -849,7 +849,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             
             // simple show the data
             sidebar.open(panelid);
-            
+            scenarioid += 1;
             // add experiments data
             var list_view_experiment = document.getElementById("list_view_experiment_" + panelid);
             for (const entry of scenario_data['experiments']) {
