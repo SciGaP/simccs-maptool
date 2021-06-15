@@ -14,8 +14,10 @@ var baseLayers = {
 //create panes
 map.createPane("polygonsPane");
 map.createPane("linesPane");
+// for sinks
 map.createPane("pointsPane");
-
+// for sources
+map.createPane("toppointsPane");
  // create the sidebar instance and add it to the map
  var sidebar = L.control.sidebar({ autopan: true, container: 'sidebar' }).addTo(map);
  
@@ -25,12 +27,32 @@ var sinkRadius = 7;
 var geojsonMarkerOptions = {
     radius: sourceRadius,
     fillColor: "blue",
-    color: "grey",
+    color: "darkgrey",
     weight: 1,
     opacity: 1,
     fillOpacity: 0.8,
     pane: "pointsPane"
 };
+var source_shapeMakerOptions = {
+    radius: sourceRadius,
+    shape: "arrowhead",
+    fillColor: "blue",
+    fillOpacity: 0.6,
+    color: "grey",
+    weight:1,
+    pane: "toppointsPane"
+};
+
+var sink_shapeMakerOptions = {
+    radius: sinkRadius,
+    shape: "square",
+    fillColor: "blue",
+    fillOpacity: 0.6,
+    color: "grey",
+    weight:1,
+    pane: "pointsPane"
+};
+
 // sink point option
 var sinkMarkerOptions = {
     radius: sinkRadius,
@@ -77,7 +99,7 @@ function sourceOnEachFeature(feature, layer) {
     //bind click
     layer.on('click', function (e) {
       var target_id = sourceselection.indexOf(e.target)
-      if (target_id >=0 ) {e.target.setStyle(geojsonMarkerOptions);sourceselection.splice(target_id,1);}
+      if (target_id >=0 ) {e.target.setStyle(source_shapeMakerOptions);sourceselection.splice(target_id,1);}
       else {e.target.setStyle({weight:3,fillColor:"darkblue",color:"black",radius:sourceRadius + 3});
             sourceselection.push(e.target);}
       //document.dispatchEvent(new Event("source-selection-change"));
@@ -138,7 +160,7 @@ function handleclick(id){
 } 
 
 // load data by url
-async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
+async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
     var data = await getdata(dataurl);
     // Add dataset_id to feature properties so we tie a source/sink back to its dataset
     for (let feature of data.features) {
@@ -151,6 +173,8 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
     }
 
     if (datadesc['type'] == 'source') {
+        // change symbol
+        source_shapeMakerOptions['shape'] = datasymbol;
         newLayer = new L.geoJSON(data,{
             pointToLayer: function (feature, latlng) {
             var content_str="<strong>Source: <br>"
@@ -158,7 +182,8 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
                 content_str += entry + ": " + feature.properties[entry] + "<br>";
             }
             content_str += "</strong>";
-            var mymarker = L.circleMarker(latlng, geojsonMarkerOptions);
+            //var mymarker = L.circleMarker(latlng, geojsonMarkerOptions);
+            var mymarker = L.shapeMarker(latlng, source_shapeMakerOptions);
             mymarker.bindTooltip(content_str);
             return mymarker;       
           },
@@ -167,6 +192,8 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
 
     } else if (datadesc['type'] == 'sink') {
         // load sink data
+        // change sink symbol
+        sink_shapeMakerOptions['shape'] = datasymbol;
         newLayer = new L.geoJSON(data,{
             pointToLayer: function (feature, latlng) {
             var content_str="<strong>Sink: <br>"
@@ -176,7 +203,8 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields) {
             content_str += "</strong>";
             var color_value = feature.properties[datastyle];
             var fillcolor = getColor(color_value);
-            var mymarker = L.circleMarker(latlng, sinkMarkerOptions);
+            //var mymarker = L.circleMarker(latlng, sinkMarkerOptions);
+            var mymarker = L.shapeMarker(latlng, sink_shapeMakerOptions);
             mymarker.setStyle({'fillColor':fillcolor});
             mymarker.bindTooltip(content_str);
             return mymarker;       
@@ -251,6 +279,8 @@ function addcostsurface(bbox) {
     radiostr += '<label class="form-check-label" for="costsurface">Cost Surface</label><br>';
     $('#layercontrol').append(radiostr);
     maplayers['costsurface'] = costsurface;
+    //zoom map to the cost surface
+    map.fitBounds(costsurface.getBounds());
 }
 
 // clear the selected
@@ -264,7 +294,7 @@ function clear_selection(needconfirm=true) {
     // clear selected sources
     var elayer;
     for (elayer of sourceselection) {
-          elayer.setStyle(geojsonMarkerOptions);
+        elayer.setStyle(source_shapeMakerOptions);
     }
     sourceselection = [];
     //document.dispatchEvent(new Event("source-selection-change"));
@@ -282,7 +312,7 @@ function source_selectbynames(dataid,selected_ids) {
     // first handle deselect all 
     if (selected_ids.length == 0) {
       for (elayer of sourceselection) {
-          elayer.setStyle(geojsonMarkerOptions);
+        elayer.setStyle(source_shapeMakerOptions);
           }
        sourceselection = [];
        return;
@@ -301,7 +331,7 @@ function source_selectbynames(dataid,selected_ids) {
           } else {
                 // if deselected, remove it
                 if (target_id >= 0) {
-                      layer.setStyle(geojsonMarkerOptions);
+                      layer.setStyle(source_shapeMakerOptions);
                       sourceselection.splice(target_id,1);
                 }
           }
@@ -316,7 +346,7 @@ function removedynlayers() {
         if (map.hasLayer(dynmaplayers[key])) { 
             switch (key) {
                 case "source_selection_layer":
-                  dynmaplayers[key].setStyle(geojsonMarkerOptions);
+                  dynmaplayers[key].setStyle(source_shapeMakerOptions);
                   break;
                 case "sink_selection_layer":
                   dynmaplayers[key].setStyle({weight:1,color:'grey',fillOpacity:0.4});
