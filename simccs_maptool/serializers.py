@@ -57,14 +57,14 @@ class UniqueToUserValidator(validators.UniqueValidator):
         self.user_field = user_field
         super().__init__(queryset, message=message, lookup=lookup)
 
-    def set_context(self, serializer_field):
+    def __call__(self, value, serializer_field):
         self.user = serializer_field.context["request"].user
-        return super().set_context(serializer_field)
+        return super().__call__(value, serializer_field)
 
-    def filter_queryset(self, value, queryset):
+    def filter_queryset(self, value, queryset, field_name):
         # filter by current user
         queryset = queryset.filter(**{self.user_field: self.user})
-        return super().filter_queryset(value, queryset)
+        return super().filter_queryset(value, queryset, field_name)
 
 
 class SimccsProjectSerializer(serializers.ModelSerializer):

@@ -126,6 +126,10 @@ export default {
     };
   },
   created() {
+    // If a new project, mark the name as dirty so it is validated immediately
+    if (!this.project.id) {
+      this.$v.project.name.$touch();
+    }
     this.loadGroups();
   },
   computed: {
@@ -189,7 +193,7 @@ export default {
     validateState,
     onSubmit(event) {
       event.preventDefault();
-      this.submittedData = this.project;
+      this.submittedData = JSON.parse(JSON.stringify(this.project)); // deep clone
       this.$emit("submit", this.project);
     },
     loadGroups() {
