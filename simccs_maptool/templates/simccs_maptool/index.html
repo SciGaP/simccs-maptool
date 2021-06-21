@@ -2345,7 +2345,6 @@
       // new picker
       function sswindowpicker_user() {
             // picker sources/sinks by drawing
-            var type = "user";
             var polygon_options = {
             showArea: false,
             shapeOptions: {
@@ -2376,7 +2375,25 @@
                               selection.push(layer); count_source +=1; } else {layer.setStyle(geojsonMarkerOptions);
                               }
             });}
-      
+            if (map.hasLayer(sinkLayer)) {
+                  sinkselection = [];
+                  var feat;
+                  sinkLayer.eachLayer(function(layer) {
+                        feat={'type':'Polygon','coordinates':layer.toGeoJSON()['geometry']['coordinates'][0]};
+                        var contains = turf.booleanWithin(feat, draw_layer.toGeoJSON());
+                        if (contains){layer.setStyle({weight:2,color:"black",fillOpacity:0.7});
+                        sinkselection.push(layer);count_sink +=1; }
+                  });}
+            if (map.hasLayer(sinkLayer2)) {
+            sinkselection2 = [];
+            var feat;
+            sinkLayer2.eachLayer(function(layer) {
+                  feat={'type':'Polygon','coordinates':layer.toGeoJSON()['geometry']['coordinates'][0]};
+                  var contains = turf.booleanWithin(feat, draw_layer.toGeoJSON());
+                  if (contains){layer.setStyle({weight:2,color:"black",fillOpacity:0.7});
+                  sinkselection2.push(layer);count_sink +=1; }
+            });}
+
             if (count_source >=1 ) {document.dispatchEvent(new Event("source-selection-change")); }
             if (count_sink >=1 ) {document.dispatchEvent(new Event("sink-selection-change"));}
             alert(count_source.toString() + " sources " + count_sink.toString() + " sinks are selected.");
