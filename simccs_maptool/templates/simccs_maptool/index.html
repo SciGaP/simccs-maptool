@@ -2342,6 +2342,7 @@
 
       }
 
+      // new picker
       function sswindowpicker_user() {
             // picker sources/sinks by drawing
             var type = "user";
@@ -2355,30 +2356,32 @@
                 fill: true,
                 fillColor: "blue", //same as color by default
                 fillOpacity: 0.6,
-                clickable: true
+                clickable: true,
+                zIndex:1000
                   }
             };
             var drawnItems = new L.FeatureGroup();
             drawnItems.clearLayers();
             map.addLayer(drawnItems);
             map.once('draw:created', function (e) {
-            var draw_type = e.layerType,draw_layer = e.layer;
+            var count_source = 0, count_sink = 0;
+            var draw_type = e.layerType,draw_layer = e.layer;     
+            if (map.hasLayer(sourceLayer)) {
+                  // empty selection
                   selection = [];
-                  if (type == "case_study") {
-                  case_sourceLayer.eachLayer(function(layer) {
-                        var contains = turf.inside(layer.toGeoJSON(), draw_layer.toGeoJSON());
-                        if (contains){
-                              layer.setStyle({weight:3,fillColor:"orangered",radius:12});
-                              selection.push(layer);} else {layer.setStyle(geojsonMarkerOptions);}
-                  });}
-                  if (type == "user") {
                   sourceLayer.eachLayer(function(layer) {
                         var contains = turf.inside(layer.toGeoJSON(), draw_layer.toGeoJSON());
                         if (contains){
                               layer.setStyle({weight:3,fillColor:"orangered",radius:12});
-                              selection.push(layer);} else {layer.setStyle(geojsonMarkerOptions);}
-                  });}
-            document.dispatchEvent(new Event("source-selection-change"));
+                              selection.push(layer); count_source +=1; } else {layer.setStyle(geojsonMarkerOptions);
+                              }
+            });}
+      
+            if (count_source >=1 ) {document.dispatchEvent(new Event("source-selection-change")); }
+            if (count_sink >=1 ) {document.dispatchEvent(new Event("sink-selection-change"));}
+            alert(count_source.toString() + " sources " + count_sink.toString() + " sinks are selected.");
+            count_source = 0;
+            count_sink = 0;
             //draw_layer.remove();
             drawnItems.clearLayers(draw_layer);
             map.removeLayer(drawnItems);
@@ -2839,10 +2842,10 @@
                                     <div class="user_cost_div">
                                           <label><input type="radio" id="user_cost" checked /><strong>&nbsp;Cost Surface</strong></label>
                                     </div>
-                                    <!--
+            
                                     <button type="button" class="btn btn-primary btn-sm btn-block" id="ss_windowpicker_sink" title="Select sources/sinks by drawing" value="sink" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_user()>
                                           Select sources/sinks by drawing <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
-                                    -->
+                                    
                                     <button type="button" class="btn btn-primary btn-sm btn-block" id="hideunselected_btn" onclick="hideunselected()" value="hide">Hide unselected data</button>
                                     <button type="button" class="btn btn-primary btn-sm btn-block" id="user_clearselected_btn" onclick="user_clearselected()" value="hide">Clear all selections</button>
                                     <!-- <button type="button" class="btn btn-primary btn-sm btn-block" onclick="downloaddata()">Download data</button>
