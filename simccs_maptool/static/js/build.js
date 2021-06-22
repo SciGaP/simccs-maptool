@@ -329,7 +329,7 @@ function clear_selection(needconfirm=true) {
     //document.dispatchEvent(new Event("source-selection-change"));
     // clear selected sinks
     for (elayer of sinkselection) {
-          elayer.setStyle({weight:1,color:'grey',fillOpacity:0.4});
+          elayer.setStyle({weight:1,color:'grey',fillOpacity:0.8,radius:sinkRadius});
     }
     sinkselection = [];
     //document.dispatchEvent(new Event("sink-selection-change"));
@@ -530,6 +530,7 @@ function sswindowpicker_build() {
     map.addLayer(drawnItems);
     map.once('draw:created', function (e) {  
         var count_source = 0, count_sink = 0;
+        var count_sinklayer = 0;
         var draw_type = e.layerType,draw_layer = e.layer;
         
         // go through all the data sets
@@ -548,6 +549,16 @@ function sswindowpicker_build() {
                               layer.setStyle({weight:3,color:"black",radius:sourceRadius + 3});
                               sourceselection.push(layer); count_source +=1; } else {layer.setStyle(source_shapeMakerOptions);
                               }
+                    });
+                }
+                if (datasets[key]['type'] == 'sink') {
+                    //empty sinkselection only for the first sink layer
+                    count_sinklayer += 1;
+                    if (count_sinklayer == 1) {sinkselection = [];}
+                    maplayers[key].eachLayer(function(layer) {
+                          var contains = turf.inside(layer.toGeoJSON(), draw_layer.toGeoJSON());
+                          if (contains){layer.setStyle({weight:2,color:"black",fillOpacity:1,radius:sinkRadius+2});
+                          sinkselection.push(layer);count_sink +=1; } else {layer.setStyle({weight:1,color:'grey',fillOpacity:0.8,radius:sinkRadius});}
                     });
                 }
             }
