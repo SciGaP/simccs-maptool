@@ -823,19 +823,29 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                   }
             });
             
-            selected_ids = [];
+            var selected_dataset = {} // datasetid:selectedid
+            for (const entry of scenario_data['sinks']) {
+                  var datalayerid = entry['dataset'];
+                  if ( ! (datalayerid in selected_dataset) ) {selected_dataset[datalayerid]=[];}
+            }
             // collect all selected sinks
             for (const entry of scenario_data['sinks']) {
-                  datalayerid = entry['dataset'];
-                  selected_ids.push(entry['sink_id']);
+                  var datalayerid = entry['dataset'];
+                  selected_dataset[datalayerid].push(entry['sink_id']);
+                  //selected_ids.push(entry['sink_id']);
             }
-            var sinkLayer = maplayers[datalayerid];
+            //console.log(selected_dataset);
+            Object.keys(selected_dataset).forEach(function(key) {
+            var sinkLayer = maplayers[key];
+            selected_ids = selected_dataset[key];
             sinkLayer.eachLayer(function(layer) {
                   feature_id = layer.feature.properties['ID'].toString();
-                  if (selected_ids.includes(feature_id)) {
-                        sinkselection.push(layer);  
-                  }
+                        if (selected_ids.includes(feature_id)) {
+                              sinkselection.push(layer);  
+                        }
+                  }); 
             });
+
             var panediv = displayselecteddata(panelid);
             
             // record data
