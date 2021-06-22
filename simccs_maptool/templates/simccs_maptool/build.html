@@ -55,6 +55,7 @@
 <script src="{% static 'js/build.js' %}" ></script>
 <script src="{% static 'js/util.js' %}" ></script>
 <script src="{% static 'django_airavata_api/dist/airavata-api.js' %}"></script>
+<script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
 
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
@@ -107,6 +108,7 @@
 // gloabl variables
 var case_id;
 var casejson;
+var datasets = {}; // datasetid: metadata
 var maplayers = {}; // record layers displayed on map, layername:layerdata
 var dynmaplayers = {}; // record dynamic layers from earch panel
 var sourceselection = []; // current source selection
@@ -143,7 +145,7 @@ async function set_casedata(caseId) {
       var bbox = casejson["maptool"]["bbox"];
       map.fitBounds([[bbox[1],bbox[0]],[bbox[3],bbox[2]]]);
       // reformat data as big array
-      var datasets = {};
+      //var datasets = {};
       for (entry of casejson['datasets'])
       {
             datasets[entry['id']]={'dataid':entry['id'],'name': entry['name'], 'description':entry['description'],'type':entry['type'],'url':entry['url']};

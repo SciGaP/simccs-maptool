@@ -129,7 +129,7 @@ function sourceOnEachFeature(feature, layer) {
     layer.on('click', function (e) {
       var target_id = sourceselection.indexOf(e.target)
       if (target_id >=0 ) {e.target.setStyle(source_shapeMakerOptions);sourceselection.splice(target_id,1);}
-      else {e.target.setStyle({weight:3,fillColor:"darkblue",color:"black",radius:sourceRadius + 3});
+      else {e.target.setStyle({weight:3,color:"black",radius:sourceRadius + 3});
             sourceselection.push(e.target);}
       //document.dispatchEvent(new Event("source-selection-change"));
     })};
@@ -355,7 +355,7 @@ function source_selectbynames(dataid,selected_ids) {
           var target_id = sourceselection.indexOf(layer);
           if (selected_ids.includes(source_id)) {
                 // if not selected, add to selection
-                if (target_id < 0) {layer.setStyle({weight:3,fillColor:"darkblue",radius:12});
+                if (target_id < 0) {layer.setStyle({weight:3,color:"black",radius:sourceRadius + 3});
                 sourceselection.push(layer);}
           } else {
                 // if deselected, remove it
@@ -394,7 +394,7 @@ function hideunselected(source_selection, sink_selection,network='') {
     }
     removedynlayers();
     var source_selection_layer = L.featureGroup(source_selection);
-    source_selection_layer.setStyle({weight:3,fillColor:"darkblue",radius:12});
+    source_selection_layer.setStyle({weight:3,color:"black",radius:sourceRadius + 3});
     var sink_selection_layer = L.featureGroup(sink_selection);
     sink_selection_layer.setStyle({weight:2,color:"black",fillOpacity:0.7});
     source_selection_layer.addTo(map);
@@ -529,7 +529,32 @@ function sswindowpicker_build() {
     drawnItems.clearLayers();
     map.addLayer(drawnItems);
     map.once('draw:created', function (e) {  
-        var draw_type = e.layerType,draw_layer = e.layer;         
+        var count_source = 0, count_sink = 0;
+        var draw_type = e.layerType,draw_layer = e.layer;
+        
+        // go through all the data sets
+        Object.keys(datasets).forEach(function(key) {
+            //key is case id
+            if (map.hasLayer(maplayers[key])) {
+                // find out case type
+                // datasets[key]['type']
+                //console.log(datasets[key]);
+                if (datasets[key]['type'] == 'source') {
+                    // empty sourceselection
+                    sourceselection = [];
+                    maplayers[key].eachLayer(function(layer) {
+                        var contains = turf.inside(layer.toGeoJSON(), draw_layer.toGeoJSON());
+                        if (contains){
+                              layer.setStyle({weight:3,color:"black",radius:sourceRadius + 3});
+                              sourceselection.push(layer); count_source +=1; } else {layer.setStyle(source_shapeMakerOptions);
+                              }
+                    });
+                }
+            }
+         });
+        alert(count_source.toString() + " sources " + count_sink.toString() + " sinks are selected.");
+        count_source = 0;
+        count_sink = 0;
         drawnItems.clearLayers(draw_layer);
         map.removeLayer(drawnItems);
         polygonDrawer.disable();   
