@@ -18,6 +18,9 @@ map.createPane("linesPane");
 map.createPane("pointsPane");
 // for sources
 map.createPane("toppointsPane");
+// for drawing
+map.createPane("drawingPane");
+
  // create the sidebar instance and add it to the map
  var sidebar = L.control.sidebar({ autopan: true, container: 'sidebar' }).addTo(map);
  
@@ -508,5 +511,31 @@ function display_error_modal(error, message) {
 
 function sswindowpicker_build() {
     // select sources and sinks by drawing
-    return;
+    var polygon_options = {
+        showArea: false,
+        shapeOptions: {
+            stroke: true,
+            color: 'black',
+            weight: 2,
+            opacity: 1,
+            fill: true,
+            fillColor: "orange", //same as color by default
+            fillOpacity: 0.5,
+            clickable: true,
+            pane:"drawingPane"
+        }
+    };
+    var drawnItems = new L.FeatureGroup();
+    drawnItems.clearLayers();
+    map.addLayer(drawnItems);
+    map.once('draw:created', function (e) {  
+        var draw_type = e.layerType,draw_layer = e.layer;         
+        drawnItems.clearLayers(draw_layer);
+        map.removeLayer(drawnItems);
+        polygonDrawer.disable();   
+    }
+    );
+    var polygonDrawer = new L.Draw.Polygon(map, polygon_options);     
+    polygonDrawer.enable();
+
 }
