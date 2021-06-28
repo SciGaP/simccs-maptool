@@ -263,7 +263,7 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
         var ukey, uvalue;
         for (entry of data['features']) {
             ukey = entry['properties']['ID'];
-            uvalue = entry['properties']['NAME'].trim();
+            uvalue = entry['properties']['NAME'].toString().trim();
             // pick up first 15 
             if (uvalue.length > 20) {uvalue = uvalue.slice(0,20) + "...";}
             selector += '<option value="'+ ukey +'">'+ uvalue +'</option>';
