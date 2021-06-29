@@ -84,7 +84,6 @@ function display_result_sample(){
 }
 
 // L.Map.addInitHook('addHandler', 'cursor', L.CursorHandler);
-var layercontrol = new L.control.layers();
 
 map = L.map('map',{cursor:true}).setView([32.00,-85.43], 6);
 // map=L.map('leaflet',{
@@ -95,15 +94,25 @@ map = L.map('map',{cursor:true}).setView([32.00,-85.43], 6);
 
     osmUrl='//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
     osmAttrib='Map data © <a href="//openstreetmap.org">OpenStreetMap</a> contributors';
-    osm = new L.TileLayer(osmUrl, {minZoom: 1, maxZoom: 15, attribution: osmAttrib});
-    map.addLayer(osm);
+    //osm = new L.TileLayer(osmUrl, {minZoom: 1, maxZoom: 15, attribution: osmAttrib});
+    //map.addLayer(osm);
     // L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
 	// attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
 	// maxZoom: 18,
 	// id: 'mapbox.streets',
 	// accessToken: 'pk.eyJ1Ijoid2FuZzIwOCIsImEiOiJjazBkd3g4cDQwMDNpM2NtZmsxMGY2bnY2In0.n8zYH_42X598kQxtl03-iA'
     // }).addTo(map);
-
+    //google streets
+    osm = new L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
+        maxZoom: 20,
+        subdomains:['mt0','mt1','mt2','mt3']
+    }).addTo(map);
+    
+    var baseLayers = {
+        "OpenStreetMap": osm
+    };
+    var layercontrol = new L.control.layers(null,null,{collapsed:false});
+    
     map.createPane("polygonsPane");
     map.createPane("linesPane");
     map.createPane("pointsPane");
@@ -666,57 +675,67 @@ var geojsonLineOptions = {
 
     });
 
-        var sink_coal_layer = L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
-                layers: 'SimCCS:NATCARB_Coal',
-                format: 'image/png',
-                transparent: true
-        });
+        // var sink_coal_layer = L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
+        //         layers: 'SimCCS:NATCARB_Coal',
+        //         format: 'image/png',
+        //         transparent: true
+        // });
 
-        var sink_oil_layer=L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
-                layers: 'SimCCS:NATCARB_OG',
-                format: 'image/png',
-                transparent: true
-        });
+        // var sink_oil_layer=L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
+        //         layers: 'SimCCS:NATCARB_OG',
+        //         format: 'image/png',
+        //         transparent: true
+        // });
 
-        var sink_saline_layer=L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
-                layers: 'SimCCS:NATCARB_SALINE',
-                //layers: 'SimCCS:SCO2T_Database_v1_1_Cheapest_Grid',
-                format: 'image/png',
-                transparent: true
-        });
+        // var sink_saline_layer=L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
+        //         layers: 'SimCCS:NATCARB_SALINE',
+        //         //layers: 'SimCCS:SCO2T_Database_v1_1_Cheapest_Grid',
+        //         format: 'image/png',
+        //         transparent: true
+        // });
 
-        var sink_ordos_layer=L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
-                layers: 'SimCCS:China_OG',
-                format: 'image/png',
-                transparent: true
-        });
+        // var sink_ordos_layer=L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
+        //         layers: 'SimCCS:China_OG',
+        //         format: 'image/png',
+        //         transparent: true
+        // });
 
-        var cost_surface_layer = L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
-            layers: 'SimCCS:cost',
-            format: 'image/png',
-            transparent: true,
-            attribution: "SimCCS",
-            zIndex:1
-        });
+        // var cost_surface_layer = L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
+        //     layers: 'SimCCS:cost',
+        //     format: 'image/png',
+        //     transparent: true,
+        //     attribution: "SimCCS",
+        //     zIndex:1
+        // });
 
-        var source_all_test_layer_1 = L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
+        var source_all_test_layer_1 = L.tileLayer.betterWms("https://simccs.org/geoserver/SimCCS/ows?", {
             //layers: 'SimCCS_Sources_Snapper',
             layers: 'Sources_082819_SimCCS_Format',
             format: 'image/png',
             transparent: true,
             attribution: "SimCCS",
+            propertyName: 'Name,Type',
             zIndex: 99
         });
 
-        var sink_sco2t_layer = L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
-            layers: 'SimCCS:SCO2T_SALINE_Test',
+        // var sink_sco2t_layer = L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
+        //     layers: 'SimCCS:SCO2T_SALINE_Test',
+        //     format: 'image/png',
+        //     transparent: true,
+        //     attribution: "SimCCS",
+        //     zIndex:2
+        // });
+
+        var sink_sco2t_layer = L.tileLayer.betterWms("https://simccs.org/geoserver/SimCCS/wms?", {
+            layers: 'sco2t_national_v1_10k',
             format: 'image/png',
             transparent: true,
             attribution: "SimCCS",
+            propertyName: 'name,sinkcapacity,sinkfixedcost,wellfixedcost,wellvarom',
             zIndex:2
         });
 
-        var sink_oil_eor_layer=L.tileLayer.wms("http://gf8.ucs.indiana.edu/geoserver/SimCCS/wms?", {
+        var sink_oil_eor_layer=L.tileLayer.wms("https://simccs.org/geoserver/SimCCS/wms?", {
             layers: 'SimCCS:NATCARB_OG_Test',
             format: 'image/png',
             transparent: true,

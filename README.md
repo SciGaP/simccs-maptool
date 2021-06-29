@@ -5,12 +5,15 @@
 1. Follow the instructions for installing the
    [Airavata Django Portal](https://github.com/apache/airavata-django-portal)
 2. With the Django Portal virtual environment activated, clone this repo and
-   install it into the portal's virtual environment
+   install it into the portal's virtual environment. Note, the `pip install`
+   command will also run the JS frontend build and will require Node.js and Yarn
+   installed (see the Airavata Django Portal installation instructions for more
+   details).
 
    ```
    git clone https://github.com/SciGaP/simccs-maptool.git
    cd simccs-maptool
-   python setup.py develop
+   pip install -e .
    ```
 
 3. Start (or restart) the Django Portal server.
@@ -24,8 +27,15 @@ specified in Django Portal's `settings_local.py` file.
 - `JAVA_HOME` - the Java home directory. Defaults to the JAVA_HOME env variable
   if not set.
 - `MAPTOOL_SETTINGS` - this is a dictionary of Map Tool specific settings:
-  - `CPLEX_APPLICATION_ID` - The Airavata application module id of the Cplex application to launch.
+  - `CPLEX_APPLICATION_ID` - The Airavata application module id of the Cplex
+    application to launch.
+  - `CPLEX_HOSTNAME` - The hostname of the compute resource on which to launch
+    Cplex.
   - `DATASETS_DIR` - Directory of datasets and their basedata (cost network).
+  - `JAVA_OPTIONS` - JVM command line options. Defaults to `-Xmx4g`. May be a
+    list or tuple to pass multiple options.
+  - `MAX_CONCURRENT_JAVA_CALLS` - maximum concurrent calls into Java code
+    allowed across all HTTP requests. Default to 1.
 
 Example of custom settings in a `settings_local.py` file:
 
@@ -37,6 +47,24 @@ MAPTOOL_SETTINGS = {
 }
 ```
 
+## Creating DB migrations
+
+```
+django-admin makemigrations --pythonpath . --settings tests.test_settings simccs_maptool
+```
+
+## Building the Vue.js frontend code
+
+```bash
+cd frontend
+yarn install
+yarn run build
+```
+
+You can also instead run `yarn run serve` to start a Webpack dev server with hot
+reloading. See
+https://apache-airavata-django-portal.readthedocs.io/en/latest/dev/developing_frontend/
+for more details.
 
 ## Pyjnius - simccs.jar notes
 
@@ -51,28 +79,14 @@ pip install pyjnius
 
 ### Building the SimCCS jar
 
-#### Building the simccs.org desktop client code
-
-```
-mvn -P pack-jar-without-gateway install
-```
-
 #### Building simccs GitHub repo code
 
-**Note: these build steps are for the SimCCS jar from the GitHub repo, but the
-jar currently being using in this Django app is the one used by the simccs.org
-desktop client.**
+**Note: No longer need to build. Just grab the SimCCS.jar from
+https://github.com/simccs/SimCCS/tree/master/store**
 
 Clone https://github.com/simccs/SimCCS
 
-```
-cd SimCCS/
-mkdir build
-find src -name "*.java" | xargs javac -cp ext/openmap.jar -d build/
-find build/ -name "*.class" | xargs jar cvf build/SimCCS.jar -C build/
-```
-
-Then copy `build/SimCCS.jar` to `simccs_maptool/simccs/lib/SimCCS.jar`.
+Then copy `store/SimCCS.jar` to `simccs_maptool/simccs/lib/SimCCS.jar`.
 
 ### MacOS notes
 

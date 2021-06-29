@@ -96,6 +96,21 @@ Extracted Water m3 per tCO2
 Number of Wells
 Total Process $ per tCO2
 
+mapping for saline sinks: SCO2T_Database_v2_2_LowestCost_10K
+SCO2T_Database_v2.2_SimCCSFormat_LowestCost.txt
+NATCARB Saline ID	Resource Name	Min Sink Capacity	Min Site Fixed Cost	Min Fix O&M ($M/yr)	Min Well Injection Rate	Min Well Fixed Cost	Min Well Fixed O&M	Min Well Variable O&M	N/A	Longitude	Latitude	Continental ID	Resource Area km2	Depth m	Gross Thickness	Net Thickness Low m	Net Thickness Likely m	Net Thickness High m	Porosity Low	Porosity Likely	Porosity High	Final Perm Low	Final Perm Likely	Final Perm High	Final Geothermal Gradient C per km	Final Resource Temperature C	Pressure Mpa	Sources	Min Site Injection Rate	Max Site Injection Rate	Max Well Injection Rate	Max Sink Capacity	Min Total Sink Cost	Max Total Sink Cost	Max Site Fixed Cost	Max Well Fixed Cost	Max Well Fixed O&M	Max Well Variable O&M	Confidence	Contains Likely Estimate?
+
+2: Capacity "fieldCap__" -> Min_Sink_C
+3: OpeningCost "costFix___" -> Min_Site_F
+4: OMCost "fixO_M___M" -> Min_Fix_O_
+5: WellCapacity "wellCap__M" -> Min_Well_I
+6: WellOpeningCost "wellCostFi" -> Min_Well_F
+7: WellOMCost "wellFixO_M" -> Min_Well_1
+8: InjectionCost "varO_M____" -> Min_Well_V
+10: Lon "Longitude"
+11: Lat "Latitude"
+16: NAME "Resource_N"
+
 
 sources.txt
 ID	costFix ($M)	fixO&M ($M/y)	varO&M ($/tCO2)	capMax (MtCO2/y)	N/A	LON	LAT	NAME

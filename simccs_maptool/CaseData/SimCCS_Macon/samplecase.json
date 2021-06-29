@@ -1,0 +1,38 @@
+{
+  "id": 123,
+  "title": "SimCCS_Macon",
+  "description": "A testing case for Illinois Basin",
+  "datasets": [
+    {
+      "id": 1,
+      "name": "SimCCS_MaconSources",
+      "description": "SimCCS_MaconSources",
+      "type": "source",
+      "url": null
+    },
+    {
+      "id": 2,
+      "name": "SCO2T_Arkosic_Macon_10K",
+      "description": "SCO2T_Arkosic_Macon_10K",
+      "type": "sink",
+      "url": null
+    }
+  ],
+  "maptool": {
+    "data": [
+      {
+        "dataset": 1,
+        "style": "",
+        "popup": ["NAME", "capMax (MtCO2/y)", "varO&M ($/tCO2)"],
+        "bbox": ""
+      },
+      {
+        "dataset": 2,
+        "style": "varO&M ($/tCO2)",
+        "popup": ["Name", "fieldCap (MtCO2)", "varO&M ($/tCO2)"],
+        "bbox": ""
+      }
+    ],
+    "bbox": [-89.91, 38.1, -87.7, 40.9]
+  }
+}

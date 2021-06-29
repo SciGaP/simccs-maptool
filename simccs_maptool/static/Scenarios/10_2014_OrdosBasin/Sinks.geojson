@@ -1,0 +1,16 @@
+{
+"type": "FeatureCollection",
+"name": "Sinks",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "ID": 1, "X": 110.6139, "Y": 40.00756, "CO2Strd": 0.0, "MxStrg": 0.378, "PieWdge": 0.378, "WllsUsd": 0, "MxWlls": 2, "ActCst": 0.0, "TtlCst": 0.378, "Name": 1, "Cell#": 226925.0 }, "geometry": { "type": "Point", "coordinates": [ 110.6139, 40.00756 ] } },
+{ "type": "Feature", "properties": { "ID": 2, "X": 107.4472, "Y": 38.89089, "CO2Strd": 87.949, "MxStrg": 102.252, "PieWdge": 14.303, "WllsUsd": 89, "MxWlls": 103, "ActCst": 1.868963, "TtlCst": 0.993, "Name": 1, "Cell#": 366843.0 }, "geometry": { "type": "Point", "coordinates": [ 107.4472, 38.89089 ] } },
+{ "type": "Feature", "properties": { "ID": 3, "X": 107.3555, "Y": 38.21589, "CO2Strd": 102.666, "MxStrg": 131.178, "PieWdge": 28.51199, "WllsUsd": 104, "MxWlls": 132, "ActCst": 1.888992, "TtlCst": 0.994, "Name": 1, "Cell#": 451639.0 }, "geometry": { "type": "Point", "coordinates": [ 107.3555, 38.21589 ] } },
+{ "type": "Feature", "properties": { "ID": 4, "X": 107.1139, "Y": 37.57423, "CO2Strd": 0.0, "MxStrg": 143.784, "PieWdge": 143.784, "WllsUsd": 0, "MxWlls": 144, "ActCst": 0.0, "TtlCst": 0.999, "Name": 1, "Cell#": 532229.0 }, "geometry": { "type": "Point", "coordinates": [ 107.1139, 37.57423 ] } },
+{ "type": "Feature", "properties": { "ID": 5, "X": 110.6889, "Y": 37.04089, "CO2Strd": 9.578, "MxStrg": 47.844, "PieWdge": 38.266, "WllsUsd": 10, "MxWlls": 48, "ActCst": 1.641311, "TtlCst": 0.997, "Name": 1, "Cell#": 599666.0 }, "geometry": { "type": "Point", "coordinates": [ 110.6889, 37.04089 ] } },
+{ "type": "Feature", "properties": { "ID": 6, "X": 110.5472, "Y": 36.28256, "CO2Strd": 26.556, "MxStrg": 31.405, "PieWdge": 4.849001, "WllsUsd": 28, "MxWlls": 33, "ActCst": 1.678143, "TtlCst": 0.981, "Name": 1, "Cell#": 694926.0 }, "geometry": { "type": "Point", "coordinates": [ 110.5472, 36.28256 ] } },
+{ "type": "Feature", "properties": { "ID": 7, "X": 109.9055, "Y": 35.47422, "CO2Strd": 19.268, "MxStrg": 22.334, "PieWdge": 3.066, "WllsUsd": 20, "MxWlls": 24, "ActCst": 1.724918, "TtlCst": 0.971, "Name": 1, "Cell#": 796408.0 }, "geometry": { "type": "Point", "coordinates": [ 109.9055, 35.47422 ] } },
+{ "type": "Feature", "properties": { "ID": 8, "X": 108.5722, "Y": 35.04922, "CO2Strd": 58.098, "MxStrg": 100.217, "PieWdge": 42.119, "WllsUsd": 59, "MxWlls": 102, "ActCst": 1.809936, "TtlCst": 0.992, "Name": 1, "Cell#": 849645.0 }, "geometry": { "type": "Point", "coordinates": [ 108.5722, 35.04922 ] } },
+{ "type": "Feature", "properties": { "ID": 9, "X": 107.6972, "Y": 34.99923, "CO2Strd": 6.175, "MxStrg": 124.697, "PieWdge": 118.522, "WllsUsd": 7, "MxWlls": 125, "ActCst": 1.999879, "TtlCst": 0.998, "Name": 1, "Cell#": 855822.0 }, "geometry": { "type": "Point", "coordinates": [ 107.6972, 34.99923 ] } }
+]
+}

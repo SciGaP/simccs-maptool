@@ -1,0 +1,28 @@
+{
+	"title": "Illinois Basin 2015",
+	"dataset-id": "IllinoisBasin_2015_11",
+	"dataset-dirname": "11_2015_IllinoisBasin",
+	"dataset-candidate-network": "Scenarios/scenario1/Network/CandidateNetwork/CandidateNetwork.txt",
+	"summary": "A case study from Illinois Basin",
+	"publication": "https://www.sciencedirect.com/science/article/pii/S1876610217319902",
+	"editor": {
+		"sources":"input_source.geojson",
+		"sinks":"input_sink.geojson"
+	},
+	"inputs": {
+		"sources": "Sources.geojson",
+		"sinks": "Sinks.geojson",
+		"candidatenetwork": "CandidateNetwork.geojson"
+	},
+	"results": [{
+			"case": "15MTyr",
+			"description": "15 MT per year",
+			"network": "result_network_15MTyr.geojson"
+		},
+		{
+			"case": "5MTyr",
+			"description": "5 MT per year",
+			"network": "result_network_5MTyr.geojson"
+		}
+    ]
+}

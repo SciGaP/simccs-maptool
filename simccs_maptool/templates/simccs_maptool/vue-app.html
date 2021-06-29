@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load render_bundle from webpack_loader %}
+
+{% block css %}
+{% render_bundle 'chunk-vendors' 'css' 'SIMCCS_MAPTOOL' %}
+{% comment %}BUT NOTE: if you only have one entry point you won't have a 'chunk-common' bundle so you may need to comment out the next line until you have more than one entry point.{% endcomment %}
+{% comment %} {% render_bundle 'chunk-common' 'css' 'SIMCCS_MAPTOOL' %} {% endcomment %}
+{% render_bundle bundle_name 'css' 'SIMCCS_MAPTOOL' %}
+<link type="text/css" href="{% static 'common/dist/CommonUI.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="main-content-wrapper">
+    <main class="main-content">
+        <div class="container-fluid">
+            <div id="{{ bundle_name }}"/>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="{% static 'django_airavata_api/dist/airavata-api.js' %}"></script>
+<script src="{% static 'common/dist/CommonUI.umd.min.js' %}"></script>
+{% render_bundle 'chunk-vendors' 'js' 'SIMCCS_MAPTOOL' %}
+{% comment %}BUT NOTE: if you only have one entry point you won't have a 'chunk-common' bundle so you may need to comment out the next line until you have more than one entry point.{% endcomment %}
+{% comment %} {% render_bundle 'chunk-common' 'js' 'SIMCCS_MAPTOOL' %} {% endcomment %}
+{% render_bundle bundle_name 'js' 'SIMCCS_MAPTOOL' %}
+{% endblock %}
