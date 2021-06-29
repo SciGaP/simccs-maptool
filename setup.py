@@ -38,7 +38,7 @@ setuptools.setup(
         'cython',
         'pyjnius',
         'pyshp',
-        "airavata-django-portal-sdk @ git+https://github.com/apache/airavata-django-portal-sdk.git@master#egg=airavata-django-portal-sdk",
+        "airavata-django-portal-sdk",
         'djangorestframework',
         # Pandas 1.2 requires Python 3.7+ and our deployments are currently on Python 3.6
         'pandas<1.2',

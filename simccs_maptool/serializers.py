@@ -584,6 +584,9 @@ class ScenarioExperimentSerializer(serializers.ModelSerializer):
             "simccs_maptool:experiment-result", args=[instance.experiment_id])
         result['solution_summary'] = reverse(
             "simccs_maptool:solution-summary", args=[instance.experiment_id])
+        result['experiment_download_url'] = reverse(
+            "airavata_django_portal_sdk:download_experiment_dir", args=[
+                instance.experiment_id])
         return result
 
 
