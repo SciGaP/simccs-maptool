@@ -536,7 +536,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
       var cplexInputValues;
       var mpsRequest = null;
       // Name the mps file based on the scenario name
-      var filename = scenario_title_panel[panelid] + ".mps";
+      var filename = scenario_title_panel[panelid] ? scenario_title_panel[panelid] + ".mps" : null;
       if (batchmode == 0) {
             var numYears = $("#Project_Period_" + panelid).val();
             var capacityTarget = $("#Capture_Target_" + panelid).val();
