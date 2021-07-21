@@ -63,7 +63,8 @@ def create_scenario_dir(
     if mps:
         _write_scenario_file(os.path.join(scenario_dir, "MIP", "cap.mps"), mps)
     if solution:
-        _write_scenario_file(os.path.join(scenario_dir, "Results", "soln.sol"))
+        _write_scenario_file(os.path.join(scenario_dir, "Results", "soln.sol"),
+                             solution)
     return scenario_dir
 
 
@@ -88,6 +89,14 @@ def get_sinks_file(scenario_dir):
 
 def get_mps_file(scenario_dir):
     return next(glob.iglob(os.path.join(scenario_dir, "MIP", "*.mps")), None)
+
+
+def get_results_dir(scenario_dir):
+    return os.path.join(scenario_dir, "Results")
+
+
+def get_shapefiles_dir(scenario_dir):
+    return os.path.join(get_results_dir(scenario_dir), "shapeFiles")
 
 
 def get_candidate_network_file(scenario_dir):
