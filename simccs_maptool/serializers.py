@@ -184,6 +184,8 @@ class DatasetVersionSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
     original_url = serializers.SerializerMethodField()
     original_filename = serializers.SerializerMethodField()
+    dataset = serializers.HyperlinkedRelatedField(view_name='simccs_maptool:dataset-detail',
+                                                  read_only=True)
 
     class Meta:
         model = models.DatasetVersion
@@ -193,7 +195,9 @@ class DatasetVersionSerializer(serializers.ModelSerializer):
                   'created',
                   'url',
                   'original_url',
-                  'original_filename']
+                  'original_filename',
+                  'dataset',
+                  ]
 
     def get_url(self, dataset_version):
         if dataset_version.data_product_uri:
@@ -565,25 +569,32 @@ class ScenarioSinkSerializer(serializers.ModelSerializer):
 class ScenarioExperimentSerializer(serializers.ModelSerializer):
     experiment_id = serializers.CharField(max_length=255)
     parameters = ParametersSerializer()
+    dataset_versions = DatasetVersionSerializer(many=True, read_only=True)
 
     class Meta:
         model = models.ScenarioExperiment
-        fields = ('experiment_id', 'parameters')
+        fields = ('experiment_id', 'parameters', 'dataset_versions')
 
     def to_representation(self, instance):
         request = self.context['request']
-        experiment = request.airavata_client.getExperiment(
-            request.authz_token, instance.experiment_id)
         result = super().to_representation(instance)
-        result['experiment_name'] = experiment.experimentName
         result['experiment_url'] = reverse(
             "django_airavata_workspace:view_experiment", args=[instance.experiment_id])
-        result['experiment_state'] = ExperimentState._VALUES_TO_NAMES[
-            experiment.experimentStatus[-1].state]
         result['experiment_result'] = reverse(
             "simccs_maptool:experiment-result", args=[instance.experiment_id])
         result['solution_summary'] = reverse(
             "simccs_maptool:solution-summary", args=[instance.experiment_id])
+        result['experiment_download_url'] = reverse(
+            "airavata_django_portal_sdk:download_experiment_dir", args=[
+                instance.experiment_id])
+        try:
+            experiment = request.airavata_client.getExperiment(
+                request.authz_token, instance.experiment_id)
+            result['experiment_name'] = experiment.experimentName
+            result['experiment_state'] = ExperimentState._VALUES_TO_NAMES[
+                experiment.experimentStatus[-1].state]
+        except Exception as e:
+            logger.warning(f"Failed to load experiment from API: {e}")
         return result
 
 
@@ -654,6 +665,14 @@ class WorkspaceSerializer(serializers.ModelSerializer):
                 experiment_parameters = experiment.pop("parameters")
                 experiment_inst = models.ScenarioExperiment.objects.create(
                     scenario=scenario_inst, **experiment)
+                # capture the current version of the datasets used in the scenario
+                dataset_versions = set()
+                for source in scenario_inst.sources.all():
+                    dataset_versions.add(source.dataset.current_version)
+                for sink in scenario_inst.sinks.all():
+                    dataset_versions.add(sink.dataset.current_version)
+                experiment_inst.dataset_versions.set(dataset_versions)
+                experiment_inst.save()
                 for parameter in experiment_parameters:
                     models.ScenarioExperimentParameter.objects.create(
                         experiment=experiment_inst, **parameter
@@ -718,6 +737,16 @@ class WorkspaceSerializer(serializers.ModelSerializer):
                 experiment_parameters = experiment.pop("parameters")
                 experiment_inst, created = models.ScenarioExperiment.objects.update_or_create(
                     scenario=scenario_inst, experiment_id=experiment_id)
+                # if created, also capture the current version of the datasets
+                # used in the scenario
+                if created:
+                    dataset_versions = set()
+                    for source in scenario_inst.sources.all():
+                        dataset_versions.add(source.dataset.current_version)
+                    for sink in scenario_inst.sinks.all():
+                        dataset_versions.add(sink.dataset.current_version)
+                    experiment_inst.dataset_versions.set(dataset_versions)
+                    experiment_inst.save()
                 parameter_names = []
                 for parameter in experiment_parameters:
                     name = parameter.pop("name")
@@ -740,7 +769,7 @@ class WorkspaceSerializer(serializers.ModelSerializer):
         queryset = models.Workspace.objects.filter(
             case_id=data['case'], owner=request.user, name=data['name'])
         if self.instance:
-            queryset.exclude(pk=self.instance.pk)
+            queryset = queryset.exclude(pk=self.instance.pk)
         if queryset.exists():
             raise serializers.ValidationError(
                 {'name': ["You already have a workspace with that name for this case."]})
