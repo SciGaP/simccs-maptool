@@ -1788,7 +1788,11 @@
             map.addLayer(result_sinkLayer);
             map.addLayer(result_sourceLayer);
             map.addLayer(result_networkLayer);
-        //layercontrol.addOverlay(result_sinkLayer,"Sinks");
+            var temp_collection = [];
+            temp_collection.push(result_sinkLayer);
+            temp_collection.push(result_sourceLayer); 
+            var vectorGroup = L.featureGroup(temp_collection);    
+            map.fitBounds(vectorGroup.getBounds());
             })).catch(display_error_modal);
 
             AiravataAPI.utils.FetchUtils.showSpinner($.getJSON( "/maptool/solution-summary/"+experiment_id, function( data ) {
