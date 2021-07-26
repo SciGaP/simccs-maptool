@@ -1770,7 +1770,7 @@
                   var mymarker = L.circleMarker(latlng,{radius: 8,fillColor: "green",
                           color: "#000",weight: 1,opacity: 1,fillOpacity: 0.7});
                   var content_str = "";
-                  content_str += "CO2 stored: " + feature.properties.CO2Strd;
+                  content_str += "CO2 stored: " + feature.properties.CO2Strd + "<br/>";
                   content_str += "Max annual storage:" + feature.properties.MxStrg;
                   var mypopup = L.popup().setContent(content_str);
                   mymarker.bindPopup(mypopup);
@@ -1782,14 +1782,14 @@
                   var mymarker = L.circleMarker(latlng,{radius: 8,fillColor: "red",
                           color: "#000",weight: 1,opacity: 1,fillOpacity: 0.7});
                   var content_str = "";
-                  content_str += "CO2 captured: " + feature.properties.CO2Cptrd;
+                  content_str += "CO2 captured: " + feature.properties.CO2Cptrd + "<br/>";
                   content_str += "Max Supply: " + feature.properties.MxSpply;
                   var mypopup = L.popup().setContent(content_str);
                   mymarker.bindPopup(mypopup);
                   return mymarker;       
                   }
             });
-            var result_networkLayer = new L.geoJSON(data["Network"],{style:{color:"blue",opacity:0.5,weight:4},
+            var result_networkLayer = new L.geoJSON(data["Network"],{style:{color:"blue",opacity:0.5,weight:4,pane:"linesPane"},
             onEachFeature: function (feature, layer) {layer.bindPopup("Flow: " + feature.properties.Flow +"<br/>Length (KM): "+feature.properties.LengKM);} 
             });
 
