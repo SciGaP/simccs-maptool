@@ -1783,7 +1783,9 @@
                   return mymarker;       
                   }
             });
-            var result_networkLayer = new L.geoJSON(data["Network"],{style:{color:"blue",opacity:0.5,weight:4}});
+            var result_networkLayer = new L.geoJSON(data["Network"],{style:{color:"blue",opacity:0.5,weight:4},
+            onEachFature: function (feature, layer) {layer.bindPopup("Flow: " + feature.properties.Flow +"<br/>Length (KM): "+feature.properties.LengKM);} 
+            });
 
             map.addLayer(result_sinkLayer);
             map.addLayer(result_sourceLayer);
