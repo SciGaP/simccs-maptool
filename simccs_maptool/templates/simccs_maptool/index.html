@@ -1789,11 +1789,23 @@
                   return mymarker;       
                   }
             });
-            // 0-0.25, 0.25-5, 5-7.5, 10
+ 
             var result_networkLayer = new L.geoJSON(data["Network"],{style:{color:"blue",opacity:0.5,weight:4,pane:"linesPane"},
             onEachFeature: function (feature, layer) {layer.bindPopup("Flow: " + feature.properties.Flow +"<br/>Length (KM): "+feature.properties.LengKM);} 
             });
-
+            // reset style
+            // 0-0.25, 0.25-5, 5-7.5, 10
+            result_networkLayer.eachLayer(function(layer) { 
+                var fv = layer.feature.properties['Flow'];
+                var lw = 1;
+                if (fv <= 0.25) {lw = 1;}
+                else if (fv>0.25 && fv <= 5) {lw = 2;}
+                else if (fv > 5 && fv <= 7.5 ) {lw = 3;}
+                else if (fv > 7.5 && fv <= 10) {lw = 4;}
+                else if (fv > 10) {lw=5;}
+                else {lw=1;}
+                layer.setStyle({weight:lw+1});
+            });
             map.addLayer(result_sinkLayer);
             map.addLayer(result_sourceLayer);
             map.addLayer(result_networkLayer);
