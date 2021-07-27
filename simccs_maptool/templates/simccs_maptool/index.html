@@ -1804,7 +1804,7 @@
                 else if (fv > 7.5 && fv <= 10) {lw = 4;}
                 else if (fv > 10) {lw=5;}
                 else {lw=1;}
-                layer.setStyle({weight:lw+1});
+                layer.setStyle({weight:Math.ceil(lw*1.5)});
             });
             map.addLayer(result_sinkLayer);
             map.addLayer(result_sourceLayer);
