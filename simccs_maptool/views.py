@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import glob
+import io
 import json
 import logging
 import os
@@ -13,6 +14,7 @@ from urllib.parse import urlencode
 import shapefile
 from django.apps import apps
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
@@ -21,12 +23,11 @@ from django.urls import reverse
 from django.views.generic import TemplateView
 from rest_framework import parsers, permissions, viewsets
 from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from simccs_maptool import datasets, models, serializers
 
 from . import simccs_helper
-from django.contrib.auth import get_user_model
-from rest_framework.response import Response
 
 # TODO: temporary code to allow working in develop and master branch of
 # airavata-django-portal
@@ -271,23 +272,25 @@ def experiment_result(request, experiment_id):
 def solution_summary(request, experiment_id):
     try:
         experiment = _get_experiment(request, experiment_id)
-        results_dir = _get_results_dir(experiment)
-        solution_summary = _get_solution_summary(request, experiment, results_dir)
+        solution_summary = _get_solution_summary(request, experiment)
         return JsonResponse(solution_summary)
     except Exception as e:
         logger.exception("Failed to generate solution summary")
         return JsonResponse({"detail": str(e)}, status=500)
 
 
-def _get_solution_summary(request, experiment, results_dir):
-    cached_solution_summary_path = os.path.join(results_dir, "solution_summary.json")
+def _get_solution_summary(request, experiment):
+    experiment_id = experiment.experimentId
     cached_solution_summary = None
-    if os.path.exists(cached_solution_summary_path):
+    if user_storage.user_file_exists(request,
+                                     "solution_summary.json",
+                                     experiment_id=experiment_id):
         try:
-            with open(cached_solution_summary_path) as f:
+            with _open_experiment_filepath(request, experiment, "solution_summary.json") as f:
                 cached_solution_summary = json.load(f)
         except Exception:
-            logger.exception(f"Failed to load {cached_solution_summary_path}")
+            logger.exception(f"Failed to load solution_summary.json for "
+                             f"experiment {experiment.experimentId}")
     SOLUTION_SUMMARY_CURRENT_VERSION = 1
     if (
         cached_solution_summary
@@ -295,40 +298,44 @@ def _get_solution_summary(request, experiment, results_dir):
     ):
         return cached_solution_summary
     else:
-        solution = _load_solution(request, experiment, results_dir)
-        solution_summary = {
-            "version": SOLUTION_SUMMARY_CURRENT_VERSION,
-            "numOpenedSources": solution.numOpenedSources,
-            "numOpenedSinks": solution.numOpenedSinks,
-            "targetCaptureAmount": solution.captureAmount,
-            "numEdgesOpened": solution.numEdgesOpened,
-            "projectLength": solution.projectLength,
-            "totalCaptureCost": solution.totalAnnualCaptureCost,
-            "unitCaptureCost": solution.unitCaptureCost,
-            "totalTransportCost": solution.totalAnnualTransportCost,
-            "unitTransportCost": solution.unitTransportCost,
-            "totalStorageCost": solution.totalAnnualStorageCost,
-            "unitStorageCost": solution.unitStorageCost,
-            "totalCost": solution.totalCost,
-            "unitTotalCost": solution.unitTotalCost,
-            "crf": solution.getCRF(),
-        }
-        # Save solution summary to cache
-        try:
-            with open(cached_solution_summary_path, "w") as f:
-                json.dump(solution_summary, f)
-        except Exception:
-            logger.exception(f"Failed to write {cached_solution_summary_path}")
-        return solution_summary
+
+        # Load solution and generate solution summary JSON
+        with experiment_scenario_dir(request, experiment) as scenario_dir:
+            solution = simccs_helper.load_solution(scenario_dir)
+            solution_summary = {
+                "version": SOLUTION_SUMMARY_CURRENT_VERSION,
+                "numOpenedSources": solution.numOpenedSources,
+                "numOpenedSinks": solution.numOpenedSinks,
+                "targetCaptureAmount": solution.captureAmount,
+                "numEdgesOpened": solution.numEdgesOpened,
+                "projectLength": solution.projectLength,
+                "totalCaptureCost": solution.totalAnnualCaptureCost,
+                "unitCaptureCost": solution.unitCaptureCost,
+                "totalTransportCost": solution.totalAnnualTransportCost,
+                "unitTransportCost": solution.unitTransportCost,
+                "totalStorageCost": solution.totalAnnualStorageCost,
+                "unitStorageCost": solution.unitStorageCost,
+                "totalCost": solution.totalCost,
+                "unitTotalCost": solution.unitTotalCost,
+                "crf": solution.getCRF(),
+            }
+            # Save solution summary to cache
+            if request.user.username == experiment.userName:
+                try:
+                    solution_file = io.BytesIO(json.dumps(solution_summary).encode())
+                    user_storage.save(request,
+                                      "",
+                                      solution_file,
+                                      name="solution_summary.json",
+                                      experiment_id=experiment_id)
+                except Exception:
+                    logger.exception(f"Failed to write solution_summary.json "
+                                     f"for experiment {experiment_id}")
+            return solution_summary
 
 
 def _get_experiment(request, experiment_id):
     return request.airavata_client.getExperiment(request.authz_token, experiment_id)
-
-
-def _get_results_dir(experiment):
-    # Get the experimentDataDir (which is the Results/ directory in v1 layout)
-    return experiment.userConfigurationData.experimentDataDir
 
 
 @contextmanager
@@ -428,34 +435,6 @@ def _get_experiment_value(experiment, name):
     return None  # if not found
 
 
-def _load_solution(request, experiment, results_dir):
-    # v2 experiment files layout
-    if os.path.basename(os.path.dirname(os.path.dirname(results_dir))) != "Scenarios":
-        sources = _get_experiment_file(request, experiment, "Sources", input_file=True)
-        sinks = _get_experiment_file(request, experiment, "Sinks", input_file=True)
-        dataset_id = _get_experiment_value(experiment, "Dataset-id")
-        with tempfile.TemporaryDirectory() as datasets_basepath:
-            dataset_dir = datasets.get_dataset_dir(dataset_id)
-            # Create the scenario directory
-            # TODO: add the candidatenetwork file too
-            scenario_dir = simccs_helper.create_scenario_dir(
-                datasets_basepath,
-                dataset_dir,
-                sources=sources,
-                sinks=sinks,
-                # Technically we don't even need these, they are loaded by
-                # make_shapefiles
-                # mps=mps,
-                # solution=solution,
-            )
-            return simccs_helper.load_solution(scenario_dir, results_dir)
-    # v1 experiment files layout
-    else:
-        datasets_basepath = _get_datasets_dir_from_results_dir(results_dir)
-        scenario_dir = os.path.dirname(results_dir)
-        return simccs_helper.load_solution(scenario_dir, results_dir)
-
-
 def _create_geojson_for_result(results_dir):
     network_sf = shapefile.Reader(os.path.join(results_dir, "shapeFiles", "Network"))
     sinks_sf = shapefile.Reader(os.path.join(results_dir, "shapeFiles", "Sinks"))
@@ -494,23 +473,6 @@ def _write_shapefile_to_geojson(shapefile, geojson_f):
     geojson_f.write(
         json.dumps({"type": "FeatureCollection", "features": buffer}, indent=2) + "\n"
     )
-
-
-def _get_dataset_from_results_dir(results_dir):
-    dataset_dir = _get_dataset_dir_from_results_dir(results_dir)
-    return os.path.basename(dataset_dir)
-
-
-def _get_datasets_dir_from_results_dir(results_dir):
-    dataset_dir = _get_dataset_dir_from_results_dir(results_dir)
-    return os.path.dirname(dataset_dir)
-
-
-def _get_dataset_dir_from_results_dir(results_dir):
-    # Results dir is structured like so:
-    # GATEWAY_STORAGE/{username}/Datasets/{dataset}/Scenarios/{scenario}/Results
-    scenario_dir = os.path.dirname(results_dir)
-    return os.path.dirname(os.path.dirname(scenario_dir))
 
 
 @max_concurrent_java_calls
@@ -553,25 +515,6 @@ def candidate_network(request):
                 )
         except Exception as e:
             return JsonResponse({"detail": str(e)}, status=500)
-
-
-def _get_basedata_dir(dataset_dirname):
-
-    if "DATASETS_DIR" in getattr(settings, "MAPTOOL_SETTINGS", {}):
-        datasets_basepath = settings.MAPTOOL_SETTINGS["DATASETS_DIR"]
-        basedata_dir = os.path.join(datasets_basepath, dataset_dirname, "BaseData")
-        if os.path.exists(basedata_dir):
-            return basedata_dir
-    else:
-        logger.warning("Setting MAPTOOL_SETTINGS['DATASETS_DIR'] is not defined")
-    # For backwards compatibility, allow loading BaseData from within this repo
-    # (SoutheastUS only)
-    basedata_dir = os.path.join(DATASETS_BASEPATH, dataset_dirname, "BaseData")
-    if os.path.exists(basedata_dir):
-        return basedata_dir
-    raise Exception(
-        "Unable to find basedata directory for dataset {}".format(dataset_dirname)
-    )
 
 
 def _get_dataset_dirname(dataset):

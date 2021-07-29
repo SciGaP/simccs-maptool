@@ -239,7 +239,7 @@ def make_shapefiles(scenario_dir):
         raise e
 
 
-def load_solution(scenario_dir, results_dir):
+def load_solution(scenario_dir):
     try:
         basepath, dataset_dirname, scenario = _get_scenario_path_components(
             scenario_dir
@@ -258,6 +258,7 @@ def load_solution(scenario_dir, results_dir):
         if cost_surface_data is not None:
             cost_surface_data.populate(data)
         # load the .mps/.sol solution
+        results_dir = get_results_dir(scenario_dir)
         solution = data.loadSolution(results_dir)
         logger.debug("Solution loaded from {}".format(results_dir))
         return solution
