@@ -65,6 +65,9 @@ def create_scenario_dir(
     if solution:
         _write_scenario_file(os.path.join(scenario_dir, "Results", "soln.sol"),
                              solution)
+        # SimCCS loadSolution also expects that solution directory will have mps file
+        shutil.copyfile(os.path.join(scenario_dir, "MIP", "cap.mps"),
+                        os.path.join(scenario_dir, "Results", "cap.mps"))
     return scenario_dir
 
 
@@ -105,6 +108,12 @@ def get_candidate_network_file(scenario_dir):
     )
 
 
+def get_candidate_network_shapefiles_dir(scenario_dir):
+    return os.path.join(
+        scenario_dir, "Network", "CandidateNetwork", "shapeFiles"
+    )
+
+
 def make_candidate_network_shapefiles(scenario_dir):
     try:
         basepath, dataset_dirname, scenario = _get_scenario_path_components(
@@ -120,7 +129,8 @@ def make_candidate_network_shapefiles(scenario_dir):
         data.setSolver(solver)
         if cost_surface_data is not None:
             cost_surface_data.populate(data)
-        results_dir = os.path.join(scenario_dir, "Network", "CandidateNetwork")
+        results_dir = os.path.dirname(
+            get_candidate_network_shapefiles_dir(scenario_dir))
         # Must make the CandidateNetwork directory before calling
         # makeCandidateNetworkShapeFiles
         os.makedirs(results_dir, exist_ok=True)
@@ -193,7 +203,7 @@ def write_mps_file(
         raise e
 
 
-def make_shapefiles(scenario_dir, results_dir):
+def make_shapefiles(scenario_dir):
     try:
         basepath, dataset_dirname, scenario = _get_scenario_path_components(
             scenario_dir
@@ -212,6 +222,7 @@ def make_shapefiles(scenario_dir, results_dir):
         if cost_surface_data is not None:
             cost_surface_data.populate(data)
         # load the .mps/.sol solution
+        results_dir = get_results_dir(scenario_dir)
         solution = data.loadSolution(results_dir)
         logger.debug(f"Solution loaded from {results_dir}")
         # generate shapefiles

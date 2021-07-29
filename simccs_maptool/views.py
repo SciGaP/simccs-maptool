@@ -208,16 +208,18 @@ def experiment_result(request, experiment_id):
             with experiment_scenario_dir(request, experiment) as scenario_dir:
 
                 results_dir = simccs_helper.get_results_dir(scenario_dir)
-                simccs_helper.make_shapefiles(scenario_dir, results_dir)
+                simccs_helper.make_shapefiles(scenario_dir)
                 simccs_helper.make_candidate_network_shapefiles(scenario_dir)
                 _create_geojson_for_result(results_dir)
-                _create_geojson_for_candidate_network(results_dir)
+                _create_geojson_for_candidate_network(scenario_dir)
 
                 # if experiment owner, save the shapeFiles and geojson files in
                 # the experiment directory
                 if request.user.username == experiment.userName:
                     _copy_directory_to_experiment(
                         request, experiment, simccs_helper.get_shapefiles_dir(scenario_dir))
+                    _copy_candidate_network_shapefiles_to_experiment(
+                        request, experiment, simccs_helper.get_candidate_network_shapefiles_dir(scenario_dir))
                     _copy_directory_to_experiment(
                         request, experiment, os.path.join(results_dir, "geojson"))
 
@@ -241,24 +243,7 @@ def experiment_result(request, experiment_id):
                                 "CandidateNetwork": json.load(candnet_geojson),
                             }
                         )
-        
-        # if not user_storage.dir_exists(request, "shapeFiles", experiment_id=experiment_id):
-        #     _create_shapefiles_for_result(request, experiment)
-        # # check if the candidate network shapefiles exist in shapeFiles/CandidateNetwork.shp
-        # if not user_storage.user_file_exists(request,
-        #                                      os.path.join(
-        #                                          "shapeFiles",
-        #                                          'CandidateNetwork.shp'),
-        #                                      experiment_id=experiment_id):
-        #     _create_shapefiles_for_candidate_network(request, experiment)
-        # if not user_storage.dir_exists(request, "geojson", experiment_id=experiment_id):
-        #     _create_geojson_for_result(experiment)
-        # if not user_storage.user_file_exists(request,
-        #                                      os.path.join(
-        #                                          "geojson",
-        #                                          'CandidateNetwork.geojson'),
-        #                                      experiment_id=experiment_id):
-        #     _create_geojson_for_candidate_network(experiment)
+
         with _open_experiment_filepath(
             request, experiment, os.path.join("geojson", "Network.geojson")
         ) as network_geojson, _open_experiment_filepath(
@@ -351,7 +336,7 @@ def experiment_scenario_dir(request, experiment):
     "Generate a scenario directory from the experiment input and output files"
     sources = _get_experiment_file(request, experiment, "Sources", input_file=True)
     sinks = _get_experiment_file(request, experiment, "Sinks", input_file=True)
-    mps = _get_experiment_file(request, experiment, "Cplex-input-file")
+    mps = _get_experiment_file(request, experiment, "Cplex-input-file", input_file=True)
     solution = _get_experiment_file(request, experiment, "Cplex-solution")
     dataset_id = _get_experiment_value(experiment, "Dataset-id")
     with tempfile.TemporaryDirectory() as datasets_basepath:
@@ -369,124 +354,48 @@ def experiment_scenario_dir(request, experiment):
         yield scenario_dir
 
 
-# def _save_shapefiles(request, experiment, scenario_dir):
-#     "Save shapefiles in the scenario_dir into the experiment data directory"
-#     experiment_id = experiment.experimentId
-#     if user_storage.dir_exists(request, "shapeFiles", experiment_id=experiment_id):
-#         user_storage.delete_dir(request, "shapeFiles", experiment_id=experiment_id)
-#     user_storage.create_user_dir(
-#         request, "shapeFiles", experiment_id=experiment_id)
-#     temp_shapefiles_dir = simccs_helper.get_shapefiles_dir(scenario_dir)
-#     shapefiles = os.listdir(temp_shapefiles_dir)
-#     for shapefile_file in shapefiles:
-#         if os.path.isfile(shapefile_file):
-#             with open(os.path.join(temp_shapefiles_dir, shapefile_file), "rb") as f:
-#                 user_storage.save(
-#                     request, "shapeFiles", f, experiment_id=experiment_id)
-
-
 def _copy_directory_to_experiment(request, experiment, directory):
     experiment_id = experiment.experimentId
     dir_name = os.path.basename(directory)
-    if user_storage.dir_exists(request, dir_name, experiment_id=experiment_id):
-        user_storage.delete_dir(request, dir_name, experiment_id=experiment_id)
     user_storage.create_user_dir(
         request, dir_name, experiment_id=experiment_id)
     listings = os.listdir(directory)
     for listing in listings:
-        if os.path.isfile(listing):
-            with open(os.path.join(dir_name, listing), "rb") as f:
+        path = os.path.join(directory, listing)
+        if os.path.isfile(path):
+            with open(path, "rb") as f:
                 user_storage.save(request, dir_name, f, experiment_id=experiment_id)
+
+
+def _copy_candidate_network_shapefiles_to_experiment(
+        request, experiment, shapefiles_dir):
+
+    experiment_id = experiment.experimentId
+    with open(
+        os.path.join(shapefiles_dir, 'Network.dbf'), 'rb'
+    ) as dbf, open(
+        os.path.join(shapefiles_dir, 'Network.prj'), 'rb'
+    ) as prj, open(
+        os.path.join(shapefiles_dir, 'Network.shp'), 'rb'
+    ) as shp, open(
+        os.path.join(shapefiles_dir, 'Network.shx'), 'rb'
+    ) as shx:
+        user_storage.save(request, 'shapeFiles', dbf,
+                          name="CandidateNetwork.dbf", experiment_id=experiment_id)
+        user_storage.save(request, 'shapeFiles', prj,
+                          name="CandidateNetwork.prj", experiment_id=experiment_id)
+        user_storage.save(request, 'shapeFiles', shp,
+                          name="CandidateNetwork.shp", experiment_id=experiment_id)
+        user_storage.save(request, 'shapeFiles', shx,
+                          name="CandidateNetwork.shx", experiment_id=experiment_id)
 
 
 def _open_experiment_filepath(request, experiment, path):
     data_product_uri = user_storage.user_file_exists(
         request, path, experiment_id=experiment.experimentId)
     if data_product_uri:
-        return user_storage.open_file(request, data_product_uri)
+        return user_storage.open_file(request, data_product_uri=data_product_uri)
     raise Exception(f"{path} does not exist in experiment {experiment.experimentId}")
-
-
-def _create_shapefiles_for_result(request, experiment):
-    sources = _get_experiment_file(request, experiment, "Sources", input_file=True)
-    sinks = _get_experiment_file(request, experiment, "Sinks", input_file=True)
-    mps = _get_experiment_file(request, experiment, "Cplex-input-file")
-    solution = _get_experiment_file(request, experiment, "Cplex-solution")
-    dataset_id = _get_experiment_value(experiment, "Dataset-id")
-    with tempfile.TemporaryDirectory() as datasets_basepath:
-        dataset_dir = datasets.get_dataset_dir(dataset_id)
-        # Create the scenario directory
-        # TODO: add the candidatenetwork file too
-        scenario_dir = simccs_helper.create_scenario_dir(
-            datasets_basepath,
-            dataset_dir,
-            sources=sources,
-            sinks=sinks,
-            mps=mps,
-            solution=solution,
-        )
-        results_dir = simccs_helper.get_results_dir(scenario_dir)
-        simccs_helper.make_shapefiles(scenario_dir, results_dir)
-
-        # Copy shapeFiles directory out of this temp directory and into user storage
-        experiment_id = experiment.experimentId
-        user_storage.create_user_dir(
-            request, "shapeFiles", experiment_id=experiment_id)
-        temp_shapefiles_dir = simccs_helper.get_shapefiles_dir(scenario_dir)
-        for shapefile_file in temp_shapefiles_dir:
-            if os.path.isfile(shapefile_file):
-                with open(os.path.join(temp_shapefiles_dir, shapefile_file), "rb") as f:
-                    user_storage.save(
-                        request, "shapeFiles", f, experiment_id=experiment_id)
-
-
-def _create_shapefiles_for_candidate_network(request, experiment):
-
-    sources = _get_experiment_file(request, experiment, "Sources", input_file=True)
-    sinks = _get_experiment_file(request, experiment, "Sinks", input_file=True)
-    dataset_id = _get_experiment_value(experiment, "Dataset-id")
-    with tempfile.TemporaryDirectory() as datasets_basepath:
-        dataset_dir = datasets.get_dataset_dir(dataset_id)
-        # Create the scenario directory
-        # TODO: add the candidatenetwork file too
-        scenario_dir = simccs_helper.create_scenario_dir(
-            datasets_basepath,
-            dataset_dir,
-            sources=sources,
-            sinks=sinks,
-            # Technically we don't even need these, they are loaded by
-            # make_shapefiles
-            # mps=mps,
-            # solution=solution,
-        )
-        simccs_helper.make_candidate_network_shapefiles(scenario_dir)
-        experiment_id = experiment.experimentId
-        # TODO: do we need to create the shapeFiles directory?
-        if not user_storage.dir_exists(request,
-                                       'shapeFiles',
-                                       experiment_id=experiment_id):
-            user_storage.create_user_dir(
-                request, ('shapeFiles',), experiment_id=experiment_id)
-        # Copy the candidate network shapefiles from the temp directory into the
-        # experiment results_dir, renaming from Network.(dbf|prj|shp|shx) ->
-        # CandidateNetwork.(dbf|prj|shp|shx)
-        with open(
-            os.path.join(scenario_dir, 'Network', 'CandidateNetwork', 'shapeFiles', 'Network.dbf'), 'rb'
-        ) as dbf, open(
-            os.path.join(scenario_dir, 'Network', 'CandidateNetwork', 'shapeFiles', 'Network.prj'), 'rb'
-        ) as prj, open(
-            os.path.join(scenario_dir, 'Network', 'CandidateNetwork', 'shapeFiles', 'Network.shp'), 'rb'
-        ) as shp, open(
-            os.path.join(scenario_dir, 'Network', 'CandidateNetwork', 'shapeFiles', 'Network.shx'), 'rb'
-        ) as shx:
-            user_storage.save(request, 'shapeFiles', dbf,
-                              name="CandidateNetwork.dbf", experiment_id=experiment_id)
-            user_storage.save(request, 'shapeFiles', prj,
-                              name="CandidateNetwork.prj", experiment_id=experiment_id)
-            user_storage.save(request, 'shapeFiles', shp,
-                              name="CandidateNetwork.shp", experiment_id=experiment_id)
-            user_storage.save(request, 'shapeFiles', shx,
-                              name="CandidateNetwork.shx", experiment_id=experiment_id)
 
 
 # TODO: this would be a good candidate to add to SDK
@@ -505,6 +414,8 @@ def _get_experiment_file(request, experiment, name, input_file=False):
             request.authz_token, data_product_uri)
         return user_storage.open_file(request, data_product)
     else:
+        logger.warning(
+            f"Could not find experiment file {name} (input_file={input_file}")
         return None
 
 
@@ -546,8 +457,6 @@ def _load_solution(request, experiment, results_dir):
 
 
 def _create_geojson_for_result(results_dir):
-    # TODO: load shp, shx and dbf files separately
-    # network_sf_shp = user_storage.open_file(request, user_storage.user_file_exists(request, os.path.join("shapeFiles", "Network.shp"), experiment_id=experiment_id))
     network_sf = shapefile.Reader(os.path.join(results_dir, "shapeFiles", "Network"))
     sinks_sf = shapefile.Reader(os.path.join(results_dir, "shapeFiles", "Sinks"))
     sources_sf = shapefile.Reader(os.path.join(results_dir, "shapeFiles", "Sources"))
@@ -561,8 +470,10 @@ def _create_geojson_for_result(results_dir):
         _write_shapefile_to_geojson(sources_sf, sources_geojson_f)
 
 
-def _create_geojson_for_candidate_network(results_dir):
-    candidate_network_sf = shapefile.Reader(os.path.join(results_dir, 'shapeFiles', 'CandidateNetwork'))
+def _create_geojson_for_candidate_network(scenario_dir):
+    results_dir = simccs_helper.get_results_dir(scenario_dir)
+    shapefiles_dir = simccs_helper.get_candidate_network_shapefiles_dir(scenario_dir)
+    candidate_network_sf = shapefile.Reader(os.path.join(shapefiles_dir, "Network"))
     geojson_dir = os.path.join(results_dir, "geojson")
     os.makedirs(geojson_dir, exist_ok=True)
     with open(os.path.join(geojson_dir, "CandidateNetwork.geojson"), "w") as candnet_geojson_f:
