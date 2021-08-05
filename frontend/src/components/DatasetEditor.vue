@@ -24,13 +24,17 @@
         required
       ></b-form-select>
     </b-form-group>
-    <b-form-group label="File" label-class="required">
+    <b-form-group
+      label="File"
+      :label-class="isFileRequired ? ['required'] : []"
+    >
       <b-form-file
         v-model="$v.dataset.file.$model"
         :state="validateState($v.dataset.file)"
-        required
+        :required="isFileRequired"
       />
-      <b-form-invalid-feedback v-if="!$v.dataset.file.required"
+      <b-form-invalid-feedback
+        v-if="'required' in $v.dataset.file && !$v.dataset.file.required"
         >A file is required.</b-form-invalid-feedback
       >
       <b-form-invalid-feedback v-if="!$v.dataset.file.serverValidation">{{
@@ -85,7 +89,7 @@ export default {
     };
   },
   validations() {
-    return {
+    const validations = {
       dataset: {
         name: {
           required,
@@ -101,7 +105,6 @@ export default {
           required,
         },
         file: {
-          required,
           serverValidation: validateFromServer(
             () => (this.submittedData ? this.submittedData.get("file") : null),
             () =>
@@ -112,6 +115,10 @@ export default {
         },
       },
     };
+    if (this.isFileRequired) {
+      validations.dataset.file.required = required;
+    }
+    return validations;
   },
   computed: {
     typeOptions() {
@@ -124,6 +131,9 @@ export default {
     isEditing() {
       return "id" in this.dataset;
     },
+    isFileRequired() {
+      return !this.isEditing;
+    },
   },
   methods: {
     onSubmit(event) {
@@ -132,6 +142,9 @@ export default {
       for (const name in this.dataset) {
         if (Object.prototype.hasOwnProperty.call(this.dataset, name)) {
           const value = this.dataset[name];
+          if (name === "file" && !value) {
+            continue;
+          }
           formData.append(name, value);
         }
       }

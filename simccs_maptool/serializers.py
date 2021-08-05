@@ -262,9 +262,10 @@ class DatasetSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        file = validated_data.pop("file")
-        current_version = self._create_dataset_version(instance, file)
-        instance.current_version = current_version
+        file = validated_data.pop("file", None)
+        if file is not None:
+            current_version = self._create_dataset_version(instance, file)
+            instance.current_version = current_version
         instance.name = validated_data["name"]
         instance.description = validated_data["description"]
         instance.save()
