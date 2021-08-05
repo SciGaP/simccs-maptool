@@ -3,6 +3,7 @@
     <dataset-editor
       :value="dataset"
       :server-validation-errors="serverValidationErrors"
+      :projectId="projectId"
       @submit="onSubmit"
       @delete="onDelete"
     />
@@ -54,7 +55,7 @@ export default {
         .then(() => {
           // TODO: add a success message
           this.$router.push({
-            name: "project",
+            name: "project-datasets",
             params: { projectId: this.projectId },
           });
         })
@@ -72,7 +73,7 @@ export default {
         `/maptool/api/datasets/${encodeURIComponent(this.id)}/`
       ).then(() => {
         this.$router.push({
-          name: "project",
+          name: "project-datasets",
           params: { projectId: this.projectId },
         });
       });

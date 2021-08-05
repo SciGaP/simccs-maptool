@@ -56,6 +56,7 @@
     <b-button v-if="isEditing" type="button" variant="danger" @click="onDelete">
       Delete</b-button
     >
+    <b-button variant="secondary" :to="{ name: 'project-datasets', params: {projectId} }"> Back</b-button>
   </b-form>
 </template>
 
@@ -81,6 +82,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    projectId: {
+      type: [String, Number],
+      required: true,
+    }
   },
   data() {
     return {

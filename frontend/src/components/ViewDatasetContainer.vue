@@ -25,7 +25,12 @@
         <i class="fa fa-edit" aria-hidden="true"></i>
         Edit</b-button
       >
-      <b-button variant="secondary" :to="{ name: 'project' }"> Back</b-button>
+      <b-button
+        variant="secondary"
+        :to="{ name: 'project-datasets', params: { projectId } }"
+      >
+        Back</b-button
+      >
     </b-card-body>
   </b-card>
 </template>

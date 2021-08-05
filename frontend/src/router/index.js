@@ -1,15 +1,17 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import CasesContainer from "../components/CasesContainer.vue";
 import CopyCaseContainer from "../components/CopyCaseContainer.vue";
 import EditCaseContainer from "../components/EditCaseContainer.vue";
 import EditDatasetContainer from "../components/EditDatasetContainer.vue";
 import EditProjectContainer from "../components/EditProjectContainer.vue";
-import NewDatasetContainer from "../components/NewDatasetContainer.vue";
 import NewCaseContainer from "../components/NewCaseContainer.vue";
+import NewDatasetContainer from "../components/NewDatasetContainer.vue";
 import NewProjectContainer from "../components/NewProjectContainer.vue";
-import ProjectsHomeContainer from "../components/ProjectsHomeContainer.vue";
+import ProjectCasesContainer from "../components/ProjectCasesContainer.vue";
 import ProjectContainer from "../components/ProjectContainer.vue";
+import ProjectDatasetsContainer from "../components/ProjectDatasetsContainer.vue";
+import ProjectsHomeContainer from "../components/ProjectsHomeContainer.vue";
+import ProjectViewContainer from "../components/ProjectViewContainer.vue";
 import ViewDatasetContainer from "../components/ViewDatasetContainer.vue";
 
 Vue.use(VueRouter);
@@ -33,7 +35,7 @@ const routes = [
     component: ProjectContainer,
     props: true,
     children: [
-      { path: "datasets/new", component: NewDatasetContainer },
+      { path: "datasets/new", component: NewDatasetContainer, props: true },
       {
         path: "datasets/:id/edit",
         component: EditDatasetContainer,
@@ -47,7 +49,26 @@ const routes = [
         name: "dataset-view",
       },
       { path: "cases/new", component: NewCaseContainer },
-      { path: "", component: CasesContainer, name: "project" },
+      {
+        path: "",
+        component: ProjectViewContainer,
+        name: "project",
+        redirect: "cases",
+        children: [
+          {
+            path: "cases",
+            component: ProjectCasesContainer,
+            name: "project-cases",
+            props: true,
+          },
+          {
+            path: "datasets",
+            component: ProjectDatasetsContainer,
+            name: "project-datasets",
+            props: true,
+          },
+        ],
+      },
       {
         path: "cases/:id/copy",
         component: CopyCaseContainer,

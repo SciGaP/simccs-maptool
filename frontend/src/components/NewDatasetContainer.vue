@@ -3,6 +3,7 @@
     <dataset-editor
       :value="dataset"
       :server-validation-errors="serverValidationErrors"
+      :projectId="projectId"
       @submit="onSubmit"
     />
   </b-card>
@@ -46,7 +47,7 @@ export default {
         .then(() => {
           // TODO: add a success message
           this.$router.push({
-            name: "project",
+            name: "project-datasets",
             params: { projectId: this.projectId },
           });
         })
