@@ -469,6 +469,8 @@ class CaseSerializer(serializers.ModelSerializer):
     simccs_project = SimccsProjectPrimaryKeyRelatedField()
     userIsProjectOwner = serializers.SerializerMethodField()
     airavata_project = serializers.SerializerMethodField()
+    useable = serializers.SerializerMethodField(
+        help_text="Whether this case can be used to create scenarios")
 
     class Meta:
         model = models.Case
@@ -522,6 +524,17 @@ class CaseSerializer(serializers.ModelSerializer):
 
     def get_airavata_project(self, instance):
         return instance.simccs_project.airavata_project
+
+    def get_useable(self, instance):
+        """Returns True if case has at least one source and one sink dataset."""
+        has_source = False
+        has_sink = False
+        for datum in instance.maptool.data.all():
+            if datum.dataset.type == 'source':
+                has_source = True
+            elif datum.dataset.type == 'sink':
+                has_sink = True
+        return has_source and has_sink
 
     def validate(self, attrs):
         data = super().validate(attrs)

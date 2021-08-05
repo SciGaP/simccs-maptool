@@ -53,6 +53,7 @@
             @click="newWorkspace(row.item)"
             variant="primary"
             :title="`Create new workspace using the ${row.item.title} case`"
+            :disabled="!row.item.useable"
           >
             <i class="fa fa-map" aria-hidden="true"></i>
             New Workspace</b-button
@@ -63,10 +64,16 @@
           @click="newWorkspace(row.item)"
           variant="primary"
           :title="`Create new workspace using the ${row.item.title} case`"
+          :disabled="!row.item.useable"
         >
           <i class="fa fa-map" aria-hidden="true"></i>
           Create New Workspace</b-button
         >
+        <div v-if="!row.item.useable" class="small text-muted">
+          Note: you cannot create a workspace with
+          <strong>{{ row.item.title }}</strong> until it has at least one source
+          dataset and one sink dataset.
+        </div>
       </template>
     </b-table>
   </div>
@@ -158,6 +165,7 @@ export default {
             userHasWriteAccess: aCase.userHasWriteAccess,
             userIsProjectOwner: aCase.userIsProjectOwner,
             actions: null,
+            useable: aCase.useable,
             _showDetails: true,
           };
         });
