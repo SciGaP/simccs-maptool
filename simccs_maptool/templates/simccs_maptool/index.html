@@ -1818,6 +1818,7 @@
             map.addLayer(result_networkLayer);
             // turn on control 
             document.getElementById("experiment_layers_div").style.display="block";
+
             var temp_collection = [];
             temp_collection.push(result_sinkLayer);
             temp_collection.push(result_sourceLayer); 
@@ -3007,15 +3008,16 @@
                                     <div id="experiments_div" style="display:none">
                                                 <input type="checkbox" id="checkbox_experiment_01" name="experiment_01" value="Cplex_on_Jun_3,_2019_4:34_PM_fe944263-db65-4a3c-a9c4-30f28967c3f1" autocomplete="off" />
                                                 <span class="default-font"><strong>Cplex_on_Jun_3,_2019_4:34_PM_exp</strong></span>
-                                                <div id="experiment_layers_div" style="display:none" class="form-check form-check-inline">
-                                                      <input class="form-check-input" type="radio" id="result_sourceLayer" autocomplete="off" checked>
-                                                      <label style="font-size: 100%;" class="form-check-label" for="result_sourceLayer">Sources</label>
-                                                      <input class="form-check-input" type="radio" id="result_sinkLayer" autocomplete="off" checked>
-                                                      <label style="font-size: 100%;" class="form-check-label" for="result_sinkLayer">Sinks</label>
-                                                      <input class="form-check-input" type="radio" id="result_networkLayer" autocomplete="off" checked>
-                                                      <label style="font-size: 100%;" class="form-check-label" for="result_networkLayer">Network</label>
-                                                  </div>
                                     </div>
+                                    <div id="experiment_layers_div" style="display:none" class="form-check form-check-inline">
+                                          <input class="form-check-input" type="radio" id="result_sourceLayer" autocomplete="off" checked>
+                                          <label style="font-size: 100%;" class="form-check-label" for="result_sourceLayer">Sources</label>
+                                          <input class="form-check-input" type="radio" id="result_sinkLayer" autocomplete="off" checked>
+                                          <label style="font-size: 100%;" class="form-check-label" for="result_sinkLayer">Sinks</label>
+                                          <input class="form-check-input" type="radio" id="result_networkLayer" autocomplete="off" checked>
+                                          <label style="font-size: 100%;" class="form-check-label" for="result_networkLayer">Network</label>
+                                    </div>
+      
             
                         <br>
                         </div>
