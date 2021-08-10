@@ -1814,7 +1814,7 @@
                 else {lw=1;}
                 layer.setStyle({weight:Math.ceil(lw*1.5+1)});
             });
-            result_candidnetworkLayer = new L.geoJSON(data['CandidateNetwork'],{style:{color:"lightgrey",opacity:0.5,pane:"polygonsPane"}});
+            result_candidnetworkLayer = new L.geoJSON(data['CandidateNetwork'],{style:{color:"grey",weight:1,opacity:0.5,pane:"polygonsPane"}});
 
             map.addLayer(result_sinkLayer);
             map.addLayer(result_sourceLayer);
