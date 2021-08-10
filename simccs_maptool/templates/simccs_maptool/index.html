@@ -1768,7 +1768,7 @@
           //layercontrol.layers()._update;
          };
       
-      var result_sourceLayer,result_sinkLayer,result_networkLayer;
+      var result_sourceLayer,result_sinkLayer,result_networkLayer,result_candidnetworkLayer;
 
       function display_experiment_result(experiment_id){
             AiravataAPI.utils.FetchUtils.showSpinner($.getJSON( "/maptool/experiment-result/"+experiment_id, function( data ) {
@@ -1798,7 +1798,7 @@
                   }
             });
  
-            result_networkLayer = new L.geoJSON(data["Network"],{style:{color:"blue",opacity:0.5,weight:4,pane:"linesPane"},
+            result_networkLayer = new L.geoJSON(data["Network"],{style:{color:"blue",opacity:0.7,weight:4,pane:"linesPane"},
             onEachFeature: function (feature, layer) {layer.bindPopup("Flow: " + feature.properties.Flow +"<br/>Length (KM): "+feature.properties.LengKM);} 
             });
             // reset style
@@ -1812,11 +1812,14 @@
                 else if (fv > 7.5 && fv <= 10) {lw = 4;}
                 else if (fv > 10) {lw=5;}
                 else {lw=1;}
-                layer.setStyle({weight:Math.ceil(lw*1.5)});
+                layer.setStyle({weight:Math.ceil(lw*1.5+1)});
             });
+            result_candidnetworkLayer = new L.geoJSON(data['CandidateNetwork'],{style:{color:"lightgrey",opacity:0.5,pane:"polygonsPane"}});
+
             map.addLayer(result_sinkLayer);
             map.addLayer(result_sourceLayer);
             map.addLayer(result_networkLayer);
+            map.addLayer(result_candidnetworkLayer);
             // turn on control 
             document.getElementById("experiment_layers_div").style.display="block";
 
