@@ -1814,13 +1814,12 @@
                 else {lw=1;}
                 layer.setStyle({weight:Math.ceil(lw*1.5+1)});
             });
-            result_candidnetworkLayer = new L.geoJSON(data['CandidateNetWork'],{style:{color:"grey",weight:1,opacity:0.5,pane:"linesPane"}});
-            console.log(data['CandidateNetwork']);
-            console.log(result_candidnetworkLayer);
+            result_candidnetworkLayer = new L.geoJSON(data['CandidateNetWork']);
             map.addLayer(result_sinkLayer);
             map.addLayer(result_sourceLayer);
             map.addLayer(result_networkLayer);
             map.addLayer(result_candidnetworkLayer);
+            
             // turn on control 
             document.getElementById("experiment_layers_div").style.display="block";
 
