@@ -259,6 +259,7 @@
                              case "result_sourceLayer": map.removeLayer(result_sourceLayer); break;
                              case "result_sinkLayer": map.removeLayer(result_sinkLayer); break;
                              case "result_networkLayer": map.removeLayer(result_networkLayer); break;        
+                             case "result_candidnetworkLayer": map.removeLayer(result_candidnetworkLayer); break;        
                          }
          
                      } else {
@@ -362,6 +363,7 @@
                              case "result_sourceLayer": map.addLayer(result_sourceLayer); break;
                              case "result_sinkLayer": map.addLayer(result_sinkLayer); break;
                              case "result_networkLayer": map.addLayer(result_networkLayer); break;
+                             case "result_candidnetworkLayer": map.addLayer(result_candidnetworkLayer); break;
                              default:alert(radio_button_id + " layer is not found");
                          }
                      }
@@ -1814,7 +1816,7 @@
                 else {lw=1;}
                 layer.setStyle({weight:Math.ceil(lw*1.5+1)});
             });
-            result_candidnetworkLayer = new L.geoJSON(data["CandidateNetwork"],{style:{color:"grey",opacity:0.7,weight:1,pane:"polygonsPane"}});
+            result_candidnetworkLayer = new L.geoJSON(data["CandidateNetwork"],{style:{color:"darkgrey",opacity:0.7,weight:1,pane:"polygonsPane"}});
 
             map.addLayer(result_sinkLayer);
             map.addLayer(result_sourceLayer);
@@ -3021,6 +3023,8 @@
                                           <label style="font-size: 100%;" class="form-check-label" for="result_sinkLayer">Sinks</label><br/>
                                           <input class="form-check-input" type="radio" id="result_networkLayer" autocomplete="off" checked>
                                           <label style="font-size: 100%;" class="form-check-label" for="result_networkLayer">Network</label><br/>
+                                          <input class="form-check-input" type="radio" id="result_candidnetworkLayer" autocomplete="off" checked>
+                                          <label style="font-size: 100%;" class="form-check-label" for="result_candidnetworkLayer">Candidate Network</label>
                                     </div>
       
             
