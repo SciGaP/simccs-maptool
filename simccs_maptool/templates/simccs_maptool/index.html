@@ -256,7 +256,9 @@
                              case "user_sinks_saline": map.removeLayer(sinkLayer); break;
                              case "user_sinks_og": map.removeLayer(sinkLayer2); break;
                              case "user_cost": map.removeLayer(user_cost_surface); break;
-         
+                             case "result_sourceLayer": map.removeLayer(result_sourceLayer); break;
+                             case "result_sinkLayer": map.removeLayer(result_sinkLayer); break;
+                             case "result_networkLayer": map.removeLayer(result_networkLayer); break;        
                          }
          
                      } else {
@@ -357,6 +359,9 @@
                              case "user_sinks_saline": map.addLayer(sinkLayer);break;
                              case "user_sinks_og": map.addLayer(sinkLayer2);break;
                              case "user_cost": map.addLayer(user_cost_surface); break;
+                             case "result_sourceLayer": map.addLayer(result_sourceLayer); break;
+                             case "result_sinkLayer": map.addLayer(result_sinkLayer); break;
+                             case "result_networkLayer": map.addLayer(result_networkLayer); break;
                              default:alert(radio_button_id + " layer is not found");
                          }
                      }
@@ -1761,11 +1766,13 @@
             layercontrol.remove(map);
           //layercontrol.layers()._update;
          };
+      
+      var result_sourceLayer,result_sinkLayer,result_networkLayer;
 
       function display_experiment_result(experiment_id){
             AiravataAPI.utils.FetchUtils.showSpinner($.getJSON( "/maptool/experiment-result/"+experiment_id, function( data ) {
             //$.getJSON( "/static/Data/experiment01.json", function( data ) {
-                  var result_sinkLayer = new L.geoJSON(data["Sinks"], {
+            result_sinkLayer = new L.geoJSON(data["Sinks"], {
                   pointToLayer: function (feature, latlng) {
                   var mymarker = L.circleMarker(latlng,{radius: 9,fillColor: "green",
                           color: "#000",weight: 1,opacity: 1,fillOpacity: 0.8,pane: "pointsPane"});
@@ -1777,7 +1784,7 @@
                   return mymarker;       
                   }
             });
-            var result_sourceLayer = new L.geoJSON(data["Sources"], {
+            result_sourceLayer = new L.geoJSON(data["Sources"], {
                   pointToLayer: function (feature, latlng) {
                   var mymarker = L.circleMarker(latlng,{radius: 9,fillColor: "red",
                           color: "#000",weight: 1,opacity: 1,fillOpacity: 0.8,pane: "pointsPane"});
@@ -1790,7 +1797,7 @@
                   }
             });
  
-            var result_networkLayer = new L.geoJSON(data["Network"],{style:{color:"blue",opacity:0.5,weight:4,pane:"linesPane"},
+            result_networkLayer = new L.geoJSON(data["Network"],{style:{color:"blue",opacity:0.5,weight:4,pane:"linesPane"},
             onEachFeature: function (feature, layer) {layer.bindPopup("Flow: " + feature.properties.Flow +"<br/>Length (KM): "+feature.properties.LengKM);} 
             });
             // reset style
@@ -1809,6 +1816,8 @@
             map.addLayer(result_sinkLayer);
             map.addLayer(result_sourceLayer);
             map.addLayer(result_networkLayer);
+            // turn on control 
+            document.getElementById("experiment_layers_div").style.display="block";
             var temp_collection = [];
             temp_collection.push(result_sinkLayer);
             temp_collection.push(result_sourceLayer); 
@@ -2998,6 +3007,14 @@
                                     <div id="experiments_div" style="display:none">
                                                 <input type="checkbox" id="checkbox_experiment_01" name="experiment_01" value="Cplex_on_Jun_3,_2019_4:34_PM_fe944263-db65-4a3c-a9c4-30f28967c3f1" autocomplete="off" />
                                                 <span class="default-font"><strong>Cplex_on_Jun_3,_2019_4:34_PM_exp</strong></span>
+                                                <div id="experiment_layers_div" style="display:none" class="form-check form-check-inline">
+                                                      <input class="form-check-input" type="radio" id="result_sourceLayer" autocomplete="off" checked>
+                                                      <label style="font-size: 100%;" class="form-check-label" for="result_sourceLayer">Sources</label>
+                                                      <input class="form-check-input" type="radio" id="result_sinkLayer" autocomplete="off" checked>
+                                                      <label style="font-size: 100%;" class="form-check-label" for="result_sinkLayer">Sinks</label>
+                                                      <input class="form-check-input" type="radio" id="result_networkLayer" autocomplete="off" checked>
+                                                      <label style="font-size: 100%;" class="form-check-label" for="result_networkLayer">Network</label>
+                                                  </div>
                                     </div>
             
                         <br>
