@@ -998,13 +998,25 @@
                   });
                   return Promise.all([computeResourceId, groupResourceProfile, loadDeployments]);
             });
-            // Load user's workspace prefs to find the id of most recently used project; experiment must be added to a project
-            const loadWorkspacePrefs = services.WorkspacePreferencesService.get();
-            Promise.all([loadAppInterface,loadGroupResourceProfileAndQueue, loadWorkspacePrefs])
-            .then(([appInterface, [computeResourceId, groupResourceProfile, defaultQueue], workspacePrefs]) => {
+            // Get or create a project for this community case study's experiments
+            const loadProject = services.ProjectService.listAll().then(projects => {
+                  const project = projects.find(p => p.owner === AiravataAPI.session.Session.username && p.name === current_case.case);
+                  if (project) {
+                        return project;
+                  } else {
+                        return services.ProjectService.create({
+                              data: new AiravataAPI.models.Project({
+                                    name: current_case.case,
+                                    description: `This project was created to hold your ${current_case.case} community case study experiments.`
+                              })
+                        });
+                  }
+            });
+            Promise.all([loadAppInterface,loadGroupResourceProfileAndQueue, loadProject])
+            .then(([appInterface, [computeResourceId, groupResourceProfile, defaultQueue], project]) => {
                   const experiment = appInterface.createExperiment();
                   experiment.experimentName = "CPLEX on " + new Date().toLocaleString();
-                  experiment.projectId = workspacePrefs.most_recent_project_id;
+                  experiment.projectId = project.projectID;
                   // Copy groupResourceProfileId and queue defaults to experiment configuration
                   experiment.userConfigurationData.groupResourceProfileId = groupResourceProfile.groupResourceProfileId;
                   experiment.userConfigurationData.computationalResourceScheduling.resourceHostId = computeResourceId;
