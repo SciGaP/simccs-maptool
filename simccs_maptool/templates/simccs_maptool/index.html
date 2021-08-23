@@ -1783,13 +1783,13 @@
          };
       
       var result_sourceLayer,result_sinkLayer,result_networkLayer,result_candidnetworkLayer;
-
+      
       function display_experiment_result(experiment_id){
             AiravataAPI.utils.FetchUtils.showSpinner($.getJSON( "/maptool/experiment-result/"+experiment_id, function( data ) {
             //$.getJSON( "/static/Data/experiment01.json", function( data ) {
             result_sinkLayer = new L.geoJSON(data["Sinks"], {
                   pointToLayer: function (feature, latlng) {
-                  var mymarker = L.circleMarker(latlng,{radius: 9,fillColor: "green",
+                  var mymarker = L.circleMarker(latlng,{radius: 9,fillColor: "blue",
                           color: "#000",weight: 1,opacity: 1,fillOpacity: 0.8,pane: "pointsPane"});
                   var content_str = "";
                   content_str += "CO2 stored: " + feature.properties.CO2Strd + "<br/>";
@@ -1812,7 +1812,7 @@
                   }
             });
  
-            result_networkLayer = new L.geoJSON(data["Network"],{style:{color:"blue",opacity:0.7,weight:4,pane:"linesPane"},
+            result_networkLayer = new L.geoJSON(data["Network"],{style:{color:"green",opacity:0.7,weight:4,pane:"linesPane"},
             onEachFeature: function (feature, layer) {layer.bindPopup("Flow: " + feature.properties.Flow +"<br/>Length (KM): "+feature.properties.LengKM);} 
             });
             // reset style
@@ -3032,7 +3032,7 @@
                                           <input class="form-check-input" type="radio" id="result_sourceLayer" autocomplete="off" checked>
                                           <label style="font-size: 100%;" class="form-check-label" for="result_sourceLayer">Sources &nbsp;<span style="height:15px; width:15px; border:1px solid black;background-color:red;border-radius: 50%;display:inline-block;"></span></label><br/>
                                           <input class="form-check-input" type="radio" id="result_sinkLayer" autocomplete="off" checked>
-                                          <label style="font-size: 100%;" class="form-check-label" for="result_sinkLayer">Sinks &nbsp;<span style="height:15px; width:15px; border:1px solid black;background-color:green;border-radius: 50%;display:inline-block;"></span></label><br/>
+                                          <label style="font-size: 100%;" class="form-check-label" for="result_sinkLayer">Sinks &nbsp;<span style="height:15px; width:15px; border:1px solid black;background-color:blue;border-radius: 50%;display:inline-block;"></span></label><br/>
                                           <input class="form-check-input" type="radio" id="result_networkLayer" autocomplete="off" checked>
                                           <label style="font-size: 100%;" class="form-check-label" for="result_networkLayer">Network</label><br/>
                                           <input class="form-check-input" type="radio" id="result_candidnetworkLayer" autocomplete="off" checked>
