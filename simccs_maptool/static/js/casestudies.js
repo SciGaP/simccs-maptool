@@ -49,7 +49,7 @@ function display_case_study(casefolder, summaryjson){
                 var result_sinkLayer = new L.geoJSON(data, {
                     pointToLayer: function (feature, latlng) {
                         //var mypopup = L.popup().setContent(content_str);
-                        var mymarker = L.circleMarker(latlng,{radius: 8,fillColor: "green",
+                        var mymarker = L.circleMarker(latlng,{radius: 8,fillColor: "blue",
                             color: "#000",weight: 1,opacity: 1,fillOpacity: 1,pane:"pointsPane"});
                         //mymarker.bindPopup(mypopup);
                         return mymarker;       
@@ -60,7 +60,7 @@ function display_case_study(casefolder, summaryjson){
             });
                 //loading candidnetwork
                 $.getJSON(datafolder + candidnetwork_json,function (data) {
-                    var result_candidnetworkLayer = new L.geoJSON(data,{style:{color:"black",opacity:0.5,weight:2,pane:"linesPane"}});
+                    var result_candidnetworkLayer = new L.geoJSON(data,{style:{color:"black",opacity:0.8,weight:1,pane:"linesPane"}});
                     map.addLayer(result_candidnetworkLayer);
                     layercontrol.addOverlay(result_candidnetworkLayer,"Candidate");   
                     //alert(result_candidnetworkLayer._leaflet_id);            
@@ -70,7 +70,7 @@ function display_case_study(casefolder, summaryjson){
                 legend_data.push(['Candidate Network','grey']);
 
                 //loading solution network
-        var display_colors = ['Blue','Green','Red','Yellow'];
+        var display_colors = ['Green','#028a0f','#466d1d','#234f1e'];
         for (i = 0; i < data['results'].length; i++) {
             var result_network = data['results'][i]['network'];
             var result_case = data['results'][i]['case'];
@@ -88,7 +88,7 @@ function display_case_study(casefolder, summaryjson){
         var legend_div = document.getElementById("case_studies_legend");
         var legend_str = "<div><table>";
         legend_str += '<tr><td><span style="height:15px; width:15px; background-color:red;border-radius: 50%;display:inline-block;" /></td><td><strong>Sources</strong></td></tr>';
-        legend_str += '<tr><td><span style="height:15px; width:15px; background-color:green;border-radius: 50%;display:inline-block;" /></td><td><strong>Sinks</strong></td></tr>';
+        legend_str += '<tr><td><span style="height:15px; width:15px; background-color:blue;border-radius: 50%;display:inline-block;" /></td><td><strong>Sinks</strong></td></tr>';
         //legend_str +='<tr><td><hr style="border: 1px solid grey;width:20px" /></td><td>Candidate Network</td></tr>';
         // legend for lines        
         for (i=2; i<legend_data.length;i++) {
