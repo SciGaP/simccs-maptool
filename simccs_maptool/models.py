@@ -174,6 +174,20 @@ class ScenarioExperiment(models.Model):
     scenario = models.ForeignKey(Scenario,
                                  on_delete=models.CASCADE,
                                  related_name="experiments")
+    dataset_versions = models.ManyToManyField(
+        DatasetVersion, through="ScenarioExperimentDatasetVersion")
+
+
+class ScenarioExperimentDatasetVersion(models.Model):
+    experiment = models.ForeignKey(ScenarioExperiment,
+                                   on_delete=models.CASCADE,
+                                   related_name="+")
+    dataset_version = models.ForeignKey(DatasetVersion,
+                                        on_delete=models.CASCADE,
+                                        related_name="+")
+
+    class Meta:
+        unique_together = ['experiment', 'dataset_version']
 
 
 class ScenarioExperimentParameter(models.Model):
