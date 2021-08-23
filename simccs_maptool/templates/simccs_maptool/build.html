@@ -250,7 +250,7 @@ function toggle_table_visibility(tableid) {
           e.style.display = 'block';
     }
 
-function displayselecteddata(panelid) {
+function displayselecteddata(panelid, options = {}) {
 
       var div = document.createElement("div");
 
@@ -299,7 +299,7 @@ function displayselecteddata(panelid) {
       var tb_entry;
       for (const entry of mp_list) {
             //get the value
-            p_value = $('#'+entry).val();
+            p_value = entry in options ? options[entry] : $('#'+entry).val();
             entry_newid = entry + "_" + panelid;
             tb_entry = '<tr><td>'+entry+'</td><td><input id="'+entry_newid+ '" name="'+entry_newid+'" type="text" class="form-control" size=8 value='+  p_value +' required></td></tr>';
             //tb_entry = tb_entry.replace(new RegExp(entry, 'g'), entry +"_"+ panelid);
@@ -686,6 +686,9 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                         if (showmodal == 1) {
                               alert('Experiment was created successfully, please check "View Experiment Summary" for the progress.');
                         }
+            
+                        // Save workspace so we keep a link between this workspace and the newly created experiment
+                        save_workspace();
                  });
             });
       });
@@ -734,6 +737,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             } 
             wdict['name'] = workspaceName;
             wdict['description'] = document.getElementById('workspace_description').value;
+            var workspace_id = document.getElementById('workspace_id').value;
             // skip Editing History
             // wdict['Time'] = new Date().toLocaleString();
             
@@ -788,10 +792,8 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             wdict['case'] = case_id;
             wdict['scenarios'] = ScenariosList;
 
-            
-            return AiravataAPI.utils.FetchUtils.post("/maptool/api/workspaces/", wdict)
+            return AiravataAPI.utils.FetchUtils.put(`/maptool/api/workspaces/${workspace_id}/`, wdict)
                   .then(result => {
-                        // TODO: get the id of the workspace and use that when updating it
                         console.log("workspace save result", result);
                         return result;
                   });
@@ -846,7 +848,11 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                   }); 
             });
 
-            var panediv = displayselecteddata(panelid);
+            var panediv = displayselecteddata(panelid, {
+                  Capital_Recovery_Rate: scenario_data.parameters.Capital_Recovery_Rate,
+                  Project_Period: scenario_data.parameters.Project_Period,
+                  Capture_Target: scenario_data.parameters.Capture_Target,
+            });
             
             // record data
             sourceselection_panel[panelid] = sourceselection.concat();
@@ -873,14 +879,21 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                   li.appendChild(a);
                   list_view_experiment.appendChild(li);
             }
+            experiment_panel[panelid] = scenario_data['experiments'];
 
             sidebar.open('home');
+
+            scenario_title_panel[panelid] = title;
       }
 
       // load workspace id
       async function load_workspace(workspaceId) {
             var workspacejson;
             workspacejson = await getdata(`/maptool/api/workspaces/${workspaceId}/`);
+            document.getElementById('workspace_name').value = workspacejson["name"];
+            document.getElementById('workspace_description').value = workspacejson["description"];
+            // Grab the workspace id to use when updating the workspace
+            document.getElementById('workspace_id').value = workspacejson["id"];
             //console.log(workspacejson);
             case_id = workspacejson["case"];
             //console.log(case_id);
@@ -956,6 +969,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                 <br>
                 <input class="form-control" id="workspace_name" name="" placeholder="Workspace Name (optional)" type="text">
                 <input class="form-control" id="workspace_description" name="" placeholder="Description (optional)" type="text">
+                <input class="form-control" id="workspace_id" name="" type="hidden">
                 <button type="button" class="btn btn-primary btn-sm btn-block" onclick="save_workspace()"><strong>Save Current Workspace</strong></button>  
             </div>
         </div>
