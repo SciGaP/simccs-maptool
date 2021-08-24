@@ -472,7 +472,7 @@
          
          var geojsonMarkerOptions_green = {
          radius: 8,
-         fillColor: "green",
+         fillColor: "blue",
          color: "#000",
          weight: 1,
          opacity: 1,
@@ -694,7 +694,7 @@
          layer.on('click', function (e) {
            var target_id = selection_green.indexOf(e.target)
            if (target_id >=0 ) {e.target.setStyle(geojsonMarkerOptions_green);selection_green.splice(target_id,1);}
-           else {e.target.setStyle({weight:3,fillColor:"LawnGreen",radius:12});
+           else {e.target.setStyle({weight:3,fillColor:"#blue",radius:12});
                  selection_green.push(e.target);}
            document.dispatchEvent(new Event("sink-selection-change"));
          })};
@@ -2296,7 +2296,7 @@
             //clear selection array first
             selection_green = [];
             case_sinkLayer.eachLayer(function(layer) {
-                  layer.setStyle({weight:3,fillColor:"LawnGreen",radius:12});
+                  layer.setStyle({weight:3,fillColor:"#blue",radius:12});
                   selection_green.push(layer);
             });
             document.dispatchEvent(new Event("sink-selection-change"));
@@ -2538,7 +2538,7 @@
                   selection_green = [];
                   case_sinkLayer.eachLayer(function(layer) {
                         var contains = turf.inside(layer.toGeoJSON(), draw_layer.toGeoJSON());
-                        if (contains){layer.setStyle({weight:3,fillColor:"LawnGreen",radius:12});
+                        if (contains){layer.setStyle({weight:3,fillColor:"#blue",radius:12});
                         selection_green.push(layer);} else {layer.setStyle(geojsonMarkerOptions_green);};
                   });}
                   if (type == "saline") {
