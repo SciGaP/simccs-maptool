@@ -445,10 +445,9 @@ function generatecandidatenetwork(panelid) {
     return AiravataAPI.utils.FetchUtils.post("/maptool/candidate-network/", formData).then(function( data ) {
         // Note: 'data' includes Sinks and Sources but since those are
         // already displayed I'm opting to only display the Network
-        var candidateNetworkLayer = L.geoJSON(null, {style:{color:"blue",opacity:0.5,weight:4}});
+        var candidateNetworkLayer = L.geoJSON(null, {style:{color:"black",opacity:0.6,weight:3}});
         candidateNetworkLayer.clearLayers();
         candidateNetworkLayer.addData(data["Network"]);
-        candidateNetworkLayer.setStyle({'color':'black','weight': 3});
 
         if (!map.hasLayer(candidateNetworkLayer)) {
               candidateNetworkLayer.addTo(map);
