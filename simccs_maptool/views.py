@@ -184,7 +184,10 @@ def experiment_result(request, experiment_id):
     {
         "Network": GeoJSON,
         "Sinks":   GeoJSON,
-        "Sources": GeoJSON
+        "Sources": GeoJSON,
+        "CandidateNetwork": GeoJSON,
+        "CandidateSinks": GeoJSON,
+        "CandidateSources": GeoJSON
     }
     """
     try:
@@ -204,6 +207,14 @@ def experiment_result(request, experiment_id):
                                                  os.path.join("geojson",
                                                               "CandidateNetwork.geojson"),
                                                  experiment_id=experiment_id)
+            or not user_storage.user_file_exists(request,
+                                                 os.path.join("geojson",
+                                                              "CandidateSources.geojson"),
+                                                 experiment_id=experiment_id)
+            or not user_storage.user_file_exists(request,
+                                                 os.path.join("geojson",
+                                                              "CandidateSinks.geojson"),
+                                                 experiment_id=experiment_id)
         ):
             # Generate shape files and geojson files
             with experiment_scenario_dir(request, experiment) as scenario_dir:
@@ -219,8 +230,11 @@ def experiment_result(request, experiment_id):
                 if request.user.username == experiment.userName:
                     _copy_directory_to_experiment(
                         request, experiment, simccs_helper.get_shapefiles_dir(scenario_dir))
-                    _copy_candidate_network_shapefiles_to_experiment(
-                        request, experiment, simccs_helper.get_candidate_network_shapefiles_dir(scenario_dir))
+                    _copy_directory_to_experiment(
+                        request,
+                        experiment,
+                        simccs_helper.get_candidate_network_shapefiles_dir(scenario_dir),
+                        lambda filename: "Candidate" + filename)
                     _copy_directory_to_experiment(
                         request, experiment, os.path.join(results_dir, "geojson"))
 
@@ -235,13 +249,19 @@ def experiment_result(request, experiment_id):
                         os.path.join(results_dir, "geojson", "Sinks.geojson")
                     ) as sinks_geojson, open(
                         os.path.join(results_dir, "geojson", "CandidateNetwork.geojson")
-                    ) as candnet_geojson:
+                    ) as candnet_geojson, open(
+                        os.path.join(results_dir, "geojson", "CandidateSources.geojson")
+                    ) as candsources_geojson, open(
+                        os.path.join(results_dir, "geojson", "CandidateSinks.geojson")
+                    ) as candsinks_geojson:
                         return JsonResponse(
                             {
                                 "Network": json.load(network_geojson),
                                 "Sources": json.load(sources_geojson),
                                 "Sinks": json.load(sinks_geojson),
                                 "CandidateNetwork": json.load(candnet_geojson),
+                                "CandidateSources": json.load(candsources_geojson),
+                                "CandidateSinks": json.load(candsinks_geojson),
                             }
                         )
 
@@ -253,13 +273,19 @@ def experiment_result(request, experiment_id):
             request, experiment, os.path.join("geojson", "Sinks.geojson")
         ) as sinks_geojson, _open_experiment_filepath(
             request, experiment, os.path.join("geojson", "CandidateNetwork.geojson")
-        ) as candnet_geojson:
+        ) as candnet_geojson, _open_experiment_filepath(
+            request, experiment, os.path.join("geojson", "CandidateSources.geojson")
+        ) as candsources_geojson, _open_experiment_filepath(
+            request, experiment, os.path.join("geojson", "CandidateSinks.geojson")
+        ) as candsinks_geojson:
             return JsonResponse(
                 {
                     "Network": json.load(network_geojson),
                     "Sources": json.load(sources_geojson),
                     "Sinks": json.load(sinks_geojson),
                     "CandidateNetwork": json.load(candnet_geojson),
+                    "CandidateSources": json.load(candsources_geojson),
+                    "CandidateSinks": json.load(candsinks_geojson),
                 }
             )
     except Exception as e:
@@ -361,7 +387,11 @@ def experiment_scenario_dir(request, experiment):
         yield scenario_dir
 
 
-def _copy_directory_to_experiment(request, experiment, directory):
+def _copy_directory_to_experiment(request,
+                                  experiment,
+                                  directory,
+                                  filename_mapping=None):
+    filename_mapping = filename_mapping if filename_mapping is not None else lambda n: n
     experiment_id = experiment.experimentId
     dir_name = os.path.basename(directory)
     user_storage.create_user_dir(
@@ -371,30 +401,12 @@ def _copy_directory_to_experiment(request, experiment, directory):
         path = os.path.join(directory, listing)
         if os.path.isfile(path):
             with open(path, "rb") as f:
-                user_storage.save(request, dir_name, f, experiment_id=experiment_id)
-
-
-def _copy_candidate_network_shapefiles_to_experiment(
-        request, experiment, shapefiles_dir):
-
-    experiment_id = experiment.experimentId
-    with open(
-        os.path.join(shapefiles_dir, 'Network.dbf'), 'rb'
-    ) as dbf, open(
-        os.path.join(shapefiles_dir, 'Network.prj'), 'rb'
-    ) as prj, open(
-        os.path.join(shapefiles_dir, 'Network.shp'), 'rb'
-    ) as shp, open(
-        os.path.join(shapefiles_dir, 'Network.shx'), 'rb'
-    ) as shx:
-        user_storage.save(request, 'shapeFiles', dbf,
-                          name="CandidateNetwork.dbf", experiment_id=experiment_id)
-        user_storage.save(request, 'shapeFiles', prj,
-                          name="CandidateNetwork.prj", experiment_id=experiment_id)
-        user_storage.save(request, 'shapeFiles', shp,
-                          name="CandidateNetwork.shp", experiment_id=experiment_id)
-        user_storage.save(request, 'shapeFiles', shx,
-                          name="CandidateNetwork.shx", experiment_id=experiment_id)
+                filename = filename_mapping(listing)
+                user_storage.save(request,
+                                  dir_name,
+                                  f,
+                                  name=filename,
+                                  experiment_id=experiment_id)
 
 
 def _open_experiment_filepath(request, experiment, path):
@@ -453,10 +465,16 @@ def _create_geojson_for_candidate_network(scenario_dir):
     results_dir = simccs_helper.get_results_dir(scenario_dir)
     shapefiles_dir = simccs_helper.get_candidate_network_shapefiles_dir(scenario_dir)
     candidate_network_sf = shapefile.Reader(os.path.join(shapefiles_dir, "Network"))
+    candidate_sinks_sf = shapefile.Reader(os.path.join(shapefiles_dir, "Sinks"))
+    candidate_sources_sf = shapefile.Reader(os.path.join(shapefiles_dir, "Sources"))
     geojson_dir = os.path.join(results_dir, "geojson")
     os.makedirs(geojson_dir, exist_ok=True)
     with open(os.path.join(geojson_dir, "CandidateNetwork.geojson"), "w") as candnet_geojson_f:
         _write_shapefile_to_geojson(candidate_network_sf, candnet_geojson_f)
+    with open(os.path.join(geojson_dir, "CandidateSinks.geojson"), "w") as candsinks_geojson_f:
+        _write_shapefile_to_geojson(candidate_sinks_sf, candsinks_geojson_f)
+    with open(os.path.join(geojson_dir, "CandidateSources.geojson"), "w") as candsources_geojson_f:
+        _write_shapefile_to_geojson(candidate_sources_sf, candsources_geojson_f)
 
 
 def _write_shapefile_to_geojson(shapefile, geojson_f):
