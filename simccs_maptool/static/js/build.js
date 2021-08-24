@@ -448,6 +448,8 @@ function generatecandidatenetwork(panelid) {
         var candidateNetworkLayer = L.geoJSON(null, {style:{color:"blue",opacity:0.5,weight:4}});
         candidateNetworkLayer.clearLayers();
         candidateNetworkLayer.addData(data["Network"]);
+        candidateNetworkLayer.setStyle({'color':'black','weight': 3});
+
         if (!map.hasLayer(candidateNetworkLayer)) {
               candidateNetworkLayer.addTo(map);
         }
