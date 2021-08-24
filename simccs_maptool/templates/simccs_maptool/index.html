@@ -872,6 +872,23 @@
                   .text(message);
       }
 
+      function clear_invalid_feedback(elem) {
+            const invalidFeedbackEl = elem.parentElement.querySelector('.invalid-feedback');
+            if (invalidFeedbackEl) {
+                  invalidFeedbackEl.remove();
+            }
+            elem.classList.remove('is-invalid');
+      }
+
+      function add_invalid_feedback(elem, message) {
+
+            const invalidFeedbackEl = document.createElement('div');
+            invalidFeedbackEl.classList.add('invalid-feedback');
+            invalidFeedbackEl.textContent = message;
+            elem.parentNode.insertBefore(invalidFeedbackEl, elem.nextSibling);
+            elem.classList.add('is-invalid');
+      }
+
       function case_generatempsfile() {
             if (selection.length == 0 ) {alert('No sources are selected!');return}
             if (selection_green.length == 0 ) {alert('No sinks are selected!');return}
@@ -881,6 +898,25 @@
             var crf = $("#case_Capital_Recovery_Rate").val();
             var numYears = $("#case_Project_Period").val();
             var capacityTarget = $("#case_Capture_Target").val();
+
+            // Validation of model parameters
+            const validations = validate_model_parameters(selection, selection_green, numYears, capacityTarget, {fieldCapFieldName: "field_3"});
+            const captureTargetEl = document.getElementById('case_Capture_Target');
+            clear_invalid_feedback(captureTargetEl);
+            if (validations.captureTarget) {
+                  add_invalid_feedback(captureTargetEl, validations.captureTarget);
+            }
+
+            const projectPeriodEl = document.getElementById('case_Project_Period');
+            clear_invalid_feedback(projectPeriodEl);
+            if (validations.projectPeriod) {
+                  add_invalid_feedback(projectPeriodEl, validations.projectPeriod);
+            }
+            // If any failed validations, just return
+            if (Object.keys(validations).length) {
+                  return;
+            }
+
             var current_dataset_id = get_current_dataset_id();
             var formData = new FormData();
             formData.set('crf', crf ? crf : 0.1);
@@ -1708,6 +1744,36 @@
             var crf = $("#Capital_Recovery_Rate").val();
             var numYears = $("#Project_Period").val();
             var capacityTarget = $("#Capture_Target").val();
+
+            // Validation of model parameters
+
+            // Oil/gas sinks have different named property for fieldCap, so
+            // create an alias in a separate copy
+            const copy_ogsinks = sinkselection2.map(sink => {
+                  // clone the feature
+                  const r = {feature: JSON.parse(JSON.stringify(sink.feature))};
+                  // alias fieldCap_M to VOL_LOW
+                  r.feature.properties['fieldCap_M'] = r.feature.properties["VOL_LOW"];
+                  return r;
+            });
+            const allsinks = sinkselection.concat(copy_ogsinks);
+            const validations = validate_model_parameters(selection, allsinks, numYears, capacityTarget, {capMaxFieldName: "Capturable", fieldCapFieldName: "fieldCap_M"});
+            const captureTargetEl = document.getElementById('Capture_Target');
+            clear_invalid_feedback(captureTargetEl);
+            if (validations.captureTarget) {
+                  add_invalid_feedback(captureTargetEl, validations.captureTarget);
+            }
+
+            const projectPeriodEl = document.getElementById('Project_Period');
+            clear_invalid_feedback(projectPeriodEl);
+            if (validations.projectPeriod) {
+                  add_invalid_feedback(projectPeriodEl, validations.projectPeriod);
+            }
+            // If any failed validations, just return
+            if (Object.keys(validations).length) {
+                  return;
+            }
+
             var formData = new FormData();
             var current_dataset_id = "Lower48US";
             formData.set('crf', crf ? crf : 0.1);
@@ -2945,9 +3011,9 @@
                                     <hr/>
                                     <strong>Model Parameters</strong><br>
                                     <table>
-                                                <tr><td>Capital Recovery Rate</td><td><input id="Capital_Recovery_Rate" name="Capital_Recovery_Rate" type="text" size=8 value="0.1" required></td></tr>
-                                                <tr><td>Project Period (yrs)</td><td><input id="Project_Period" name="Project_Period" type="text" size=8 value="10" required></td></tr>
-                                                <tr><td>Capture Target (MT/y)</td><td><input id="Capture_Target" name="Capture_Target" type="text" size=8 value="5" required></td></tr>
+                                                <tr><td>Capital Recovery Rate</td><td><input id="Capital_Recovery_Rate" name="Capital_Recovery_Rate" class="form-control" type="text" size=8 value="0.1" required></td></tr>
+                                                <tr><td>Project Period (yrs)</td><td><input id="Project_Period" name="Project_Period" class="form-control" type="text" size=8 value="10" required></td></tr>
+                                                <tr><td>Capture Target (MT/y)</td><td><input id="Capture_Target" name="Capture_Target" class="form-control" type="text" size=8 value="5" required></td></tr>
                                     </table><br>
                                     <button type="button" id="bn_generatemps" class="btn btn-primary btn-sm btn-block" onclick="generatempsfile()" disabled>Generate MPS file</button>
                               </div>
@@ -3103,9 +3169,9 @@
                               <hr/>
                               <strong>Model Parameters</strong><br>
                               <table>
-                                          <tr><td>Capital Recovery Rate</td><td><input id="case_Capital_Recovery_Rate" name="case_Capital_Recovery_Rate" type="text" size=8 value=0.1 required></td></tr>
-                                          <tr><td>Project Period (yrs)</td><td><input id="case_Project_Period" name="case_Project_Period" type="text" size=8 value=10 required></td></tr>
-                                          <tr><td>Capture Target (MT/y)</td><td><input id="case_Capture_Target" name="caase_Capture_Target" type="text" size=8 value=5 required></td></tr>
+                                          <tr><td>Capital Recovery Rate</td><td><input id="case_Capital_Recovery_Rate" name="case_Capital_Recovery_Rate" class="form-control" type="text" size=8 value=0.1 required></td></tr>
+                                          <tr><td>Project Period (yrs)</td><td><input id="case_Project_Period" name="case_Project_Period" class="form-control" type="text" size=8 value=10 required></td></tr>
+                                          <tr><td>Capture Target (MT/y)</td><td><input id="case_Capture_Target" name="caase_Capture_Target" class="form-control" type="text" size=8 value=5 required></td></tr>
                               </table><br>
                               <button type="button" id="bn_case_generatemps" class="btn btn-primary btn-sm btn-block" onclick="case_generatempsfile()" disabled>Generate MPS file</button>
                               <a href="" id="case_download_mps" style="display: none;">Download MPS</a>

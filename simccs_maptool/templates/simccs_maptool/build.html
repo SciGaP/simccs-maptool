@@ -352,54 +352,23 @@ function create_scenario() {
 
 }
 
-function get_max_capture_target(source_selection) {
-      let capTotal = 0;
-      for (const source of source_selection) {
-            const capMax = source.feature.properties["capMax (MtCO2/y)"];
-            capTotal += capMax;
-      }
-      return capTotal;
-}
-
-function get_total_field_cap(sink_selection) {
-      let fieldCapTotal = 0;
-      for (const sink of sink_selection) {
-            const fieldCap = sink.feature.properties["fieldCap (MtCO2)"];
-            fieldCapTotal += fieldCap;
-      }
-      return fieldCapTotal;
-}
-
-function get_max_project_period(sink_selection, captureTarget) {
-
-      const fieldCapTotal = get_total_field_cap(sink_selection);
-      return fieldCapTotal / captureTarget;
-}
-
-function validate_model_parameters(panelid, numYears, captureTarget) {
+function validate_scenario_model_parameters(panelid, numYears, captureTarget) {
       let valid = true;
       const source_selection = get_source_selection(panelid);
       const sink_selection = get_sink_selection(panelid);
-      const max_capture_target = get_max_capture_target(source_selection);
-      const max_project_period = get_max_project_period(sink_selection, captureTarget);
+      const validations = validate_model_parameters(source_selection, sink_selection, numYears, captureTarget);
 
       const captureTargetEl = document.getElementById('Capture_Target_' + panelid);
       clear_invalid_feedback(captureTargetEl);
-      if (captureTarget > max_capture_target) {
-            add_invalid_feedback(captureTargetEl, 
-                  `Annual capture target exceeds total capMax of sources
-                  (${max_capture_target.toFixed(2)})`);
+      if (validations.captureTarget) {
+            add_invalid_feedback(captureTargetEl, validations.captureTarget);
             valid = false;
       }
 
       const projectPeriodEl = document.getElementById('Project_Period_' + panelid);
       clear_invalid_feedback(projectPeriodEl);
-      if (numYears > max_project_period) {
-            const fieldCapTotal = get_total_field_cap(sink_selection);
-            add_invalid_feedback(projectPeriodEl, 
-                  `Total project storage exceeds available storage
-                  (${fieldCapTotal.toFixed(2)}) of the sinks using current
-                  project period and annual capture target`);
+      if (validations.projectPeriod) {
+            add_invalid_feedback(projectPeriodEl, validations.projectPeriod);
             valid = false;
       }
       return valid;
@@ -540,7 +509,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
       if (batchmode == 0) {
             var numYears = $("#Project_Period_" + panelid).val();
             var capacityTarget = $("#Capture_Target_" + panelid).val();
-            if (!validate_model_parameters(panelid, numYears, capacityTarget)) {
+            if (!validate_scenario_model_parameters(panelid, numYears, capacityTarget)) {
                   return;
             }
             mpsRequest = generatempsfile(panelid,showmodal=0,[],filename).then((result) => {cplexInputValues = result});
@@ -548,7 +517,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
       // force regenerate mps for batch mode
       if (batchmode == 1) {
             const [crf, numYears, capacityTarget] = paras;
-            if (!validate_model_parameters(panelid, numYears, capacityTarget)) {
+            if (!validate_scenario_model_parameters(panelid, numYears, capacityTarget)) {
                   return;
             }
             mpsRequest = generatempsfile(panelid,showmodal=0,paras,filename).then((result) => {cplexInputValues = result});
@@ -710,7 +679,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             }
 
             const maxCapacity = Math.max(...capacityArr);
-            if (!validate_model_parameters(panelid, numYears, maxCapacity)) {
+            if (!validate_scenario_model_parameters(panelid, numYears, maxCapacity)) {
                   return;
             }
 
