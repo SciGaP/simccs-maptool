@@ -99,7 +99,7 @@ class SimccsProjectSerializer(serializers.ModelSerializer):
         airavata_project_id = self._create_airavata_project(validated_data)
         simccs_project.airavata_project = airavata_project_id
         simccs_project.save()
-        if validated_data["group"]:
+        if validated_data.get("group", None) is not None:
             # share project with group
             request.airavata_client.shareResourceWithGroups(
                 request.authz_token, airavata_project_id,
