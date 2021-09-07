@@ -1907,7 +1907,7 @@
                         return mymarker;
                   }
             });
-            var r_candidateSinks = new L.geojson(data['CandidateSinks'],{
+            var r_candidateSinks = new L.geoJSON(data['CandidateSinks'],{
                   pointToLayer: function (feature,latlng) {
                         var mymarker = L.circleMarker(latlng,{radius: 6,fillColor: "blue",
                           color: "grey",weight: 1,opacity: 1,fillOpacity: 0.5,pane: "polygonsPane"});
