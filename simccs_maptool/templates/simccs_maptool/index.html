@@ -1699,7 +1699,7 @@
                   // already displayed I'm opting to only display the Network
                   candidateNetworkLayer.clearLayers();
                   candidateNetworkLayer.addData(data["Network"]);
-                  candidateNetworkLayer.setStyle({'color':'black','weight': 3});
+                  candidateNetworkLayer.setStyle({'color':'black','weight': 3,'pane':'linesPane'});
 
                   if (!map.hasLayer(candidateNetworkLayer)) {
                         candidateNetworkLayer.addTo(map);
