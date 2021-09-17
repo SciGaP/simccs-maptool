@@ -745,14 +745,10 @@ map = L.map('map',{cursor:true}).setView([32.00,-85.43], 6);
     });
 
 L.Control.SolutionSummary = L.Control.extend({
-    experiments: [],
-    summaries: [],
+    summaries: new Map(),
     el: null,
 
     onAdd(map) {
-        // const h1 = L.DomUtil.create('h1');
-        // h1.textContent = "Hello";
-        // return h1;
         const card = this.el = document.createElement('div');
         card.classList.add("card");
         const cardHeader = document.createElement('div');
@@ -769,9 +765,13 @@ L.Control.SolutionSummary = L.Control.extend({
         // Nothing to do here
     },
 
-    addSolutionSummary(experiment, solutionSummary) {
-        this.experiments.push(experiment);
-        this.summaries.push(solutionSummary);
+    addSolutionSummary(solutionLabel, solutionSummary) {
+        this.summaries.set(solutionLabel, solutionSummary);
+        this.render();
+    },
+
+    removeSolutionSummary(solutionLabel) {
+        this.summaries.delete(solutionLabel);
         this.render();
     },
 
@@ -781,74 +781,74 @@ L.Control.SolutionSummary = L.Control.extend({
     },
 
     generateTable(container) {
-        const [experiment] = this.experiments;
-        const [summary] = this.summaries;
+        const labels = [...this.summaries.keys()];
+        const summaries = [...this.summaries.values()];
         container.innerHTML = `
             <table class="table table-sm">
                 <tbody>
                 <tr class="table-secondary">
                         <th scope="row">Experiment</th>
-                        <td>#1</td>
+                        ${labels.map(k => `<td>${k}</td>`).join("")}
                 </tr>
                 <tr>
                         <th scope="row">Sources</th>
-                        <td>${summary.numOpenedSources}</td>
+                        ${summaries.map(s => s.numOpenedSources).map(v => `<td>${v}</td>`).join("")}
                 </tr>
                 <tr>
                         <th scope="row">Sinks</th>
-                        <td>${summary.numOpenedSinks}</td>
+                        ${summaries.map(s => s.numOpenedSinks).map(v => `<td>${v}</td>`).join("")}
                 </tr>
                 <tr>
                         <th scope="row">CO<sub>2</sub> Stored</th>
-                        <td>${summary.targetCaptureAmount.toFixed(2)}</td>
+                        ${summaries.map(s => s.targetCaptureAmount.toFixed(2)).map(v => `<td>${v}</td>`).join("")}
                 </tr>
                 <tr>
                         <th scope="row">Edges</th>
-                        <td>${summary.numEdgesOpened}</td>
+                        ${summaries.map(s => s.numEdgesOpened).map(v => `<td>${v}</td>`).join("")}
                 </tr>
                 <tr>
                         <th scope="row">Project Length</th>
-                        <td>${summary.projectLength}</td>
+                        ${summaries.map(s => s.projectLength).map(v => `<td>${v}</td>`).join("")}
                 </tr>
                 <tr class="table-secondary">
                         <th scope="row">Total Cost ($m/yr)</th>
-                        <td></td>
+                        ${labels.map(k => `<td></td>`).join("")}
                 </tr>
                 <tr>
                         <th scope="row">Capture</th>
-                        <td>${summary.totalCaptureCost.toFixed(2)}</td>
+                        ${summaries.map(s => s.totalCaptureCost.toFixed(2)).map(v => `<td>${v}</td>`).join("")}
                 </tr>
                 <tr>
                         <th scope="row">Transport</th>
-                        <td>${summary.totalTransportCost.toFixed(2)}</td>
+                        ${summaries.map(s => s.totalTransportCost.toFixed(2)).map(v => `<td>${v}</td>`).join("")}
                 </tr>
                 <tr>
                         <th scope="row">Storage</th>
-                        <td>${summary.totalStorageCost.toFixed(2)}</td>
+                        ${summaries.map(s => s.totalStorageCost.toFixed(2)).map(v => `<td>${v}</td>`).join("")}
                 </tr>
                 <tr>
                         <th scope="row">Total</th>
-                        <td>${summary.totalCost.toFixed(2)}</td>
+                        ${summaries.map(s => s.totalCost.toFixed(2)).map(v => `<td>${v}</td>`).join("")}
                 </tr>
                 <tr class="table-secondary">
                         <th scope="row">Unit Cost ($/tCO<sub>2</sub>)</th>
-                        <td></td>
+                        ${labels.map(k => `<td></td>`).join("")}
                 </tr>
                 <tr>
                         <th scope="row">Capture</th>
-                        <td>${summary.unitCaptureCost.toFixed(2)}</td>
+                        ${summaries.map(s => s.unitCaptureCost.toFixed(2)).map(v => `<td>${v}</td>`).join("")}
                 </tr>
                 <tr>
                         <th scope="row">Transport</th>
-                        <td>${summary.unitTransportCost.toFixed(2)}</td>
+                        ${summaries.map(s => s.unitTransportCost.toFixed(2)).map(v => `<td>${v}</td>`).join("")}
                 </tr>
                 <tr>
                         <th scope="row">Storage</th>
-                        <td>${summary.unitStorageCost.toFixed(2)}</td>
+                        ${summaries.map(s => s.unitStorageCost.toFixed(2)).map(v => `<td>${v}</td>`).join("")}
                 </tr>
                 <tr>
                         <th scope="row">Total</th>
-                        <td>${summary.unitTotalCost.toFixed(2)}</td>
+                        ${summaries.map(s => s.unitTotalCost.toFixed(2)).map(v => `<td>${v}</td>`).join("")}
                 </tr>
                 </tbody>
             </table>

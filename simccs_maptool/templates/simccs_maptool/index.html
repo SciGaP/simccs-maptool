@@ -2015,7 +2015,7 @@
             AiravataAPI.utils.FetchUtils.showSpinner($.getJSON( "/maptool/solution-summary/"+experiment_id, function( data ) {
                   display_solution_summary(data);
                   // TODO: pass the full Experiment object so summary can be identified
-                  solutionSummaryControl.addSolutionSummary({experimentId: experiment_id}, data);
+                  solutionSummaryControl.addSolutionSummary("#1", data);
             })).catch(display_error_modal);
       };
 
