@@ -743,16 +743,120 @@ map = L.map('map',{cursor:true}).setView([32.00,-85.43], 6);
             transparent: true,
             zIndex: 3
     });
-        
 
+L.Control.SolutionSummary = L.Control.extend({
+    experiments: [],
+    summaries: [],
+    el: null,
 
+    onAdd(map) {
+        // const h1 = L.DomUtil.create('h1');
+        // h1.textContent = "Hello";
+        // return h1;
+        const card = this.el = document.createElement('div');
+        card.classList.add("card");
+        const cardHeader = document.createElement('div');
+        cardHeader.classList.add('card-header');
+        cardHeader.textContent = "Solution Summary";
+        card.appendChild(cardHeader);
+        const cardBody = document.createElement('div');
+        cardBody.classList.add("card-body");
+        card.appendChild(cardBody);
+        return card;
+    },
 
+    onRemove(map) {
+        // Nothing to do here
+    },
 
+    addSolutionSummary(experiment, solutionSummary) {
+        this.experiments.push(experiment);
+        this.summaries.push(solutionSummary);
+        this.render();
+    },
 
+    render() {
+        const cardBody = this.el.querySelector('.card-body');
+        this.generateTable(cardBody);
+    },
 
+    generateTable(container) {
+        const [experiment] = this.experiments;
+        const [summary] = this.summaries;
+        container.innerHTML = `
+            <table class="table table-sm">
+                <tbody>
+                <tr class="table-secondary">
+                        <th scope="row">Experiment</th>
+                        <td>#1</td>
+                </tr>
+                <tr>
+                        <th scope="row">Sources</th>
+                        <td>${summary.numOpenedSources}</td>
+                </tr>
+                <tr>
+                        <th scope="row">Sinks</th>
+                        <td>${summary.numOpenedSinks}</td>
+                </tr>
+                <tr>
+                        <th scope="row">CO<sub>2</sub> Stored</th>
+                        <td>${summary.targetCaptureAmount.toFixed(2)}</td>
+                </tr>
+                <tr>
+                        <th scope="row">Edges</th>
+                        <td>${summary.numEdgesOpened}</td>
+                </tr>
+                <tr>
+                        <th scope="row">Project Length</th>
+                        <td>${summary.projectLength}</td>
+                </tr>
+                <tr class="table-secondary">
+                        <th scope="row">Total Cost ($m/yr)</th>
+                        <td></td>
+                </tr>
+                <tr>
+                        <th scope="row">Capture</th>
+                        <td>${summary.totalCaptureCost.toFixed(2)}</td>
+                </tr>
+                <tr>
+                        <th scope="row">Transport</th>
+                        <td>${summary.totalTransportCost.toFixed(2)}</td>
+                </tr>
+                <tr>
+                        <th scope="row">Storage</th>
+                        <td>${summary.totalStorageCost.toFixed(2)}</td>
+                </tr>
+                <tr>
+                        <th scope="row">Total</th>
+                        <td>${summary.totalCost.toFixed(2)}</td>
+                </tr>
+                <tr class="table-secondary">
+                        <th scope="row">Unit Cost ($/tCO<sub>2</sub>)</th>
+                        <td></td>
+                </tr>
+                <tr>
+                        <th scope="row">Capture</th>
+                        <td>${summary.unitCaptureCost.toFixed(2)}</td>
+                </tr>
+                <tr>
+                        <th scope="row">Transport</th>
+                        <td>${summary.unitTransportCost.toFixed(2)}</td>
+                </tr>
+                <tr>
+                        <th scope="row">Storage</th>
+                        <td>${summary.unitStorageCost.toFixed(2)}</td>
+                </tr>
+                <tr>
+                        <th scope="row">Total</th>
+                        <td>${summary.unitTotalCost.toFixed(2)}</td>
+                </tr>
+                </tbody>
+            </table>
+        `;
+    }
 
+});
 
-
-
-
-
+L.control.solutionSummary = function(opts) {
+    return new L.Control.SolutionSummary(opts);
+}

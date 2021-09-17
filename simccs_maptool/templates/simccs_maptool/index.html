@@ -564,6 +564,8 @@
          onEachFeature: sinkOnEachFeature2
          })
 
+         var solutionSummaryControl = null;
+
          document.addEventListener("source-selection-change", updateGenerateCandidateNetworkButton);
          document.addEventListener("sink-selection-change", updateGenerateCandidateNetworkButton);
          document.addEventListener("candidate-network-loaded", updateGenerateCandidateNetworkButton);
@@ -1862,7 +1864,7 @@
           //layercontrol.layers()._update;
          };
       
-      var result_sourceLayer,result_sinkLayer,result_networkLayer,result_candidnetworkLayer;
+      var result_sourceLayer,result_sinkLayer,result_networkLayer,result_candidnetworkLayer, result_solutionLayer;
       
       function csvToArray(str, delimiter = "\t") {
             // slice from start of text to the first \n index
@@ -1974,6 +1976,8 @@
                 else {lw=1;}
                 layer.setStyle({weight:Math.ceil(lw*1.5+1)});
             });
+
+            result_solutionLayer = new L.featureGroup([result_sinkLayer, result_sourceLayer, result_networkLayer]);
             
             var r_candidateNetwork = new L.geoJSON(data["CandidateNetwork"],{style:{color:"black",opacity:0.7,weight:1,pane:"polygonsPane"}});
             var r_candidateSources = new L.geoJSON(data['CandidateSources'],{
@@ -1992,23 +1996,26 @@
             });
             result_candidnetworkLayer = new L.featureGroup([r_candidateNetwork,r_candidateSinks,r_candidateSources]);
 
-            map.addLayer(result_sinkLayer);
-            map.addLayer(result_sourceLayer);
-            map.addLayer(result_networkLayer);
+            map.addLayer(result_solutionLayer);
             map.addLayer(result_candidnetworkLayer);
+            layercontrol.addTo(map);
+            layercontrol.addOverlay(result_solutionLayer, "Solution");
+            layercontrol.addOverlay(result_candidnetworkLayer, "Candidate");
 
             // turn on control 
             document.getElementById("experiment_layers_div").style.display="block";
 
-            var temp_collection = [];
-            temp_collection.push(result_sinkLayer);
-            temp_collection.push(result_sourceLayer); 
-            var vectorGroup = L.featureGroup(temp_collection);    
-            map.fitBounds(vectorGroup.getBounds());
+            map.fitBounds(result_candidnetworkLayer.getBounds());
             })).catch(display_error_modal);
 
+            if (solutionSummaryControl === null) {
+                  solutionSummaryControl = L.control.solutionSummary({position: "topleft"});
+                  solutionSummaryControl.addTo(map);
+            }
             AiravataAPI.utils.FetchUtils.showSpinner($.getJSON( "/maptool/solution-summary/"+experiment_id, function( data ) {
                   display_solution_summary(data);
+                  // TODO: pass the full Experiment object so summary can be identified
+                  solutionSummaryControl.addSolutionSummary({experimentId: experiment_id}, data);
             })).catch(display_error_modal);
       };
 
