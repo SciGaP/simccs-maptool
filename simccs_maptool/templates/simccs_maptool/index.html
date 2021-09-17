@@ -407,22 +407,10 @@
         // continue document ready funtion
         $('#experiments_div').on('change', 'input', function() {
             if(this.checked) {
-				//$('#southeastUS_div').show();
-                        // clear map, remove all layers
-                        map.eachLayer(function (layer) {
-                              //keep the basemap layer
-                              if (layer != osm) {map.removeLayer(layer);};
-                              });
-                        // load sample layers
                         display_experiment_result(this.value);
                   }
                   else {
-                        //$('#southeastUS_div').hide();
-                        map.eachLayer(function (layer) {
-                              //keep the basemap layer
-                              if (layer != osm) {layercontrol.removeLayer(layer);map.removeLayer(layer);};
-                              });  
-                        document.getElementById("experiment_layers_div").style.display="none";
+                        remove_experiment_result(this.value);
                   }
             });
  
@@ -1864,7 +1852,10 @@
           //layercontrol.layers()._update;
          };
       
-      var result_sourceLayer,result_sinkLayer,result_networkLayer,result_candidnetworkLayer, result_solutionLayer;
+      // references to all of the experiments solution and candidate network layers, keyed by experiment id
+      var result_solutionLayers = new Map();
+      var result_candidnetworkLayers = new Map();
+      var experiment_labels = new Map();
       
       function csvToArray(str, delimiter = "\t") {
             // slice from start of text to the first \n index
@@ -1925,9 +1916,11 @@
             const sinks_arr = csvToArray(sinksText);
             //console.log(sinks_arr);
 
+            experiment_labels.set(experiment_id, '#' + (experiment_labels.size + 1));
+            const experiment_label = experiment_labels.get(experiment_id);
             AiravataAPI.utils.FetchUtils.showSpinner($.getJSON( "/maptool/experiment-result/"+experiment_id, function( data ) {
             //$.getJSON( "/static/Data/experiment01.json", function( data ) {
-            result_sinkLayer = new L.geoJSON(data["Sinks"], {
+            var result_sinkLayer = new L.geoJSON(data["Sinks"], {
                   pointToLayer: function (feature, latlng) {
                   var mymarker = L.circleMarker(latlng,{radius: 9,fillColor: "blue",
                           color: "#000",weight: 1,opacity: 1,fillOpacity: 0.8,pane: "pointsPane"});
@@ -1943,7 +1936,7 @@
                   return mymarker;       
                   }
             });
-            result_sourceLayer = new L.geoJSON(data["Sources"], {
+            var result_sourceLayer = new L.geoJSON(data["Sources"], {
                   pointToLayer: function (feature, latlng) {
                   var mymarker = L.circleMarker(latlng,{radius: 9,fillColor: "red",
                           color: "#000",weight: 1,opacity: 1,fillOpacity: 0.8,pane: "pointsPane"});
@@ -1960,7 +1953,7 @@
                   }
             });
  
-            result_networkLayer = new L.geoJSON(data["Network"],{style:{color:"green",opacity:0.7,weight:4,pane:"linesPane"},
+            var result_networkLayer = new L.geoJSON(data["Network"],{style:{color:"green",opacity:0.7,weight:4,pane:"linesPane"},
             onEachFeature: function (feature, layer) {layer.bindPopup("Flow: " + feature.properties.Flow +"<br/>Length (KM): "+feature.properties.LengKM);} 
             });
             // reset style
@@ -1977,7 +1970,7 @@
                 layer.setStyle({weight:Math.ceil(lw*1.5+1)});
             });
 
-            result_solutionLayer = new L.featureGroup([result_sinkLayer, result_sourceLayer, result_networkLayer]);
+            var result_solutionLayer = new L.featureGroup([result_sinkLayer, result_sourceLayer, result_networkLayer]);
             
             var r_candidateNetwork = new L.geoJSON(data["CandidateNetwork"],{style:{color:"black",opacity:0.7,weight:1,pane:"polygonsPane"}});
             var r_candidateSources = new L.geoJSON(data['CandidateSources'],{
@@ -1994,16 +1987,16 @@
                         return mymarker;
                   }                        
             });
-            result_candidnetworkLayer = new L.featureGroup([r_candidateNetwork,r_candidateSinks,r_candidateSources]);
+            var result_candidnetworkLayer = new L.featureGroup([r_candidateNetwork,r_candidateSinks,r_candidateSources]);
 
             map.addLayer(result_solutionLayer);
             map.addLayer(result_candidnetworkLayer);
             layercontrol.addTo(map);
-            layercontrol.addOverlay(result_solutionLayer, "Solution");
-            layercontrol.addOverlay(result_candidnetworkLayer, "Candidate");
+            layercontrol.addOverlay(result_solutionLayer, `${experiment_label} Solution`);
+            layercontrol.addOverlay(result_candidnetworkLayer, `${experiment_label} Candidate`);
 
-            // turn on control 
-            document.getElementById("experiment_layers_div").style.display="block";
+            result_solutionLayers.set(experiment_id, result_solutionLayer);
+            result_candidnetworkLayers.set(experiment_id, result_candidnetworkLayer);
 
             map.fitBounds(result_candidnetworkLayer.getBounds());
             })).catch(display_error_modal);
@@ -2013,15 +2006,34 @@
                   solutionSummaryControl.addTo(map);
             }
             AiravataAPI.utils.FetchUtils.showSpinner($.getJSON( "/maptool/solution-summary/"+experiment_id, function( data ) {
-                  display_solution_summary(data);
-                  // TODO: pass the full Experiment object so summary can be identified
-                  solutionSummaryControl.addSolutionSummary("#1", data);
+                  solutionSummaryControl.addSolutionSummary(experiment_label, data);
             })).catch(display_error_modal);
       };
 
+      function remove_experiment_result(experiment_id) {
+
+            const result_solutionLayer = result_solutionLayers.get(experiment_id);
+            if (result_solutionLayer) {
+                  layercontrol.removeLayer(result_solutionLayer);
+                  map.removeLayer(result_solutionLayer);
+                  result_solutionLayers.delete(experiment_id);
+            }
+            const result_candidnetworkLayer = result_candidnetworkLayers.get(experiment_id);
+            if (result_candidnetworkLayer) {
+                  layercontrol.removeLayer(result_candidnetworkLayer);
+                  map.removeLayer(result_candidnetworkLayer);
+                  result_candidnetworkLayers.delete(experiment_id);
+            }
+            const experiment_label = experiment_labels.get(experiment_id);
+            if (experiment_label) {
+                  solutionSummaryControl.removeSolutionSummary(experiment_label);
+                  experiment_labels.delete(experiment_id);
+            }
+      }
+
       // Load results from experiment as given in "?experiment_id=..." query
       // parameter if it exists and the user is authenticated
-      function load_current_experiment() {
+      async function load_current_experiment() {
           const urlParams = new URLSearchParams(window.location.search);
           const experimentId = urlParams.get('experiment_id');
           if (experimentId && userIsAuthenticated) {
@@ -2029,9 +2041,16 @@
             document.getElementById("start-over").style.display="block";
             document.getElementById("casestudies_menu").style.display="none";
             display_experiment_result(experimentId);
-            AiravataAPI.services.ExperimentService.retrieve({lookup: experimentId}).then(experiment => {
-                  render_experiment_list([experiment], [experimentId]);
+
+            const appInterface = await AiravataAPI.services.ApplicationModuleService.getApplicationInterface({
+                  lookup: "{{ cplex_application_id }}",
             });
+            const {results} = await AiravataAPI.services.ExperimentSearchService.list({
+                  limit: 5, 
+                  [AiravataAPI.models.ExperimentSearchFields.USER_NAME.name]: AiravataAPI.session.Session.username,
+                  [AiravataAPI.models.ExperimentSearchFields.APPLICATION_ID.name]: appInterface.applicationInterfaceId,
+            });
+            render_experiment_list(results, [experimentId]);
           }
       }
 
@@ -2054,7 +2073,7 @@
 
               var $label = $('<label class="form-check-label"></label>');
               $label.attr('for', experiment.experimentId);
-              $label.text(experiment.experimentName);
+              $label.text(experiment.name);
               $form_check.append($label);
             })
       }
