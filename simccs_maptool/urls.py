@@ -13,8 +13,9 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.conf.urls import include, url
+from django.conf.urls import include
 from django.contrib.auth.decorators import login_required
+from django.urls import re_path
 from rest_framework import routers
 
 from . import geoserver, views
@@ -26,19 +27,19 @@ router.register(r"projects", views.SimccsProjectViewSet, basename="simccs-projec
 router.register(r"workspaces", views.WorkspaceViewSet, basename="workspace")
 app_name = "simccs_maptool"
 urlpatterns = [
-    url(r"^$", views.HomeView.as_view(), name="home"),
-    url(r"^help/$", views.HelpView.as_view(), name="help"),
-    url(r"^candidate-network/$", views.candidate_network, name="candidate-network"),
-    url(r"^mps/$", views.generate_mps, name="generate-mps"),
-    url(r"^experiment-result/(?P<experiment_id>[^/]+)$",
-        views.experiment_result, name="experiment-result"),
-    url(r"^solution-summary/(?P<experiment_id>[^/]+)$",
-        views.solution_summary, name="solution-summary"),
-    url(r"^case/(?P<case_id>[^/]+)$", views.get_case),
-    url(r"^build/projects/", views.ProjectsView.as_view(), name="projects"),
-    url(r"^get-data", geoserver.get_data),
-    url(r"^api/", include(router.urls)),
-    url(r"^build$", login_required(views.BuildView.as_view()), name="build"),
+    re_path(r"^$", views.HomeView.as_view(), name="home"),
+    re_path(r"^help/$", views.HelpView.as_view(), name="help"),
+    re_path(r"^candidate-network/$", views.candidate_network, name="candidate-network"),
+    re_path(r"^mps/$", views.generate_mps, name="generate-mps"),
+    re_path(r"^experiment-result/(?P<experiment_id>[^/]+)$",
+            views.experiment_result, name="experiment-result"),
+    re_path(r"^solution-summary/(?P<experiment_id>[^/]+)$",
+            views.solution_summary, name="solution-summary"),
+    re_path(r"^case/(?P<case_id>[^/]+)$", views.get_case),
+    re_path(r"^build/projects/", views.ProjectsView.as_view(), name="projects"),
+    re_path(r"^get-data", geoserver.get_data),
+    re_path(r"^api/", include(router.urls)),
+    re_path(r"^build$", login_required(views.BuildView.as_view()), name="build"),
     # for local debug:
     #url(r"^build", views.BuildView.as_view(), name="build"),
     
