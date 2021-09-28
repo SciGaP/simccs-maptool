@@ -1998,7 +1998,8 @@
             result_solutionLayers.set(experiment_id, result_solutionLayer);
             result_candidnetworkLayers.set(experiment_id, result_candidnetworkLayer);
 
-            map.fitBounds(result_candidnetworkLayer.getBounds());
+            const all_candidatenetworkLayers = L.featureGroup(Array.from(result_candidnetworkLayers.values()));
+            map.fitBounds(all_candidatenetworkLayers.getBounds());
             })).catch(display_error_modal);
 
             if (solutionSummaryControl === null) {
