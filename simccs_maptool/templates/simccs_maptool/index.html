@@ -1855,7 +1855,7 @@
       // references to all of the experiments solution and candidate network layers, keyed by experiment id
       var result_solutionLayers = new Map();
       var result_candidnetworkLayers = new Map();
-      var experiment_labels = new Map();
+      var solution_configs = new Map();
       
       function csvToArray(str, delimiter = "\t") {
             // slice from start of text to the first \n index
@@ -1918,6 +1918,18 @@
 
             experiment_labels.set(experiment_id, '#' + (experiment_labels.size + 1));
             const experiment_label = experiment_labels.get(experiment_id);
+            // Assign label and color for solution
+            const max_label = solution_configs.size === 0 ? 0 : Math.max(...Array.from(solution_configs.values()).map(v => parseInt(v.label.substring(1))));
+            const solution_config = {label:'#' + (max_label + 1)};
+            solution_configs.set(experiment_id, solution_config);
+            const experiment_label = solution_config.label;
+            const colors = Array.from(solution_configs.values()).map(v => v.color);
+            for (const color of ["green", "red", "blue"]) {
+                  if (!colors.includes(color)) {
+                        solution_config.color = color;
+                        break;
+                  }
+            }
             AiravataAPI.utils.FetchUtils.showSpinner($.getJSON( "/maptool/experiment-result/"+experiment_id, function( data ) {
             //$.getJSON( "/static/Data/experiment01.json", function( data ) {
             var result_sinkLayer = new L.geoJSON(data["Sinks"], {
@@ -1953,7 +1965,7 @@
                   }
             });
  
-            var result_networkLayer = new L.geoJSON(data["Network"],{style:{color:"green",opacity:0.7,weight:4,pane:"linesPane"},
+            var result_networkLayer = new L.geoJSON(data["Network"],{style:{color:solution_config.color,opacity:0.7,weight:4,pane:"linesPane"},
             onEachFeature: function (feature, layer) {layer.bindPopup("Flow: " + feature.properties.Flow +"<br/>Length (KM): "+feature.properties.LengKM);} 
             });
             // reset style
@@ -2025,10 +2037,10 @@
                   map.removeLayer(result_candidnetworkLayer);
                   result_candidnetworkLayers.delete(experiment_id);
             }
-            const experiment_label = experiment_labels.get(experiment_id);
+            const experiment_label = solution_configs.get(experiment_id).label;
             if (experiment_label) {
                   solutionSummaryControl.removeSolutionSummary(experiment_label);
-                  experiment_labels.delete(experiment_id);
+                  solution_configs.delete(experiment_id);
             }
       }
 
