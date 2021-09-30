@@ -1856,6 +1856,7 @@
       var result_solutionLayers = new Map();
       var result_candidnetworkLayers = new Map();
       var solution_configs = new Map();
+      var experiments_list = [];
       
       function csvToArray(str, delimiter = "\t") {
             // slice from start of text to the first \n index
@@ -1919,10 +1920,15 @@
             experiment_labels.set(experiment_id, '#' + (experiment_labels.size + 1));
             const experiment_label = experiment_labels.get(experiment_id);
             // Assign label and color for solution
-            const max_label = solution_configs.size === 0 ? 0 : Math.max(...Array.from(solution_configs.values()).map(v => parseInt(v.label.substring(1))));
-            const solution_config = {label:'#' + (max_label + 1)};
+            const solution_config = {};
             solution_configs.set(experiment_id, solution_config);
-            const experiment_label = solution_config.label;
+            const labels = Array.from(solution_configs.values()).map(v => v.label);
+            for (const label of ["#1", "#2", "#3"]) {
+                  if (!labels.includes(label)) {
+                        solution_config.label = label;
+                        break;
+                  }
+            }
             const colors = Array.from(solution_configs.values()).map(v => v.color);
             for (const color of ["green", "red", "blue"]) {
                   if (!colors.includes(color)) {
@@ -2004,10 +2010,10 @@
             map.addLayer(result_solutionLayer);
             map.addLayer(result_candidnetworkLayer);
             layercontrol.addTo(map);
-            layercontrol.addOverlay(result_solutionLayer, `${experiment_label} 
+            layercontrol.addOverlay(result_solutionLayer, `${solution_config.label} 
                   <span style="background-color:${solution_config.color}; display: inline-block;
                         margin-bottom: 2px; width: 2em; height: 4px; opacity: 0.7;"></span> Solution`);
-            layercontrol.addOverlay(result_candidnetworkLayer, `${experiment_label} Candidate`);
+            layercontrol.addOverlay(result_candidnetworkLayer, `${solution_config.label} Candidate`);
 
             result_solutionLayers.set(experiment_id, result_solutionLayer);
             result_candidnetworkLayers.set(experiment_id, result_candidnetworkLayer);
@@ -2021,8 +2027,10 @@
                   solutionSummaryControl.addTo(map);
             }
             AiravataAPI.utils.FetchUtils.showSpinner($.getJSON( "/maptool/solution-summary/"+experiment_id, function( data ) {
-                  solutionSummaryControl.addSolutionSummary(experiment_label, data);
+                  solutionSummaryControl.addSolutionSummary(solution_config.label, data);
             })).catch(display_error_modal);
+
+            render_experiment_list();
       };
 
       function remove_experiment_result(experiment_id) {
@@ -2044,6 +2052,7 @@
                   solutionSummaryControl.removeSolutionSummary(experiment_label);
                   solution_configs.delete(experiment_id);
             }
+            render_experiment_list();
       }
 
       // Load results from experiment as given in "?experiment_id=..." query
@@ -2065,32 +2074,70 @@
                   [AiravataAPI.models.ExperimentSearchFields.USER_NAME.name]: AiravataAPI.session.Session.username,
                   [AiravataAPI.models.ExperimentSearchFields.APPLICATION_ID.name]: appInterface.applicationInterfaceId,
             });
-            render_experiment_list(results, [experimentId]);
+            experiments_list = results;
+            solution_configs.set(experimentId, {label: "#1", color: "green"});
+            render_experiment_list();
           }
       }
 
-      function render_experiment_list(experiments, selected_experiments) {
+      function render_experiment_list() {
+
+            const selected_experiments = [];
+            for (const [key, value] of solution_configs) {
+                  selected_experiments.push(Object.assign({experimentId: key}, value));
+            }
+            // selected_experiments.sort((a,b) => a.label > b.label);
+
             $("#model-results").show();
             var $experiments_div = $('#experiments_div');
             $experiments_div.empty();
             document.getElementById("experiments_div").style.display="block";
-            experiments.forEach(experiment => {
+            selected_experiments.forEach(selected_experiment => {
 
-              var $form_check = $('<div class="form-check"></div>');
-              $experiments_div.append($form_check);
-              var $input = $('<input class="form-check-input" type="checkbox">');
-              if (selected_experiments.indexOf(experiment.experimentId) >= 0) {
-                    $input.prop('checked', true);
-              }
-              $input.attr('id', experiment.experimentId);
-              $input.attr('value', experiment.experimentId);
-              $form_check.append($input);
+                  const experiment = experiments_list.find(e => e.experimentId === selected_experiment.experimentId);
+                  const experimentId = selected_experiment.experimentId;
+                  const experimentName = experiment ? experiment.name : experimentId;
+                  render_experiment_listitem($experiments_div, {
+                        experimentId,
+                        experimentName,
+                        badgeColor: selected_experiment.color,
+                        badgeText: selected_experiment.label,
+                        checked: true
+                  });
+            });
+            $experiments_div.append("<hr/>")
+            experiments_list.forEach(experiment => {
+                  if (selected_experiments.find(e => e.experimentId === experiment.experimentId)) {
+                        return;
+                  }
+                  render_experiment_listitem($experiments_div, {
+                        experimentId: experiment.experimentId,
+                        experimentName: experiment.name,
+                        checked: false
+                  });
+            });
+      }
 
-              var $label = $('<label class="form-check-label"></label>');
-              $label.attr('for', experiment.experimentId);
-              $label.text(experiment.name);
-              $form_check.append($label);
-            })
+      function render_experiment_listitem($el, { experimentId, experimentName, badgeColor, badgeText, checked}) {
+
+            var $form_check = $('<div class="form-check"></div>');
+            $el.append($form_check);
+            var $input = $('<input class="form-check-input" type="checkbox">');
+            $input.attr('id', experimentId);
+            $input.attr('value', experimentId);
+            if (checked) {
+                  $input.attr('checked', 'checked')
+            }
+            $form_check.append($input);
+            var $label = $(`<label class="form-check-label"></label>`);
+            if (badgeColor) {
+                  $label.append(`<span class="badge badge-info" 
+                        style="background-color: ${badgeColor}; opacity: 0.7;">
+                        ${badgeText}</span> `);
+            }
+            $label.attr('for', experimentId);
+            $label.append(experimentName);
+            $form_check.append($label);
       }
 
       function display_solution_summary(data) {
