@@ -2004,7 +2004,9 @@
             map.addLayer(result_solutionLayer);
             map.addLayer(result_candidnetworkLayer);
             layercontrol.addTo(map);
-            layercontrol.addOverlay(result_solutionLayer, `${experiment_label} Solution`);
+            layercontrol.addOverlay(result_solutionLayer, `${experiment_label} 
+                  <span style="background-color:${solution_config.color}; display: inline-block;
+                        margin-bottom: 2px; width: 2em; height: 4px; opacity: 0.7;"></span> Solution`);
             layercontrol.addOverlay(result_candidnetworkLayer, `${experiment_label} Candidate`);
 
             result_solutionLayers.set(experiment_id, result_solutionLayer);
