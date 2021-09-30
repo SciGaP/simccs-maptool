@@ -1943,10 +1943,11 @@
                   var mymarker = L.circleMarker(latlng,{radius: 9,fillColor: "blue",
                           color: "#000",weight: 1,opacity: 1,fillOpacity: 0.8,pane: "pointsPane"});
                   var content_str = '<span style="font-size:16px">';
+                  content_str += `<b>Solution ${solution_config.label}</b><br/>`;
                   content_str += "ID: " + feature.properties.Id + "<br/>";
                   var namestr = findNamebyID(feature.properties.Id,sinks_arr);
                   if (namestr.length > 0) { content_str += "Name: " + namestr + "<br/>";}
-                  content_str += "CO2 stored: " + feature.properties.CO2Strd + "<br/>";
+                  content_str += "CO<sub>2</sub> stored: " + feature.properties.CO2Strd + "<br/>";
                   content_str += "Max annual storage:" + feature.properties.MxStrg;
                   content_str += "</span>";
                   var mypopup = L.popup().setContent(content_str);
@@ -1959,10 +1960,11 @@
                   var mymarker = L.circleMarker(latlng,{radius: 9,fillColor: "red",
                           color: "#000",weight: 1,opacity: 1,fillOpacity: 0.8,pane: "pointsPane"});
                   var content_str = '<span style="font-size:16px">';;
+                  content_str += `<b>Solution ${solution_config.label}</b><br/>`;
                   content_str += "ID: " + feature.properties.Id + "<br/>";
                   var namestr = findNamebyID(feature.properties.Id,sources_arr);
                   if (namestr.length > 0) { content_str += "Name: " + namestr + "<br/>";}
-                  content_str += "CO2 captured: " + feature.properties.CO2Cptrd + "<br/>";
+                  content_str += "CO<sub>2</sub> captured: " + feature.properties.CO2Cptrd + "<br/>";
                   content_str += "Max Supply: " + feature.properties.MxSpply;
                   content_str += "</span>";                 
                   var mypopup = L.popup().setContent(content_str);
@@ -1972,7 +1974,7 @@
             });
  
             var result_networkLayer = new L.geoJSON(data["Network"],{style:{color:solution_config.color,opacity:0.7,weight:4,pane:"linesPane"},
-            onEachFeature: function (feature, layer) {layer.bindPopup("Flow: " + feature.properties.Flow +"<br/>Length (KM): "+feature.properties.LengKM);} 
+            onEachFeature: function (feature, layer) {layer.bindPopup(`<b>Solution ${solution_config.label}</b><br/>` + "Flow: " + feature.properties.Flow +"<br/>Length (KM): "+feature.properties.LengKM);} 
             });
             // reset style
             // 0-0.25, 0.25-5, 5-7.5, 10
