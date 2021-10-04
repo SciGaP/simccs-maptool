@@ -1866,7 +1866,7 @@
                   if (input.name == "Sources") {sourceProductURI = input.value;}
                   if (input.name == "Sinks") {sinkProductURI=input.value;}
             };
-            const sourcesText = await AiravataAPI.utils.ExperimentUtils.readDataProduct(sourcedataProductURI);
+            const sourcesText = await AiravataAPI.utils.ExperimentUtils.readDataProduct(sourceProductURI);
             console.log(sourcesText);
             const sinksText = await AiravataAPI.utils.ExperimentUtils.readDataProduct(sinkProductURI);
             console.log(sinksText);
