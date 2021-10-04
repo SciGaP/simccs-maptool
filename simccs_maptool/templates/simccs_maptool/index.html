@@ -1854,7 +1854,7 @@
       
       var result_sourceLayer,result_sinkLayer,result_networkLayer,result_candidnetworkLayer;
       
-      function display_experiment_result(experiment_id){
+      async function display_experiment_result(experiment_id){
             // testing retrieve sources/sinks
             const experiment = await services.ExperimentService.retrieve({
                   lookup: experiment_id,});
