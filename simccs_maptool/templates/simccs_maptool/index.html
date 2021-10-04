@@ -1856,7 +1856,7 @@
       
       async function display_experiment_result(experiment_id){
             // testing retrieve sources/sinks
-            const experiment = await services.ExperimentService.retrieve({
+            const experiment = await AiravataAPI.services.ExperimentService.retrieve({
                   lookup: experiment_id,});
             const sourcesInput = experiment.getExperimentOutput("Sources");
             const dataProductURI = sourcesInput.value;
