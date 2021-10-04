@@ -1858,6 +1858,7 @@
             // testing retrieve sources/sinks
             const experiment = await AiravataAPI.services.ExperimentService.retrieve({
                   lookup: experiment_id,});
+            console.log(experiement);
             const sourcesInput = experiment.getExperimentOutput("Sources");
             const dataProductURI = sourcesInput.value;
             const sourcesText = await AiravataAPI.utils.ExperimentUtils.readDataProduct(dataProductURI);
