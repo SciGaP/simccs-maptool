@@ -1861,12 +1861,15 @@
             console.log(experiment.experimentInputs);
             //const sourcesInput = experiment.getExperimentOutput("Sources");
             //const dataProductURI = sourcesInput.value;
-            var dataProductURI;
+            var sourceProductURI,sinkProductURI;
             for (let input of experiment.experimentInputs) {
-                  if (input.name == "Sources") {dataProductURI = input.value;}
+                  if (input.name == "Sources") {sourceProductURI = input.value;}
+                  if (input.name == "Sinks") {sinkProductURI=input.value;}
             };
-            const sourcesText = await AiravataAPI.utils.ExperimentUtils.readDataProduct(dataProductURI);
+            const sourcesText = await AiravataAPI.utils.ExperimentUtils.readDataProduct(sourcedataProductURI);
             console.log(sourcesText);
+            const sinksText = await AiravataAPI.utils.ExperimentUtils.readDataProduct(sinkProductURI);
+            console.log(sinksText);
 
             AiravataAPI.utils.FetchUtils.showSpinner($.getJSON( "/maptool/experiment-result/"+experiment_id, function( data ) {
             //$.getJSON( "/static/Data/experiment01.json", function( data ) {
