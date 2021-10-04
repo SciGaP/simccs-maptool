@@ -1855,6 +1855,14 @@
       var result_sourceLayer,result_sinkLayer,result_networkLayer,result_candidnetworkLayer;
       
       function display_experiment_result(experiment_id){
+            // testing retrieve sources/sinks
+            const experiment = await services.ExperimentService.retrieve({
+                  lookup: experiment_id,});
+            const sourcesInput = experiment.getExperimentOutput("Sources");
+            const dataProductURI = sourcesInput.value;
+            const sourcesText = await AiravataAPI.utils.ExperimentUtils.readDataProduct(dataProductURI);
+            console.log(sourcesText);
+
             AiravataAPI.utils.FetchUtils.showSpinner($.getJSON( "/maptool/experiment-result/"+experiment_id, function( data ) {
             //$.getJSON( "/static/Data/experiment01.json", function( data ) {
             result_sinkLayer = new L.geoJSON(data["Sinks"], {
