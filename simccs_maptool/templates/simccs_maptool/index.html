@@ -1908,10 +1908,10 @@
             const sourcesText = await AiravataAPI.utils.ExperimentUtils.readDataProduct(sourceProductURI);
             //console.log(sourcesText);
             const sources_arr = csvToArray(sourcesText);
-            console.log(sources_arr);
+            //console.log(sources_arr);
             const sinksText = await AiravataAPI.utils.ExperimentUtils.readDataProduct(sinkProductURI);
             const sinks_arr = csvToArray(sinksText);
-            console.log(sinks_arr);
+            //console.log(sinks_arr);
 
             AiravataAPI.utils.FetchUtils.showSpinner($.getJSON( "/maptool/experiment-result/"+experiment_id, function( data ) {
             //$.getJSON( "/static/Data/experiment01.json", function( data ) {
@@ -1919,12 +1919,13 @@
                   pointToLayer: function (feature, latlng) {
                   var mymarker = L.circleMarker(latlng,{radius: 9,fillColor: "blue",
                           color: "#000",weight: 1,opacity: 1,fillOpacity: 0.8,pane: "pointsPane"});
-                  var content_str = "";
+                  var content_str = '<span style="font-size:14px">';
                   content_str += "ID: " + feature.properties.Id + "<br/>";
                   var namestr = findNamebyID(feature.properties.Id,sinks_arr);
                   if (namestr.length > 0) { content_str += "Name: " + namestr + "<br/>";}
                   content_str += "CO2 stored: " + feature.properties.CO2Strd + "<br/>";
                   content_str += "Max annual storage:" + feature.properties.MxStrg;
+                  content_str += "</span>";
                   var mypopup = L.popup().setContent(content_str);
                   mymarker.bindPopup(mypopup);
                   return mymarker;       
