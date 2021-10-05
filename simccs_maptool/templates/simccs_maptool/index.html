@@ -1844,6 +1844,7 @@
                         layercontrol.removeLayer(layer);
                   };
             });
+            map.off('click', show_solution_network_popup);
             sourceLayer.clearLayers();
            sinkLayer.clearLayers();
 
@@ -1855,6 +1856,7 @@
       // references to all of the experiments solution and candidate network layers, keyed by experiment id
       var result_solutionLayers = new Map();
       var result_candidnetworkLayers = new Map();
+      var result_solutionNetworkLayers = new Map();
       var solution_configs = new Map();
       var experiments_list = [];
       
@@ -1974,7 +1976,6 @@
             });
  
             var result_networkLayer = new L.geoJSON(data["Network"],{style:{color:solution_config.color,opacity:0.7,weight:4,pane:"linesPane"},
-            onEachFeature: function (feature, layer) {layer.bindPopup(`<b>Solution ${solution_config.label}</b><br/>` + "Flow: " + feature.properties.Flow +"<br/>Length (KM): "+feature.properties.LengKM);} 
             });
             // reset style
             // 0-0.25, 0.25-5, 5-7.5, 10
@@ -1989,6 +1990,8 @@
                 else {lw=1;}
                 layer.setStyle({weight:Math.ceil(lw*1.5+1)});
             });
+            result_solutionNetworkLayers.set(experiment_id, result_networkLayer);
+            map.on('click', show_solution_network_popup);
 
             var result_solutionLayer = new L.featureGroup([result_sinkLayer, result_sourceLayer, result_networkLayer]);
             
@@ -2034,6 +2037,31 @@
 
             render_experiment_list();
       };
+
+      /*
+       * show information about all solution networks at the point (solution
+       * networks may be overlapping)
+       */
+      function show_solution_network_popup(e) {
+            const point = turf.point([e.latlng.lng, e.latlng.lat]);
+            const popup = [];
+            for (const [experiment_id, solution_config] of Array.from(solution_configs.entries())) {
+                  const solutionNetworkLayer = result_solutionNetworkLayers.get(experiment_id);
+                  if (!map.hasLayer(solutionNetworkLayer)) {
+                        continue;
+                  }
+                  for (const layer of solutionNetworkLayer.getLayers()) {
+                        const feature = layer.toGeoJSON();
+                        const isOnLine = turf.booleanPointOnLine(point, feature, {epsilon: 1e-3});
+                        if (isOnLine) {
+                              popup.push(`<b>Solution ${solution_config.label}</b><br/>` + "Flow: " + feature.properties.Flow +"<br/>Length (KM): "+feature.properties.LengKM);
+                        }
+                  }
+            }
+            if (popup.length > 0) {
+                  map.openPopup(popup.join('<hr>'), e.latlng);
+            }
+      }
 
       function remove_experiment_result(experiment_id) {
 
