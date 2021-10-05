@@ -1881,6 +1881,19 @@
             return arr;
       }
 
+      function findNamebyID(idstr,input_arr) {
+            var name = "";
+            // in input_arr first column is id, the last column is name
+            var id1 = Object.keys(input_arr[0])[0];
+            for (let input_dict of input_arr) {
+                  if (idstr == input_dict[id1]) {
+                        name = input_dict[Object.keys(input_dict)[Object.keys(input_dict).length-1]];
+                        return name;
+                  }
+            }
+            return name;
+      }
+
       async function display_experiment_result(experiment_id){
             // testing retrieve sources/sinks
             const experiment = await AiravataAPI.services.ExperimentService.retrieve({
@@ -1907,6 +1920,9 @@
                   var mymarker = L.circleMarker(latlng,{radius: 9,fillColor: "blue",
                           color: "#000",weight: 1,opacity: 1,fillOpacity: 0.8,pane: "pointsPane"});
                   var content_str = "";
+                  content_str += "ID: " + feature.properties.Id + "<br/>";
+                  var namestr = findNamebyID(feature.properties.Id,sinks_arr);
+                  if (namestr.length > 0) { content_str += "Name: " + namestr + "<br/>";}
                   content_str += "CO2 stored: " + feature.properties.CO2Strd + "<br/>";
                   content_str += "Max annual storage:" + feature.properties.MxStrg;
                   var mypopup = L.popup().setContent(content_str);
@@ -1919,6 +1935,9 @@
                   var mymarker = L.circleMarker(latlng,{radius: 9,fillColor: "red",
                           color: "#000",weight: 1,opacity: 1,fillOpacity: 0.8,pane: "pointsPane"});
                   var content_str = "";
+                  content_str += "ID: " + feature.properties.Id + "<br/>";
+                  var namestr = findNamebyID(feature.properties.Id,sources_arr);
+                  if (namestr.length > 0) { content_str += "Name: " + namestr + "<br/>";}
                   content_str += "CO2 captured: " + feature.properties.CO2Cptrd + "<br/>";
                   content_str += "Max Supply: " + feature.properties.MxSpply;
                   var mypopup = L.popup().setContent(content_str);
