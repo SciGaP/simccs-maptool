@@ -752,12 +752,35 @@ L.Control.SolutionSummary = L.Control.extend({
         const card = this.el = document.createElement('div');
         card.classList.add("card");
         const cardHeader = document.createElement('div');
-        cardHeader.classList.add('card-header');
-        cardHeader.textContent = "Solution Summary";
+        cardHeader.classList.add('card-header', 'd-flex', 'justify-content-between');
+        const cardHeaderTitle = document.createElement('div');
+        cardHeaderTitle.textContent = "Solution Summary";
+        cardHeader.appendChild(cardHeaderTitle);
+        // <i class="fas fa-angle-up"></i>
+        const icon = document.createElement('i');
+        icon.classList.add('fas', 'fa-angle-up', 'ml-3', 'text-muted');
+        const iconBaseStyle = "cursor: pointer; font-size: 1.4rem; transition: transform 0.3s;";
+        icon.style = iconBaseStyle;
+        cardHeader.appendChild(icon);
         card.appendChild(cardHeader);
+        const collapsible = document.createElement('div');
+        collapsible.classList.add('collapse', 'show');
         const cardBody = document.createElement('div');
         cardBody.classList.add("card-body");
-        card.appendChild(cardBody);
+        collapsible.appendChild(cardBody);
+        card.appendChild(collapsible);
+
+        let collapsed = false;
+        icon.addEventListener("click", () => {
+          if (collapsed) {
+            $(collapsible).collapse("show");
+            icon.style = iconBaseStyle;
+          } else {
+            $(collapsible).collapse("hide");
+            icon.style = iconBaseStyle + " transform: rotate(-180deg);";
+          }
+          collapsed = !collapsed;
+        });
         return card;
     },
 
