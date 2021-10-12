@@ -781,6 +781,8 @@ L.Control.SolutionSummary = L.Control.extend({
           }
           collapsed = !collapsed;
         });
+        L.DomEvent.disableClickPropagation(card);
+        L.DomEvent.disableScrollPropagation(card);
         return card;
     },
 
