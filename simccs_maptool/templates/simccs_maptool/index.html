@@ -1859,6 +1859,7 @@
       var result_solutionNetworkLayers = new Map();
       var solution_configs = new Map();
       var experiments_list = [];
+      var project = null;
       
       function csvToArray(str, delimiter = "\t") {
             // slice from start of text to the first \n index
@@ -2095,14 +2096,18 @@
             document.getElementById("start-over").style.display="block";
             document.getElementById("casestudies_menu").style.display="none";
             display_experiment_result(experimentId);
+            const experiment = await AiravataAPI.services.ExperimentService.retrieve({lookup: experimentId});
+            project = await AiravataAPI.services.ProjectService.retrieve({lookup: experiment.projectId});
 
-            const appInterface = await AiravataAPI.services.ApplicationModuleService.getApplicationInterface({
-                  lookup: "{{ cplex_application_id }}",
-            });
+            // const appInterface = await AiravataAPI.services.ApplicationModuleService.getApplicationInterface({
+            //       lookup: "{{ cplex_application_id }}",
+            // });
             const {results} = await AiravataAPI.services.ExperimentSearchService.list({
-                  limit: 5, 
+                  // limit: 5, 
                   [AiravataAPI.models.ExperimentSearchFields.USER_NAME.name]: AiravataAPI.session.Session.username,
-                  [AiravataAPI.models.ExperimentSearchFields.APPLICATION_ID.name]: appInterface.applicationInterfaceId,
+                  [AiravataAPI.models.ExperimentSearchFields.APPLICATION_ID.name]: experiment.executionId,
+                  [AiravataAPI.models.ExperimentSearchFields.STATUS.name]: AiravataAPI.models.ExperimentState.COMPLETED.name,
+                  [AiravataAPI.models.ExperimentSearchFields.PROJECT_ID.name]: experiment.projectId,
             });
             experiments_list = results;
             solution_configs.set(experimentId, {label: "#1", color: "green"});
@@ -2121,6 +2126,9 @@
             $("#model-results").show();
             var $experiments_div = $('#experiments_div');
             $experiments_div.empty();
+            if (project) {
+                  $experiments_div.append(`<h5 class="text-uppercase">${project.name}</h5>`);
+            }
             document.getElementById("experiments_div").style.display="block";
             selected_experiments.forEach(selected_experiment => {
 
