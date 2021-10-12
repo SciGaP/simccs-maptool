@@ -2235,7 +2235,7 @@
                   map.addLayer(searchlayer);
                   map.fitBounds(searchlayer.getBounds(),{maxZoom:10}); }
             else {
-                  alert("No source is found.");
+                  alert("No source is found in this region.");
             }
       }
 
@@ -2880,12 +2880,12 @@
                                 <input type="text" placeholder="search by name" name="searchString" id="search-name-value" size="20" value="" onchange="searchsourceFilters('source_all_test',this.value)" /> 
                               </div>
                               <div class="btn-group mr-2" role="group" aria-label="First group">
-                                    <button type="button" class="btn btn-light" data-toggle="collapse" aria-expanded="false" data-target="#searchsourcediv"><i class="fas fa-plus"></i></span></button>
+                                    <button type="button" title="more search functions" class="btn btn-light" data-toggle="collapse" aria-expanded="false" data-target="#searchsourcediv"><i class="fas fa-plus"></i></span></button>
                               </div>
                         </div>
                         <div id="searchsourcediv" class="collapse" >
                               <div>
-                              Extra filters: 
+                              Select sources by Types: 
                               <div>
                               <select class="selectpicker" id="types_selector" title="Choose Types ..." data-live-search="true" multiple data-actions-box="true">
                                     <option>Ammonia/fertilizer</option>
