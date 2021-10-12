@@ -2233,7 +2233,10 @@
                   });
 
                   map.addLayer(searchlayer);
-                  map.fitBounds(searchlayer.getBounds(),{maxZoom:10}); }
+                  map.fitBounds(searchlayer.getBounds(),{maxZoom:10});
+                  // remove source layer 
+                  if (map.hasLayer(source_all_test_layer_1)) {map.removeLayer(source_all_test_layer_1);}
+             }
             else {
                   alert("No source is found in this region.");
             }
