@@ -2059,7 +2059,16 @@
                         const feature = layer.toGeoJSON();
                         const isOnLine = turf.booleanPointOnLine(point, feature, {epsilon: 1e-3});
                         if (isOnLine) {
-                              popup.push(`<b>Solution ${solution_config.label}</b><br/>` + "Flow: " + feature.properties.Flow +"<br/>Length (KM): "+feature.properties.LengKM);
+                              popup.push(`
+                                    <b>
+                                          ${solution_config.label}
+                                          <span style="background-color:${solution_config.color}; display: inline-block;
+                                                margin-bottom: 2px; width: 2em; height: 4px; opacity: 0.7;"></span>
+                                          Solution 
+                                    </b>
+                                    <br/>Flow: ${feature.properties.Flow}
+                                    <br/>Length (KM): ${feature.properties.LengKM}
+                              `);
                         }
                   }
             }
