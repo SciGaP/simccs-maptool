@@ -1860,6 +1860,7 @@
       var solution_configs = new Map();
       var experiments_list = [];
       var project = null;
+      const MAX_DISPLAYED_RESULTS = 5;
       
       function csvToArray(str, delimiter = "\t") {
             // slice from start of text to the first \n index
@@ -1923,17 +1924,20 @@
             experiment_labels.set(experiment_id, '#' + (experiment_labels.size + 1));
             const experiment_label = experiment_labels.get(experiment_id);
             // Assign label and color for solution
+            if (solution_configs.size >= MAX_DISPLAYED_RESULTS) {
+                  throw Error(`Max number of displayed experiments is ${MAX_DISPLAYED_RESULTS}`);
+            }
             const solution_config = {};
             solution_configs.set(experiment_id, solution_config);
             const labels = Array.from(solution_configs.values()).map(v => v.label);
-            for (const label of ["#1", "#2", "#3"]) {
+            for (const label of ["#1", "#2", "#3", "#4", "#5"]) {
                   if (!labels.includes(label)) {
                         solution_config.label = label;
                         break;
                   }
             }
             const colors = Array.from(solution_configs.values()).map(v => v.color);
-            for (const color of ["green", "red", "blue"]) {
+            for (const color of ["green", "red", "blue", "orange", "purple"]) {
                   if (!colors.includes(color)) {
                         solution_config.color = color;
                         break;
@@ -2122,6 +2126,7 @@
                   selected_experiments.push(Object.assign({experimentId: key}, value));
             }
             // selected_experiments.sort((a,b) => a.label > b.label);
+            const disableSelections = selected_experiments.length >= MAX_DISPLAYED_RESULTS;
 
             $("#model-results").show();
             var $experiments_div = $('#experiments_div');
@@ -2140,7 +2145,8 @@
                         experimentName,
                         badgeColor: selected_experiment.color,
                         badgeText: selected_experiment.label,
-                        checked: true
+                        checked: true,
+                        disabled: false,
                   });
             });
             $experiments_div.append("<hr/>")
@@ -2151,18 +2157,22 @@
                   render_experiment_listitem($experiments_div, {
                         experimentId: experiment.experimentId,
                         experimentName: experiment.name,
-                        checked: false
+                        checked: false,
+                        disabled: disableSelections,
                   });
             });
       }
 
-      function render_experiment_listitem($el, { experimentId, experimentName, badgeColor, badgeText, checked}) {
+      function render_experiment_listitem($el, { experimentId, experimentName, badgeColor, badgeText, checked, disabled }) {
 
             var $form_check = $('<div class="form-check"></div>');
             $el.append($form_check);
             var $input = $('<input class="form-check-input" type="checkbox">');
             $input.attr('id', experimentId);
             $input.attr('value', experimentId);
+            if (disabled) {
+                  $input.attr('disabled', 'disabled');
+            }
             if (checked) {
                   $input.attr('checked', 'checked')
             }

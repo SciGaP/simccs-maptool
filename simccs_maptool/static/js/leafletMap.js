@@ -824,7 +824,7 @@ L.Control.SolutionSummary = L.Control.extend({
                         ${summaries.map(s => s.numOpenedSinks).map(v => `<td>${v}</td>`).join("")}
                 </tr>
                 <tr>
-                        <th scope="row">CO<sub>2</sub> Stored</th>
+                        <th scope="row">MtCO<sub>2</sub> Stored</th>
                         ${summaries.map(s => s.targetCaptureAmount.toFixed(2)).map(v => `<td>${v}</td>`).join("")}
                 </tr>
                 <tr>
@@ -832,7 +832,7 @@ L.Control.SolutionSummary = L.Control.extend({
                         ${summaries.map(s => s.numEdgesOpened).map(v => `<td>${v}</td>`).join("")}
                 </tr>
                 <tr>
-                        <th scope="row">Project Length</th>
+                        <th scope="row">Project Length (yr)</th>
                         ${summaries.map(s => s.projectLength).map(v => `<td>${v}</td>`).join("")}
                 </tr>
                 <tr class="table-secondary">
