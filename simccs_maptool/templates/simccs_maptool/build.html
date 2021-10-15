@@ -48,6 +48,11 @@
 {% endblock css %}
 
 {% block scripts %}
+<script>
+      // 'base.html' template has already loaded Bootstrap
+      // Prevent Bootstrap tooltip from colliding with jQuery UI tooltip
+      var bootstrapTooltip = $.fn.tooltip.noConflict();
+</script>
 <script src="{% static 'js/leaflet.js' %}"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 <link rel="stylesheet" type="text/css" href="{% static 'css/leaflet-sidebar.min.css' %}" />
@@ -67,6 +72,11 @@
 <script src="{% static 'js/leaflet-svg-shape-markers.min.js' %}"></script>
 
 <script>
+      // Rename jQuery UI tooltip function to 'uitooltip'
+      $.widget.bridge('uitooltip', $.ui.tooltip);
+      // Restore the tooltip function to the bootstrap one
+      $.fn.tooltip = bootstrapTooltip;
+
          //var Maptool = window.Maptool || {};
          //Maptool.FeatureFlag = Maptool.FeatureFlag || {};
          // TODO: replace with global user session object
