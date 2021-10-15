@@ -9,7 +9,7 @@ def create_default_simccs_project(apps, schema_editor):
     Case = apps.get_model('simccs_maptool', 'Case')
     SimccsProject = apps.get_model('simccs_maptool', 'SimccsProject')
     user_ids = Dataset.objects.values_list('owner', flat=True).union(
-        Case.objects.values_list('owner', flat=True)).distinct()
+        Case.objects.values_list('owner', flat=True))
     for user_id in user_ids:
         simccs_project = SimccsProject.objects.create(name="Default", owner_id=user_id)
         Dataset.objects.filter(owner_id=user_id).update(simccs_project=simccs_project)
