@@ -1928,7 +1928,6 @@
                   throw Error(`Max number of displayed experiments is ${MAX_DISPLAYED_RESULTS}`);
             }
             const solution_config = {};
-            solution_configs.set(experiment_id, solution_config);
             const labels = Array.from(solution_configs.values()).map(v => v.label);
             for (const label of ["#1", "#2", "#3", "#4", "#5"]) {
                   if (!labels.includes(label)) {
@@ -1943,8 +1942,30 @@
                         break;
                   }
             }
-            AiravataAPI.utils.FetchUtils.showSpinner($.getJSON( "/maptool/experiment-result/"+experiment_id, function( data ) {
-            //$.getJSON( "/static/Data/experiment01.json", function( data ) {
+            try {
+                  // Load experiment-result and solution summary in parallel and
+                  // display them both if neither fails
+                  const [experimentResult, solutionSummary] = await Promise.all([
+                        AiravataAPI.utils.FetchUtils.get(
+                              `/maptool/experiment-result/${encodeURIComponent(experiment_id)}`
+                        ),
+                        AiravataAPI.utils.FetchUtils.get(
+                              `/maptool/solution-summary/${encodeURIComponent(experiment_id)}`,
+                        )
+                  ]);
+                  add_experiment_result_to_map(experimentResult, experiment_id, solution_config);
+                  add_solution_summary(solutionSummary, solution_config);
+                  solution_configs.set(experiment_id, solution_config);
+                  render_experiment_list();
+            } catch (error) {
+                  console.log(error);
+                  // experiment_result_errors.set(experiment_id, error.message);
+                  render_experiment_list({[experiment_id]: error.message});
+            }
+      };
+
+      function add_experiment_result_to_map(data, experiment_id, solution_config) {
+
             var result_sinkLayer = new L.geoJSON(data["Sinks"], {
                   pointToLayer: function (feature, latlng) {
                   var mymarker = L.circleMarker(latlng,{radius: 9,fillColor: "blue",
@@ -2030,18 +2051,16 @@
 
             const all_candidatenetworkLayers = L.featureGroup(Array.from(result_candidnetworkLayers.values()));
             map.fitBounds(all_candidatenetworkLayers.getBounds());
-            })).catch(display_error_modal);
+      }
+
+      function add_solution_summary(solutionSummary, solution_config) {
 
             if (solutionSummaryControl === null) {
                   solutionSummaryControl = L.control.solutionSummary({position: "topleft"});
                   solutionSummaryControl.addTo(map);
             }
-            AiravataAPI.utils.FetchUtils.showSpinner($.getJSON( "/maptool/solution-summary/"+experiment_id, function( data ) {
-                  solutionSummaryControl.addSolutionSummary(solution_config.label, data);
-            })).catch(display_error_modal);
-
-            render_experiment_list();
-      };
+            solutionSummaryControl.addSolutionSummary(solution_config.label, solutionSummary);
+      }
 
       /*
        * show information about all solution networks at the point (solution
@@ -2123,12 +2142,11 @@
                   [AiravataAPI.models.ExperimentSearchFields.PROJECT_ID.name]: experiment.projectId,
             });
             experiments_list = results;
-            solution_configs.set(experimentId, {label: "#1", color: "green"});
             render_experiment_list();
           }
       }
 
-      function render_experiment_list() {
+      function render_experiment_list(errors) {
 
             const selected_experiments = [];
             for (const [key, value] of solution_configs) {
@@ -2163,12 +2181,19 @@
                   if (selected_experiments.find(e => e.experimentId === experiment.experimentId)) {
                         return;
                   }
-                  render_experiment_listitem($experiments_div, {
-                        experimentId: experiment.experimentId,
-                        experimentName: experiment.name,
-                        checked: false,
-                        disabled: disableSelections,
-                  });
+                  if (errors && experiment.experimentId in errors) {
+                        $experiments_div.append($(`<div class="alert alert-danger" role="alert">
+                              Failed to load <strong>${experiment.name}</strong><br/>
+                              <small>${errors[experiment.experimentId]}</small>
+                        </div>`));
+                  } else {
+                        render_experiment_listitem($experiments_div, {
+                              experimentId: experiment.experimentId,
+                              experimentName: experiment.name,
+                              checked: false,
+                              disabled: disableSelections,
+                        });
+                  }
             });
       }
 
