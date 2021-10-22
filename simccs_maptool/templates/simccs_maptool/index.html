@@ -1903,26 +1903,6 @@
       }
 
       async function display_experiment_result(experiment_id){
-            // testing retrieve sources/sinks
-            const experiment = await AiravataAPI.services.ExperimentService.retrieve({
-                  lookup: experiment_id,});
-            //const sourcesInput = experiment.getExperimentOutput("Sources");
-            //const dataProductURI = sourcesInput.value;
-            var sourceProductURI,sinkProductURI;
-            for (let input of experiment.experimentInputs) {
-                  if (input.name == "Sources") {sourceProductURI = input.value;}
-                  if (input.name == "Sinks") {sinkProductURI=input.value;}
-            };
-            const sourcesText = await AiravataAPI.utils.ExperimentUtils.readDataProduct(sourceProductURI);
-            //console.log(sourcesText);
-            const sources_arr = csvToArray(sourcesText);
-            //console.log(sources_arr);
-            const sinksText = await AiravataAPI.utils.ExperimentUtils.readDataProduct(sinkProductURI);
-            const sinks_arr = csvToArray(sinksText);
-            //console.log(sinks_arr);
-
-            experiment_labels.set(experiment_id, '#' + (experiment_labels.size + 1));
-            const experiment_label = experiment_labels.get(experiment_id);
             // Assign label and color for solution
             if (solution_configs.size >= MAX_DISPLAYED_RESULTS) {
                   throw Error(`Max number of displayed experiments is ${MAX_DISPLAYED_RESULTS}`);
@@ -1953,7 +1933,7 @@
                               `/maptool/solution-summary/${encodeURIComponent(experiment_id)}`,
                         )
                   ]);
-                  add_experiment_result_to_map(experimentResult, experiment_id, solution_config);
+                  AiravataAPI.utils.FetchUtils.showSpinner(add_experiment_result_to_map(experimentResult, experiment_id, solution_config));
                   add_solution_summary(solutionSummary, solution_config);
                   solution_configs.set(experiment_id, solution_config);
                   render_experiment_list();
@@ -1964,7 +1944,25 @@
             }
       };
 
-      function add_experiment_result_to_map(data, experiment_id, solution_config) {
+      async function add_experiment_result_to_map(data, experiment_id, solution_config) {
+
+            // testing retrieve sources/sinks
+            const experiment = await AiravataAPI.services.ExperimentService.retrieve({
+                  lookup: experiment_id,});
+            //const sourcesInput = experiment.getExperimentOutput("Sources");
+            //const dataProductURI = sourcesInput.value;
+            var sourceProductURI,sinkProductURI;
+            for (let input of experiment.experimentInputs) {
+                  if (input.name == "Sources") {sourceProductURI = input.value;}
+                  if (input.name == "Sinks") {sinkProductURI=input.value;}
+            };
+            const sourcesText = await AiravataAPI.utils.ExperimentUtils.readDataProduct(sourceProductURI);
+            //console.log(sourcesText);
+            const sources_arr = csvToArray(sourcesText);
+            //console.log(sources_arr);
+            const sinksText = await AiravataAPI.utils.ExperimentUtils.readDataProduct(sinkProductURI);
+            const sinks_arr = csvToArray(sinksText);
+            //console.log(sinks_arr);
 
             var result_sinkLayer = new L.geoJSON(data["Sinks"], {
                   pointToLayer: function (feature, latlng) {
