@@ -405,11 +405,11 @@
                   }
             });
         // continue document ready funtion
-        $('#experiments_div').on('change', 'input', function() {
-            if(this.checked) {
+        $('#experiments_div').on('click', 'button', function() {
+            if(this.name === 'add') {
                         display_experiment_result(this.value);
                   }
-                  else {
+                  else if (this.name === 'remove') {
                         remove_experiment_result(this.value);
                   }
             });
@@ -2154,7 +2154,6 @@
             for (const [key, value] of solution_configs) {
                   selected_experiments.push(Object.assign({experimentId: key}, value));
             }
-            // selected_experiments.sort((a,b) => a.label > b.label);
             const disableSelections = selected_experiments.length >= MAX_DISPLAYED_RESULTS;
 
             $("#model-results").show();
@@ -2164,27 +2163,10 @@
                   $experiments_div.append(`<h5 class="text-uppercase">${project.name}</h5>`);
             }
             document.getElementById("experiments_div").style.display="block";
-            selected_experiments.forEach(selected_experiment => {
-
-                  const experiment = experiments_list.find(e => e.experimentId === selected_experiment.experimentId);
-                  const experimentId = selected_experiment.experimentId;
-                  const experimentName = experiment ? experiment.name : experimentId;
-                  render_experiment_listitem($experiments_div, {
-                        experimentId,
-                        experimentName,
-                        badgeColor: selected_experiment.color,
-                        badgeText: selected_experiment.label,
-                        checked: true,
-                        disabled: false,
-                  });
-            });
-            $experiments_div.append("<hr/>")
             experiments_list.forEach(experiment => {
-                  if (selected_experiments.find(e => e.experimentId === experiment.experimentId)) {
-                        return;
-                  }
+                  const selected_experiment = selected_experiments.find(e => e.experimentId === experiment.experimentId);
                   if (errors && experiment.experimentId in errors) {
-                        $experiments_div.append($(`<div class="alert alert-danger" role="alert">
+                        $experiments_div.append($(`<div class="list-group-item list-group-item-danger">
                               Failed to load <strong>${experiment.name}</strong><br/>
                               <small>${errors[experiment.experimentId]}</small>
                         </div>`));
@@ -2192,36 +2174,40 @@
                         render_experiment_listitem($experiments_div, {
                               experimentId: experiment.experimentId,
                               experimentName: experiment.name,
-                              checked: false,
+                              badgeColor: selected_experiment?.color,
+                              badgeText: selected_experiment?.label,
+                              added: !!selected_experiment,
                               disabled: disableSelections,
                         });
                   }
             });
       }
 
-      function render_experiment_listitem($el, { experimentId, experimentName, badgeColor, badgeText, checked, disabled }) {
+      function render_experiment_listitem($el, { experimentId, experimentName, badgeColor, badgeText, added, disabled }) {
 
-            var $form_check = $('<div class="form-check"></div>');
-            $el.append($form_check);
-            var $input = $('<input class="form-check-input" type="checkbox">');
-            $input.attr('id', experimentId);
-            $input.attr('value', experimentId);
-            if (disabled) {
-                  $input.attr('disabled', 'disabled');
-            }
-            if (checked) {
-                  $input.attr('checked', 'checked')
-            }
-            $form_check.append($input);
-            var $label = $(`<label class="form-check-label"></label>`);
+            var $list_group_item = $('<div class="list-group-item"></div>');
+            $el.append($list_group_item);
+            var $experiment_row1 = $('<div class="d-flex w-100 justify-content-between align-items-center mb-1"></div>');
+            var $name = $('<span></span>');
+            $name.text(experimentName);
+            $experiment_row1.append($name);
             if (badgeColor) {
-                  $label.append(`<span class="badge badge-info" 
+                  $experiment_row1.append(`<span class="badge badge-info" 
                         style="background-color: ${badgeColor}; opacity: 0.7;">
                         ${badgeText}</span> `);
             }
-            $label.attr('for', experimentId);
-            $label.append(experimentName);
-            $form_check.append($label);
+            $list_group_item.append($experiment_row1);
+            $experiment_row2 = $('<div></div>');
+            $list_group_item.append($experiment_row2);
+            if (added) {
+                  const $button = $('<button type="button" class="btn btn-primary btn-sm" name="remove"><i class="fas fa-minus"></i> Remove</button>');
+                  $button.attr('value', experimentId);
+                  $experiment_row2.append($button);
+            } else {
+                  const $button = $('<button type="button" class="btn btn-primary btn-sm" name="add"><i class="fas fa-plus"></i> Add</button>');
+                  $button.attr('value', experimentId);
+                  $experiment_row2.append($button);
+            }
       }
 
       function display_solution_summary(data) {
@@ -3361,7 +3347,7 @@
                                                 </tbody>
                                           </table>
                                     </div>
-                                    <div id="experiments_div" style="display:none">
+                                    <div id="experiments_div" class="list-group" style="display:none">
                                                 <input type="checkbox" id="checkbox_experiment_01" name="experiment_01" value="Cplex_on_Jun_3,_2019_4:34_PM_fe944263-db65-4a3c-a9c4-30f28967c3f1" autocomplete="off" />
                                                 <span class="default-font"><strong>Cplex_on_Jun_3,_2019_4:34_PM_exp</strong></span>
                                     </div>
