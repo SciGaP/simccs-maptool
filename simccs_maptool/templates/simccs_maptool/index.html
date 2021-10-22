@@ -2050,7 +2050,9 @@
             result_candidnetworkLayers.set(experiment_id, result_candidnetworkLayer);
 
             const all_candidatenetworkLayers = L.featureGroup(Array.from(result_candidnetworkLayers.values()));
-            map.fitBounds(all_candidatenetworkLayers.getBounds());
+            map.fitBounds(all_candidatenetworkLayers.getBounds(), {
+                  paddingTopLeft: [0, 200]
+            });
       }
 
       function add_solution_summary(solutionSummary, solution_config) {
