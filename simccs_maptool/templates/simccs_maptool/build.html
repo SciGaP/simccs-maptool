@@ -980,9 +980,9 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             const notShowingButtons = document.querySelectorAll(".experiment-list button[data-showing=false]")
             notShowingButtons.forEach(button => button.disabled = true);
 
-            const button = e.target;
+            const button = e.currentTarget;
             const showing = button.dataset.showing === "true";
-            const experimentDiv = e.target.closest('.experiment');
+            const experimentDiv = button.closest('.experiment');
             try {
                   if (!showing) {
                         await display_experiment_result(button.dataset.experimentId);
