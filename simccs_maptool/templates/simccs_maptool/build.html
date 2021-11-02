@@ -43,7 +43,47 @@
       border:2px solid grey;
       opacity: 0.7;
       }
+      .experiment-list {
+            padding-left: 0px;
+            list-style: none;
+      }
+      .experiment-list li {
+            margin-bottom: .25rem;
+      }
+      .experiment-list .experiment {
+            display: flex;
+            align-items: flex-start;
+      }
+      .experiment-list .metadata {
+            display: flex;
+            flex-direction: column;
+            width: calc(100% - 96px);
+            margin-right: 8px;
+      }
+      .experiment-list .name {
+            display: flex;
+            align-items: baseline;
+      }
+      .experiment-list .experiment-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 90%;
+      }
+      .experiment-list .info {
+            font-size: 80%;
+      }
+      .experiment-list .badge {
+            margin-left: auto;
+      }
+      .experiment-list .actions {
+            width: 88px;
+            white-space: nowrap;
+      }
 
+      .experiment-list a.btn {
+            color: #fff;
+      }
 </style>
 {% endblock css %}
 
@@ -57,6 +97,7 @@
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 <link rel="stylesheet" type="text/css" href="{% static 'css/leaflet-sidebar.min.css' %}" />
 <script src="{% static 'js/leaflet-sidebar.min.js' %}"></script>
+<script src="{% static 'js/leaflet-SolutionSummary.js' %}" ></script>
 <script src="{% static 'js/build.js' %}" ></script>
 <script src="{% static 'js/util.js' %}" ></script>
 <script src="{% static 'django_airavata_api/dist/airavata-api.js' %}"></script>
@@ -129,6 +170,8 @@ var sinkselection_panel = {}; // panelid:data
 var experiment_panel = {}; //panelid: [eperiment]
 var candidatenetwork_panel = {}; // panelid: network layer
 var candidatenetwork_cached = {} // panelid: network data 
+var solution_configs = new Map();
+var result_solutionNetworkLayers = new Map();
 // panelid: "Sources": data.sources, "Sinks": data.sinks,"Cplex-input-file": data.mps, "Dataset-id": current_dataset_id
 // "capacityTarget":capacityTarget,"projectPeriod":numYears,"capitalRecoveryRate":crf
 var current_dataset_id = "Lower48US";
@@ -324,9 +367,9 @@ function displayselecteddata(panelid, options = {}) {
       div.innerHTML += "<br>";
       div.innerHTML += '<input class="form-control input-sm" id="experiment_name_'+panelid+'" name="" placeholder="Experiment Name (optional)" type="text">';
       div.innerHTML += '<button type="button" class="btn btn-primary btn-sm btn-block" onclick=case_submitexperiment("'+ panelid +'")><strong>Create a New Experiment</strong></button>';
-      div.innerHTML += '<button type="button" class="btn btn-primary btn-sm btn-block" onclick=case_submitmultipleexperiments("'+ panelid +'")><strong>Create Multiple Experiments</strong></button>';
+      div.innerHTML += '<button type="button" class="btn btn-primary btn-sm btn-block mb-2" onclick=case_submitmultipleexperiments("'+ panelid +'")><strong>Create Multiple Experiments</strong></button>';
       //div.innerHTML +=  '<a target="_blank" href="" id="case_view_experiment_' + panelid+ '" style="display: none;">View Experiment Summary</a>';
-      div.innerHTML += '<ul id="list_view_experiment_' + panelid +'"> </ul>';
+      div.innerHTML += '<ul class="experiment-list" id="list_view_experiment_' + panelid +'"> </ul>';
 
       return div;
 }
@@ -628,18 +671,6 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                        lookup: experiment.experimentId
                  }).then(() => {
 
-                        // Create a link to the experiment summary page
-                        var list_view_experiment = document.getElementById("list_view_experiment_" + panelid);
-                        var a = document.createElement('a');
-                        a.href = `/workspace/experiments/${encodeURIComponent(experiment.experimentId)}/`;
-                        a.target = "_blank";
-                        //var drs = new Date(); var nrs = drs.toLocaleString();
-                        //a.innerHTML = 'View Experiment Summary ' + nrs;
-                        a.innerHTML ="view: " + "<strong>" + experiment.experimentName + "</strong>";
-                        var li = document.createElement('li');
-                        li.appendChild(a);
-                        list_view_experiment.appendChild(li);
-
                         // record experiment_panel
                         if (!(panelid in experiment_panel)) {
                               experiment_panel[panelid] = [];
@@ -647,6 +678,8 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                         var ex_dict = {};
                         ex_dict['experiment_id'] = experiment.experimentId;
                         ex_dict['experiment_name'] = experiment.experimentName;
+                        // create_experiment_listitem needs the url
+                        ex_dict['experiment_url'] = `/workspace/experiments/${encodeURIComponent(experiment.experimentId)}/`;
                         var crf1 = cplexInputValues["capitalRecoveryRate"];
                         var ny1 = cplexInputValues["projectPeriod"];
                         var ct1 = cplexInputValues["capacityTarget"];
@@ -656,6 +689,11 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                         // ex_dict['ExperimentState'] = '';
                         // ex_dict['ExperimentResult'] = '';
                         experiment_panel[panelid].push(ex_dict); 
+
+                        // Create a link to the experiment summary page
+                        var list_view_experiment = document.getElementById("list_view_experiment_" + panelid);
+                        const li = create_experiment_listitem(ex_dict);
+                        list_view_experiment.appendChild(li);
 
                         // var caseViewExperimentLink = document.getElementById("case_view_experiment_" + panelid);
                         // caseViewExperimentLink.setAttribute("href", `/workspace/experiments/${encodeURIComponent(experiment.experimentId)}/`);
@@ -850,12 +888,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             // add experiments data
             var list_view_experiment = document.getElementById("list_view_experiment_" + panelid);
             for (const entry of scenario_data['experiments']) {
-                  var a = document.createElement('a');
-                  a.href = entry['experiment_url'];
-                  a.target = "_blank";
-                  a.innerHTML ="view: " + "<strong>" + entry['experiment_name'] + "</strong>";
-                  var li = document.createElement('li');
-                  li.appendChild(a);
+                  const li = create_experiment_listitem(entry);
                   list_view_experiment.appendChild(li);
             }
             experiment_panel[panelid] = scenario_data['experiments'];
@@ -863,6 +896,134 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             sidebar.open('home');
 
             scenario_title_panel[panelid] = title;
+      }
+
+      function create_experiment_listitem(scenario_experiment) {
+
+            // Main structure
+            // <li>
+            //       <div class="experiment">
+            //             <div class="metadata">
+            //                   <div class="name"></div>
+            //                   <div class="info"></div>
+            //             </div>
+            //             <div class="actions"></div>
+            //       </div>
+            //       <div class="error">
+            //       </div>
+            // </li>
+
+            const li = document.createElement('li');
+            const experimentDiv = document.createElement('div');
+            experimentDiv.classList.add('experiment');
+            li.appendChild(experimentDiv);
+            const metadata = document.createElement('div');
+            metadata.classList.add('metadata');
+            experimentDiv.appendChild(metadata);
+            const name = document.createElement('div');
+            name.classList.add('name');
+            metadata.appendChild(name);
+            const info = document.createElement('div');
+            info.classList.add('info', 'text-muted');
+            metadata.appendChild(info);
+            const actions = document.createElement('div');
+            actions.classList.add('actions');
+            experimentDiv.appendChild(actions);
+            const errorDiv = document.createElement('div');
+            errorDiv.classList.add('error');
+            li.appendChild(errorDiv);
+            if (scenario_experiment["experiment_result"]) {
+                  const button = document.createElement('button');
+                  button.innerHTML = `<i class="fas fa-plus"></i> Add`;
+                  button.classList.add("btn", "btn-sm", "btn-primary", "btn-block");
+                  button.dataset.showing = "false";
+                  button.dataset.experimentId = scenario_experiment["experiment_id"];
+                  button.dataset.experimentName = scenario_experiment["experiment_name"];
+                  // TODO: pass experiment_result and solution_summary into handle_experiment_add_remove_click?
+                  button.addEventListener('click', handle_experiment_add_remove_click);
+                  actions.appendChild(button);
+            }
+            var a = document.createElement('a');
+            a.href = scenario_experiment['experiment_url'];
+            a.target = "_blank";
+            const nameSpan = document.createElement('span');
+            a.innerHTML = `<i class="fas fa-external-link-alt"></i> `;
+            a.appendChild(document.createTextNode(scenario_experiment['experiment_name']));
+            nameSpan.appendChild(a);
+            nameSpan.setAttribute('title', scenario_experiment['experiment_name']);
+            nameSpan.classList.add('experiment-name');
+            name.appendChild(nameSpan);
+            const periodSpan = document.createElement('span');
+            periodSpan.textContent = scenario_experiment.parameters.Project_Period + " yr";
+            info.appendChild(periodSpan);
+            info.appendChild(document.createTextNode(" - "));
+            const captureTarget = document.createElement('span');
+            captureTarget.textContent = scenario_experiment.parameters.Capture_Target + " Mt/yr";
+            info.appendChild(captureTarget);
+            if (scenario_experiment.experiment_state) {
+                  info.appendChild(document.createTextNode(" - "));
+                  const experimentState = document.createElement('span');
+                  experimentState.textContent = scenario_experiment.experiment_state;
+                  info.appendChild(experimentState);
+            }
+            const badge = document.createElement('span');
+            badge.classList.add('badge', 'badge-info');
+            badge.setAttribute("style", "background-color: green; opacity: 0.7;");
+            name.appendChild(badge);
+
+            return li;
+      }
+
+      async function handle_experiment_add_remove_click(e) {
+
+            // while loading, disable all add buttons
+            const notShowingButtons = document.querySelectorAll(".experiment-list button[data-showing=false]")
+            notShowingButtons.forEach(button => button.disabled = true);
+
+            const button = e.target;
+            const showing = button.dataset.showing === "true";
+            const experimentDiv = e.target.closest('.experiment');
+            try {
+                  if (!showing) {
+                        await display_experiment_result(button.dataset.experimentId);
+                        button.innerHTML = `<i class="fas fa-minus"></i> Remove`;
+                  } else {
+                        remove_experiment_result(button.dataset.experimentId);
+                        button.innerHTML = `<i class="fas fa-plus"></i> Add`;
+                  }
+                  // toggle showing state
+                  button.dataset.showing = showing ? "false" : "true";
+
+                  // Update badge
+                  const solution_config = solution_configs.get(button.dataset.experimentId);
+                  const badge = experimentDiv.querySelector('.badge');
+                  if (badge && solution_config) {
+                        badge.textContent = solution_config.label;
+                        badge.style.backgroundColor = solution_config.color;
+                  } else {
+                        badge.textContent = "";
+                  }
+            } catch (e) {
+                  const errorDiv = experimentDiv.querySelector('.error');
+                  if (errorDiv) {
+                        errorDiv.innerHTML = `
+                        <div class="alert alert-danger alert-dismissable fade show" role="alert">
+                              Failed to load <strong></strong><br/>
+                              <small></small>
+                              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                              </button>
+                        </div>
+                        `;
+                        errorDiv.querySelector('strong').textContent = button.dataset.experimentName;
+                        errorDiv.querySelector('small').textContent = e.message;
+                  }
+            }
+
+            // Check if max selectable experiments are showing or not
+            for (const notShowingButton of notShowingButtons) {
+                  notShowingButton.disabled = solution_configs.size >= MAX_DISPLAYED_RESULTS;
+            }
       }
 
       // load workspace id

@@ -23,6 +23,11 @@ map.createPane("drawingPane");
 
  // create the sidebar instance and add it to the map
  var sidebar = L.control.sidebar({ autopan: true, container: 'sidebar' }).addTo(map);
+
+
+map_layercontrol = L.control.layers(null, null, { collapsed: false });
+map_layercontrol.addTo(map);
+map_solutionSummaryControl = null;
  
 // default point option (source)
 var sourceRadius = 9;
@@ -384,7 +389,9 @@ function removedynlayers() {
                 default:
                   break;
               } 
-            map.removeLayer(dynmaplayers[key]);}
+            map.removeLayer(dynmaplayers[key]);
+            map_layercontrol.removeLayer(dynmaplayers[key]);
+        }
     }
 }
 
@@ -399,12 +406,15 @@ function hideunselected(source_selection, sink_selection,network='') {
     var sink_selection_layer = L.featureGroup(sink_selection);
     sink_selection_layer.setStyle({weight:2,color:"black",fillOpacity:0.7});
     source_selection_layer.addTo(map);
+    map_layercontrol.addOverlay(source_selection_layer, "Sources");
     sink_selection_layer.addTo(map);
+    map_layercontrol.addOverlay(sink_selection_layer, "Sinks");
     dynmaplayers['source_selection_layer'] = source_selection_layer;
     dynmaplayers['sink_selection_layer'] = sink_selection_layer;
     // candidate_network_layer
     if (! network=='') {
         network.addTo(map);
+        map_layercontrol.addOverlay(network, "Candidate Network");
         dynmaplayers['candidate_network_layer'] = network;
     }
 }
@@ -451,6 +461,7 @@ function generatecandidatenetwork(panelid) {
 
         if (!map.hasLayer(candidateNetworkLayer)) {
               candidateNetworkLayer.addTo(map);
+              map_layercontrol.addOverlay(candidateNetworkLayer, "Candidate Network");
         }
         // save candidateNetworkLayer
         dynmaplayers['candidate_network_layer'] = candidateNetworkLayer;
@@ -576,4 +587,139 @@ function sswindowpicker_build() {
     var polygonDrawer = new L.Draw.Polygon(map, polygon_options);     
     polygonDrawer.enable();
 
+}
+
+const MAX_DISPLAYED_RESULTS = 5;
+
+async function display_experiment_result(experiment_id){
+    // Assign label and color for solution
+    if (solution_configs.size >= MAX_DISPLAYED_RESULTS) {
+            throw Error(`Max number of displayed experiments is ${MAX_DISPLAYED_RESULTS}`);
+    }
+    const solution_config = {};
+    const labels = Array.from(solution_configs.values()).map(v => v.label);
+    for (const label of ["#1", "#2", "#3", "#4", "#5"]) {
+            if (!labels.includes(label)) {
+                solution_config.label = label;
+                break;
+            }
+    }
+    const colors = Array.from(solution_configs.values()).map(v => v.color);
+    for (const color of ["green", "red", "blue", "orange", "purple"]) {
+            if (!colors.includes(color)) {
+                solution_config.color = color;
+                break;
+            }
+    }
+    // Load experiment-result and solution summary in parallel and
+    // display them both if neither fails
+    const [experimentResult, solutionSummary] = await Promise.all([
+        // TODO: we already have these URLs
+        AiravataAPI.utils.FetchUtils.get(
+                `/maptool/experiment-result/${encodeURIComponent(experiment_id)}`
+        ),
+        AiravataAPI.utils.FetchUtils.get(
+                `/maptool/solution-summary/${encodeURIComponent(experiment_id)}`,
+        )
+    ]);
+    await add_experiment_result_to_map(experimentResult, experiment_id, solution_config);
+    add_solution_summary(solutionSummary, solution_config);
+    solution_configs.set(experiment_id, solution_config);
+};
+
+async function add_experiment_result_to_map(data, experiment_id, solution_config) {
+
+    var result_networkLayer = new L.geoJSON(data["Network"],{style:{color:solution_config.color,opacity:0.7,weight:4,pane:"linesPane"},
+    });
+    // reset style
+    // 0-0.25, 0.25-5, 5-7.5, 10
+    result_networkLayer.eachLayer(function(layer) { 
+        var fv = layer.feature.properties['Flow'];
+        var lw = 1;
+        if (fv <= 0.25) {lw = 1;}
+        else if (fv>0.25 && fv <= 5) {lw = 2;}
+        else if (fv > 5 && fv <= 7.5 ) {lw = 3;}
+        else if (fv > 7.5 && fv <= 10) {lw = 4;}
+        else if (fv > 10) {lw=5;}
+        else {lw=1;}
+        layer.setStyle({weight:Math.ceil(lw*1.5+1)});
+    });
+    result_solutionNetworkLayers.set(experiment_id, result_networkLayer);
+    map.on('click', show_solution_network_popup);
+
+    map.addLayer(result_networkLayer);
+    map_layercontrol.addOverlay(result_networkLayer, `${solution_config.label} 
+            <span style="background-color:${solution_config.color}; display: inline-block;
+                margin-bottom: 2px; width: 2em; height: 4px; opacity: 0.7;"></span> Solution`);
+    map.fitBounds(result_networkLayer.getBounds(), {
+            // Account for sidebar (may need more than 460 to also account for
+            // solution summary, but just accounting for sidebar seems good enough)
+            paddingTopLeft: [460, 0]
+    });
+}
+
+function add_solution_summary(solutionSummary, solution_config) {
+
+    if (map_solutionSummaryControl === null) {
+            map_solutionSummaryControl = L.control.solutionSummary({position: "topleft"});
+    }
+    map_solutionSummaryControl.addTo(map);
+    map_solutionSummaryControl.addSolutionSummary(solution_config.label, solutionSummary);
+}
+
+/*
+* show information about all solution networks at the point (solution
+* networks may be overlapping)
+*/
+function show_solution_network_popup(e) {
+    const point = turf.point([e.latlng.lng, e.latlng.lat]);
+    const popup = [];
+    for (const [experiment_id, solution_config] of Array.from(solution_configs.entries())) {
+            const solutionNetworkLayer = result_solutionNetworkLayers.get(experiment_id);
+            if (!map.hasLayer(solutionNetworkLayer)) {
+                continue;
+            }
+            for (const layer of solutionNetworkLayer.getLayers()) {
+                const feature = layer.toGeoJSON();
+                const isOnLine = turf.booleanPointOnLine(point, feature, {epsilon: 1e-3});
+                if (isOnLine) {
+                        popup.push(`
+                            <b>
+                                    ${solution_config.label}
+                                    <span style="background-color:${solution_config.color}; display: inline-block;
+                                        margin-bottom: 2px; width: 2em; height: 4px; opacity: 0.7;"></span>
+                                    Solution 
+                            </b>
+                            <br/>Flow: ${feature.properties.Flow}
+                            <br/>Length (KM): ${feature.properties.LengKM}
+                        `);
+                }
+            }
+    }
+    if (popup.length > 0) {
+            map.openPopup(popup.join('<hr>'), e.latlng);
+    }
+}
+
+function remove_experiment_result(experiment_id) {
+
+    const result_solutionLayer = result_solutionNetworkLayers.get(experiment_id);
+    if (result_solutionLayer) {
+            map_layercontrol.removeLayer(result_solutionLayer);
+            if (map.hasLayer(result_solutionLayer)) {
+                map.removeLayer(result_solutionLayer);
+            }
+            result_solutionNetworkLayers.delete(experiment_id);
+    }
+    const solution_config = solution_configs.get(experiment_id);
+    if (solution_config) {
+        const experiment_label = solution_config.label;
+        if (experiment_label) {
+                map_solutionSummaryControl.removeSolutionSummary(experiment_label);
+                solution_configs.delete(experiment_id);
+                if (solution_configs.size === 0) {
+                    map_solutionSummaryControl.remove();
+                }
+        }
+    }
 }

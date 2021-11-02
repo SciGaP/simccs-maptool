@@ -592,12 +592,9 @@ class ScenarioExperimentSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         request = self.context['request']
         result = super().to_representation(instance)
+
         result['experiment_url'] = reverse(
             "django_airavata_workspace:view_experiment", args=[instance.experiment_id])
-        result['experiment_result'] = reverse(
-            "simccs_maptool:experiment-result", args=[instance.experiment_id])
-        result['solution_summary'] = reverse(
-            "simccs_maptool:solution-summary", args=[instance.experiment_id])
         result['experiment_download_url'] = reverse(
             "airavata_django_portal_sdk:download_experiment_dir", args=[
                 instance.experiment_id])
@@ -607,6 +604,20 @@ class ScenarioExperimentSerializer(serializers.ModelSerializer):
             result['experiment_name'] = experiment.experimentName
             result['experiment_state'] = ExperimentState._VALUES_TO_NAMES[
                 experiment.experimentStatus[-1].state]
+            has_soln_file = [o
+                             for o in experiment.experimentOutputs
+                             if o.name == "Cplex-solution"]
+            # Only populate experiment_result and solution_summary if soln.sol exists
+            if (len(has_soln_file) == 1
+                and has_soln_file[0].value.startswith('airavata-dp:')
+                    and user_storage.exists(request, data_product_uri=has_soln_file[0].value)):
+                result['experiment_result'] = reverse(
+                    "simccs_maptool:experiment-result", args=[instance.experiment_id])
+                result['solution_summary'] = reverse(
+                    "simccs_maptool:solution-summary", args=[instance.experiment_id])
+            else:
+                result['experiment_result'] = None
+                result['solution_summary'] = None
         except Exception as e:
             logger.warning(f"Failed to load experiment from API: {e}")
         return result
