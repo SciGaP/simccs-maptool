@@ -56,6 +56,7 @@
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 <script src="{% static 'js/L.TileLayer.BetterWMS.js' %}" ></script>
 <script src="{% static 'js/leafletMap.js' %}" ></script>
+<script src="{% static 'js/leaflet-SolutionSummary.js' %}" ></script>
 <script src="{% static 'js/casestudies.js' %}" ></script>
 <script src="{% static 'js/util.js' %}" ></script>
 <script src="{% static 'django_airavata_api/dist/airavata-api.js' %}"></script>
@@ -2049,7 +2050,7 @@
 
             const all_candidatenetworkLayers = L.featureGroup(Array.from(result_candidnetworkLayers.values()));
             map.fitBounds(all_candidatenetworkLayers.getBounds(), {
-                  paddingTopLeft: [0, 200]
+                  paddingTopLeft: [200, 0]
             });
       }
 
