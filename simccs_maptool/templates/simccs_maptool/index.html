@@ -42,6 +42,41 @@
       margin-right: 8px;
       opacity: 0.7;
       }
+      .experiment-list .experiment {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: .25rem;
+      }
+      .experiment-list .metadata {
+            display: flex;
+            flex-direction: column;
+            width: calc(100% - 88px);
+            margin-right: 8px;
+      }
+      .experiment-list .name {
+            display: flex;
+            align-items: baseline;
+      }
+      .experiment-list .experiment-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 85%;
+      }
+      .experiment-list .info {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 80%;
+      }
+      .experiment-list .badge {
+            margin-left: auto;
+      }
+      .experiment-list .actions {
+            width: 88px;
+            white-space: nowrap;
+            flex: 0 1;
+      }
 </style>
 {% endblock css %}
 
@@ -2144,6 +2179,10 @@
                   [AiravataAPI.models.ExperimentSearchFields.PROJECT_ID.name]: experiment.projectId,
             });
             experiments_list = results;
+            // Check that soln.sol file actually exists for these COMPLETED experiments
+            for (const expSummary of experiments_list) {
+                  expSummary.solutionExists = await solution_exists(expSummary.experimentId);
+            }
             render_experiment_list();
           }
       }
@@ -2163,51 +2202,93 @@
                   $experiments_div.append(`<h5 class="text-uppercase">${project.name}</h5>`);
             }
             document.getElementById("experiments_div").style.display="block";
-            experiments_list.forEach(experiment => {
+            experiments_list.forEach(async experiment => {
                   const selected_experiment = selected_experiments.find(e => e.experimentId === experiment.experimentId);
                   if (errors && experiment.experimentId in errors) {
-                        $experiments_div.append($(`<div class="list-group-item list-group-item-danger">
+                        $experiments_div.append($(`<div class="alert alert-danger">
                               Failed to load <strong>${experiment.name}</strong><br/>
                               <small>${errors[experiment.experimentId]}</small>
                         </div>`));
                   } else {
-                        render_experiment_listitem($experiments_div, {
+                        await render_experiment_listitem($experiments_div, {
                               experimentId: experiment.experimentId,
                               experimentName: experiment.name,
+                              description: experiment.description,
                               badgeColor: selected_experiment?.color,
                               badgeText: selected_experiment?.label,
                               added: !!selected_experiment,
-                              disabled: disableSelections,
+                              disabled: disableSelections || !experiment.solutionExists,
                         });
                   }
             });
       }
 
-      function render_experiment_listitem($el, { experimentId, experimentName, badgeColor, badgeText, added, disabled }) {
+      async function render_experiment_listitem($el, { experimentId, experimentName, description, badgeColor, badgeText, added, disabled }) {
 
-            var $list_group_item = $('<div class="list-group-item"></div>');
-            $el.append($list_group_item);
-            var $experiment_row1 = $('<div class="d-flex w-100 justify-content-between align-items-center mb-1"></div>');
-            var $name = $('<span></span>');
-            $name.text(experimentName);
-            $experiment_row1.append($name);
-            if (badgeColor) {
-                  $experiment_row1.append(`<span class="badge badge-info" 
-                        style="background-color: ${badgeColor}; opacity: 0.7;">
-                        ${badgeText}</span> `);
-            }
-            $list_group_item.append($experiment_row1);
-            $experiment_row2 = $('<div></div>');
-            $list_group_item.append($experiment_row2);
+            const experimentDiv = document.createElement('div');
+            experimentDiv.classList.add('experiment');
+            $el.append(experimentDiv);
+            const metadata = document.createElement('div');
+            metadata.classList.add('metadata');
+            experimentDiv.appendChild(metadata);
+            const name = document.createElement('div');
+            name.classList.add('name');
+            metadata.appendChild(name);
+            const info = document.createElement('div');
+            info.classList.add('info', 'text-muted');
+            metadata.appendChild(info);
+            const actions = document.createElement('div');
+            actions.classList.add('actions');
+            experimentDiv.appendChild(actions);
+
+            const button = document.createElement('button');
+            button.classList.add("btn", "btn-sm", "btn-primary", "btn-block");
             if (added) {
-                  const $button = $('<button type="button" class="btn btn-primary btn-sm" name="remove"><i class="fas fa-minus"></i> Remove</button>');
-                  $button.attr('value', experimentId);
-                  $experiment_row2.append($button);
+                  button.name = "remove";
+                  button.innerHTML = `<i class="fas fa-minus"></i> Remove`;
             } else {
-                  const $button = $('<button type="button" class="btn btn-primary btn-sm" name="add"><i class="fas fa-plus"></i> Add</button>');
-                  $button.attr('value', experimentId);
-                  $experiment_row2.append($button);
+                  button.name = "add";
+                  button.innerHTML = `<i class="fas fa-plus"></i> Add`;
+                  if (disabled) {
+                        button.setAttribute("disabled", "disabled");
+                  }
             }
+            button.setAttribute("value", experimentId);
+            actions.appendChild(button);
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = experimentName;
+            nameSpan.setAttribute('title', experimentName);
+            nameSpan.classList.add('experiment-name');
+            name.appendChild(nameSpan);
+            const descriptionSpan = document.createElement('span');
+            descriptionSpan.textContent = description;
+            descriptionSpan.classList.add('experiment-description');
+            descriptionSpan.setAttribute('title', description);
+            info.appendChild(descriptionSpan);
+            const badge = document.createElement('span');
+            badge.classList.add('badge', 'badge-info');
+            badge.setAttribute("style", "background-color: green; opacity: 0.7;");
+            if (badgeColor) {
+                  badge.style.backgroundColor = badgeColor;
+                  badge.textContent = badgeText;
+            }
+            name.appendChild(badge);
+      }
+
+      async function solution_exists(experimentId) {
+
+            // check that soln.sol exists
+            const experiment = await AiravataAPI.services.ExperimentService.retrieve({
+                  lookup: experimentId});
+            const solnOutput = experiment.getExperimentOutput('Cplex-solution');
+            let solutionExists = false;
+            if (solnOutput && solnOutput.value.startsWith("airavata-dp:")) {
+                  const dataProduct = await AiravataAPI.services.DataProductService.retrieve({lookup: solnOutput.value});
+                  if (dataProduct.downloadURL) {
+                        solutionExists = true;
+                  }
+            }
+            return solutionExists;
       }
 
       function display_solution_summary(data) {
@@ -3347,7 +3428,7 @@
                                                 </tbody>
                                           </table>
                                     </div>
-                                    <div id="experiments_div" class="list-group" style="display:none">
+                                    <div id="experiments_div" class="experiment-list" style="display:none">
                                                 <input type="checkbox" id="checkbox_experiment_01" name="experiment_01" value="Cplex_on_Jun_3,_2019_4:34_PM_fe944263-db65-4a3c-a9c4-30f28967c3f1" autocomplete="off" />
                                                 <span class="default-font"><strong>Cplex_on_Jun_3,_2019_4:34_PM_exp</strong></span>
                                     </div>
