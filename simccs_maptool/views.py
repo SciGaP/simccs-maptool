@@ -394,8 +394,8 @@ def _copy_directory_to_experiment(request,
     filename_mapping = filename_mapping if filename_mapping is not None else lambda n: n
     experiment_id = experiment.experimentId
     dir_name = os.path.basename(directory)
-    user_storage.create_user_dir(
-        request, dir_name, experiment_id=experiment_id)
+    if not user_storage.dir_exists(request, dir_name, experiment_id=experiment_id):
+        user_storage.create_user_dir(request, dir_name, experiment_id=experiment_id)
     listings = os.listdir(directory)
     for listing in listings:
         path = os.path.join(directory, listing)
