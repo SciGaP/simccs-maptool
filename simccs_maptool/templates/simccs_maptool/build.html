@@ -354,7 +354,7 @@ function displayselecteddata(panelid, options = {}) {
             //get the value
             p_value = entry in options ? options[entry] : $('#'+entry).val();
             entry_newid = entry + "_" + panelid;
-            tb_entry = '<tr><td>'+entry+'</td><td><input id="'+entry_newid+ '" name="'+entry_newid+'" type="text" class="form-control" size=8 value='+  p_value +' required></td></tr>';
+            tb_entry = '<tr><td>'+entry+'</td><td><input id="'+entry_newid+ '" name="'+entry_newid+'" type="text" class="form-control" size=8 value='+  p_value +' required oninput="validate_is_number(event' + (entry === "Capture_Target" ? ',multiple=true': '') + ')"></td></tr>';
             //tb_entry = tb_entry.replace(new RegExp(entry, 'g'), entry +"_"+ panelid);
             tb_new += tb_entry;
       }
@@ -403,6 +403,21 @@ function create_scenario() {
       // simple show the data
       sidebar.open(panelid);
 
+}
+
+function validate_is_number(event, multiple=false) {
+      const el = event.currentTarget;
+      clear_invalid_feedback(el);
+      let values = [el.value];
+      if (multiple) {
+            values = el.value.split(',');
+      }
+      for (const value of values) {
+            if (!is_float_string(value)) {
+                  add_invalid_feedback(el, "Not a valid number");
+                  break;
+            }
+      }
 }
 
 function validate_scenario_model_parameters(panelid, numYears, captureTarget) {
@@ -488,6 +503,12 @@ function generatempsfile(panelid,showmodal=1,paras=[], filename=null) {
       crf = paras[0];
       numYears = paras[1];
       capacityTarget = paras[2];
+    }
+    // Type validation
+    for (const value of [crf, numYears, capacityTarget]) {
+          if (!is_float_string(value)) {
+                return Promise.reject();
+          }
     }
     // generate formdata
     var formData = new FormData();
@@ -724,6 +745,16 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             else {
                   alert("Please input value,value,.. in Capture_Target.");
                   return;
+            }
+
+            // Type validation
+            // Make sure that each capacity value is valid
+            for (capacity of capacityArr) {
+                  for (const value of [crf, numYears, capacity]) {
+                        if (!is_float_string(value)) {
+                              return;
+                        }
+                  }
             }
 
             const maxCapacity = Math.max(...capacityArr);

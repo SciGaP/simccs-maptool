@@ -58,3 +58,8 @@ function validate_model_parameters(source_selection, sink_selection, numYears, c
       }
       return result;
 }
+
+function is_float_string(value) {
+      // https://stackoverflow.com/a/22100269
+      return parseFloat(value) == value;
+}
