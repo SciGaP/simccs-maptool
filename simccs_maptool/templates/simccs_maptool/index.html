@@ -1846,7 +1846,7 @@
             </div>
             <div class="modal-footer">
             <button type="button" class="btn btn-primary">
-                  <a href="/workspace/applications/{{ cplex_application_id }}/create_experiment?Sources=sources_input_file&Sinks=sinks_input_file&Cplex-input-file=user_input_file&Dataset-id=${current_dataset_id}" style="color:inherit">Create Experiment</a></button>
+                  <a href="/workspace/applications/{{ cplex_application_id }}/create_experiment?Sources=sources_input_file&Sinks=sinks_input_file&Cplex-input-file=user_input_file&Dataset-id=${current_dataset_id}&Candidate-Network=candidate_network" style="color:inherit">Create Experiment</a></button>
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
       </div>
@@ -1855,6 +1855,7 @@
             m_html = m_html.replace("user_input_file", data["mps"]);
             m_html = m_html.replace("sources_input_file", data["sources"]);
             m_html = m_html.replace("sinks_input_file", data["sinks"]);
+            m_html = m_html.replace("candidate_network", data["candidate-network"]);
       $('body').append(m_html);
       $("#dynamicModal").modal();
       $("#dynamicModal").modal('show');
