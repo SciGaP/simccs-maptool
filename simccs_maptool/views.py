@@ -152,27 +152,25 @@ def generate_mps(request):
                 simccs_helper.get_sinks_file(scenario_dir)
             ) as sinks_file, open(
                 simccs_helper.get_mps_file(scenario_dir)
-            ) as mps_file:
-                # open(
-                #     simccs_helper.get_candidate_network_file(
-                #         datasets_basepath, dataset_dirname, "scenario1"
-                #     )
-                # ) as candidate_network_file,
+            ) as mps_file, open(
+                simccs_helper.get_candidate_network_file(scenario_dir)
+            ) as candidate_network_file:
                 sources_dp = user_storage.save_input_file(request, sources_file)
                 sinks_dp = user_storage.save_input_file(request, sinks_file)
-                # candidate_network_dp = user_storage.save_input_file(
-                #     request, candidate_network_file
-                # )
+                candidate_network_dp = user_storage.save_input_file(
+                    request, candidate_network_file
+                )
                 mps_dp = user_storage.save_input_file(request, mps_file)
             return JsonResponse(
                 {
                     "sources": sources_dp.productUri,
                     "sinks": sinks_dp.productUri,
                     "mps": mps_dp.productUri,
-                    # "candidate-network": candidate_network_dp.productUri,
+                    "candidate-network": candidate_network_dp.productUri,
                 }
             )
         except Exception as e:
+            logger.exception("Failed to generate mps file")
             return JsonResponse({"detail": str(e)}, status=500)
 
 
@@ -370,12 +368,13 @@ def experiment_scenario_dir(request, experiment):
     sources = _get_experiment_file(request, experiment, "Sources", input_file=True)
     sinks = _get_experiment_file(request, experiment, "Sinks", input_file=True)
     mps = _get_experiment_file(request, experiment, "Cplex-input-file", input_file=True)
+    candidate_network = _get_experiment_file(
+        request, experiment, "Candidate-Network", input_file=True)
     solution = _get_experiment_file(request, experiment, "Cplex-solution")
     dataset_id = _get_experiment_value(experiment, "Dataset-id")
     with tempfile.TemporaryDirectory() as datasets_basepath:
         dataset_dir = datasets.get_dataset_dir(dataset_id)
         # Create the scenario directory
-        # TODO: add the candidatenetwork file too
         scenario_dir = simccs_helper.create_scenario_dir(
             datasets_basepath,
             dataset_dir,
@@ -383,6 +382,7 @@ def experiment_scenario_dir(request, experiment):
             sinks=sinks,
             mps=mps,
             solution=solution,
+            candidate_network=candidate_network,
         )
         yield scenario_dir
 
@@ -434,7 +434,7 @@ def _get_experiment_file(request, experiment, name, input_file=False):
         return user_storage.open_file(request, data_product)
     else:
         logger.warning(
-            f"Could not find experiment file {name} (input_file={input_file}")
+            f"Could not find experiment file {name} (input_file={input_file})")
         return None
 
 

@@ -119,7 +119,6 @@ def make_candidate_network_shapefiles(scenario_dir):
         basepath, dataset_dirname, scenario = _get_scenario_path_components(
             scenario_dir
         )
-        cost_surface_data = _get_cached_cost_surface_data(basepath, dataset_dirname)
         from jnius import autoclass
 
         DataStorer = autoclass("dataStore.DataStorer")
@@ -127,8 +126,10 @@ def make_candidate_network_shapefiles(scenario_dir):
         Solver = autoclass("solver.Solver")
         solver = Solver(data)
         data.setSolver(solver)
-        if cost_surface_data is not None:
-            cost_surface_data.populate(data)
+        if not os.path.exists(get_candidate_network_file(scenario_dir)):
+            cost_surface_data = _get_cached_cost_surface_data(basepath, dataset_dirname)
+            if cost_surface_data is not None:
+                cost_surface_data.populate(data)
         results_dir = os.path.dirname(
             get_candidate_network_shapefiles_dir(scenario_dir))
         # Must make the CandidateNetwork directory before calling
@@ -165,7 +166,6 @@ def write_mps_file(
         basepath, dataset_dirname, scenario = _get_scenario_path_components(
             scenario_dir
         )
-        cost_surface_data = _get_cached_cost_surface_data(basepath, dataset_dirname)
         from jnius import autoclass
 
         DataStorer = autoclass("dataStore.DataStorer")
@@ -173,10 +173,11 @@ def write_mps_file(
         Solver = autoclass("solver.Solver")
         solver = Solver(data)
         data.setSolver(solver)
-        # TODO: really only need cost_surface_data if we don't have the
-        # candidate network
-        if cost_surface_data is not None:
-            cost_surface_data.populate(data)
+        # only need cost_surface_data if we don't have the candidate network
+        if not os.path.exists(get_candidate_network_file(scenario_dir)):
+            cost_surface_data = _get_cached_cost_surface_data(basepath, dataset_dirname)
+            if cost_surface_data is not None:
+                cost_surface_data.populate(data)
         MPSWriter = autoclass("solver.MPSWriter")
         os.mkdir(os.path.join(scenario_dir, "MIP"))
         MPSWriter.writeCapPriceMPS(
@@ -208,7 +209,6 @@ def make_shapefiles(scenario_dir):
         basepath, dataset_dirname, scenario = _get_scenario_path_components(
             scenario_dir
         )
-        cost_surface_data = _get_cached_cost_surface_data(basepath, dataset_dirname)
         from jnius import autoclass
 
         DataStorer = autoclass("dataStore.DataStorer")
@@ -217,10 +217,11 @@ def make_shapefiles(scenario_dir):
         solver = Solver(data)
         data.setSolver(solver)
         logger.debug(f"Scenario data loaded for {basepath}:{scenario}")
-        # TODO: really only need cost_surface_data if we don't have the
-        # candidate network
-        if cost_surface_data is not None:
-            cost_surface_data.populate(data)
+        # only need cost_surface_data if we don't have the candidate network
+        if not os.path.exists(get_candidate_network_file(scenario_dir)):
+            cost_surface_data = _get_cached_cost_surface_data(basepath, dataset_dirname)
+            if cost_surface_data is not None:
+                cost_surface_data.populate(data)
         # load the .mps/.sol solution
         results_dir = get_results_dir(scenario_dir)
         solution = data.loadSolution(results_dir)
@@ -244,7 +245,6 @@ def load_solution(scenario_dir):
         basepath, dataset_dirname, scenario = _get_scenario_path_components(
             scenario_dir
         )
-        cost_surface_data = _get_cached_cost_surface_data(basepath, dataset_dirname)
         from jnius import autoclass
 
         DataStorer = autoclass("dataStore.DataStorer")
@@ -253,10 +253,11 @@ def load_solution(scenario_dir):
         solver = Solver(data)
         data.setSolver(solver)
         logger.debug(f"Scenario data loaded for {basepath}:{scenario}")
-        # TODO: really only need cost_surface_data if we don't have the
-        # candidate network
-        if cost_surface_data is not None:
-            cost_surface_data.populate(data)
+        # only need cost_surface_data if we don't have the candidate network
+        if not os.path.exists(get_candidate_network_file(scenario_dir)):
+            cost_surface_data = _get_cached_cost_surface_data(basepath, dataset_dirname)
+            if cost_surface_data is not None:
+                cost_surface_data.populate(data)
         # load the .mps/.sol solution
         results_dir = get_results_dir(scenario_dir)
         solution = data.loadSolution(results_dir)

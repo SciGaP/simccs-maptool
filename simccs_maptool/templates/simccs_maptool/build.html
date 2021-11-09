@@ -545,7 +545,7 @@ if (showmodal == 1) {
       //$("#dynamicModal").modal('show'); 
       alert("MPS file was generated successfully.");
 }
-return {"Sources": data["sources"], "Sinks": data["sinks"],"Cplex-input-file": data["mps"], "Dataset-id": current_dataset_id,"capacityTarget":capacityTarget,"projectPeriod":numYears,"capitalRecoveryRate":crf};
+return {"Sources": data["sources"], "Sinks": data["sinks"],"Cplex-input-file": data["mps"], "Candidate-Network": data["candidate-network"], "Dataset-id": current_dataset_id,"capacityTarget":capacityTarget,"projectPeriod":numYears,"capitalRecoveryRate":crf};
 
           }).catch(display_error_modal);
     });
