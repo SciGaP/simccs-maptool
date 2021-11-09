@@ -92,6 +92,7 @@ function createLegend(datasetid,fieldname,symbol,limits,colorlist)
     var div = L.DomUtil.create('div'),
     labels = [],
     from, to;
+    // legend_div: id_legend
     div.id = datasetid+"_legend";
     var symbolsvg;
     switch(symbol) {
@@ -129,6 +130,20 @@ function createLegend(datasetid,fieldname,symbol,limits,colorlist)
     div.innerHTML = fieldname + "<br>";
     div.innerHTML += labels.join('<br>');
     return div;
+}
+
+// function show/hide legend
+function showlegend(legendid) {
+    var legenddiv = document.getElementById(legendid + "_legend");
+    console.log(legenddiv);
+    if (legenddiv.style.display == "none") 
+    {
+        legenddiv.style.display = "block";
+    }
+    else 
+    {
+        legenddiv.style.display = "none";
+    }
 }
 
 // for source
@@ -255,7 +270,7 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
         //q for quantile, e for equidistant, k for k-means
         mode = {"q":'quantile','e':'equidistant'};
         opts['mode']='q';
-        opts['steps']= 5;
+        opts['steps']= 10;
         opts['scale']= ['green','yellow','red'];
         opts['colors']=[];  
         [limits, colorlist] = colormap(data,opts);
@@ -284,8 +299,18 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
     }
 
     var radiostr='<input class="form-check-input"  type="radio" id="'+datadesc['dataid']+'" checked="checked" onclick=handleclick(this.id)>';
-    radiostr += '<label class="form-check-label" for="'+datadesc['dataid']+'">'+ datadesc['type'].charAt(0).toUpperCase() + datadesc['type'].slice(1)+":"+datadesc['name']+'</label><br>';
-    
+    radiostr += '<label class="form-check-label" for="'+datadesc['dataid']+'">'+ datadesc['type'].charAt(0).toUpperCase() + datadesc['type'].slice(1)+":"+datadesc['name']+"</label>";
+    if (datastyle && datadesc['type'] != 'source') {
+        radiostr += '<div style="margin-left: 10px;display: inline-block"; class="dropdown"> \
+        <button class="btn btn-sm dropdown-toggle" type="button" data-toggle="dropdown"> \
+        <span STYLE="font-size:18px">&#8286;</span></button> \
+        <ul class="dropdown-menu"> \
+          <li><a class="dropdown-item" id='+ datadesc['dataid'] +' onclick=showlegend(this.id) href="#">Show/Hide Legend</a></li> \
+          <li><a class="dropdown-item" href="#">Modify Style</a></li> \
+        </ul> \
+      </div>';
+    }
+    radiostr += "<br>";
     $('#layercontrol').append(radiostr);
     // add selector
     if (datadesc['type'] == 'source') {
