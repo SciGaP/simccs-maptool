@@ -45,7 +45,7 @@ var source_shapeMakerOptions = {
     radius: sourceRadius,
     shape: "arrowhead",
     fillColor: "blue",
-    fillOpacity: 0.6,
+    fillOpacity: 0.8,
     color: "grey",
     weight:1,
     pane: "toppointsPane"
@@ -55,7 +55,7 @@ var sink_shapeMakerOptions = {
     radius: sinkRadius,
     shape: "square",
     fillColor: "blue",
-    fillOpacity: 0.6,
+    fillOpacity: 0.8,
     color: "grey",
     weight:1,
     pane: "pointsPane"
@@ -74,19 +74,31 @@ var sinkMarkerOptions = {
 
 
 // function getcolor
-function getColor(d) {
+function getColor1(d) {
     return d > 10.0 ? '#f50000' :
             d > 5.0  ? '#fdff00' :
             d > 0.0  ? '#00f905' :
                         '#FFEDA0';
 }
 
+function getcolor(featureValue,limits,colorlist){
+    if (!isNaN(featureValue)) {
+        // Find the bucket/step/limit that this value is less than and give it that color
+        for (var i = 0; i < limits.length; i++) {
+          if (featureValue <= limits[i]) {
+            return colorlist[i]
+            break
+          }
+        }
+    }
+}
+
 // create a legend for coloring field
-function createLegend(fieldname,symbol)
+//function createLegend(fieldname,symbol)
+function createLegend(fieldname,symbol,limits,colorlist)
 {
     //var div = L.DomUtil.create('div', 'info legend'),
     var div = L.DomUtil.create('div'),
-    grades = [0, 5, 10],
     labels = [],
     from, to;
     var symbolsvg;
@@ -115,12 +127,13 @@ function createLegend(fieldname,symbol)
             symbolsvg = '<svg width="20" height="20"><circle cx="10" cy="10" r="9" style="fill:#3388ff;stroke:black;stroke-width:2;fill-opacity:0.6;stroke-opacity:1" /></svg>';
     };
     var fillc;
-    for (var i = 0; i < grades.length; i++) {
-    from = grades[i];
-    to = grades[i + 1];
-    fillc = getColor(from + 1);
+    console.log(limits,colorlist);
+    for (var i = 0; i < limits.length; i++) {
+    from = limits[i];
+    to = limits[i+1];
+    fillc = colorlist[i];
     labels.push(
-        symbolsvg.replace('#3388ff',fillc) + ' ' + from + (to ? '&nbsp;&ndash;&nbsp;' + to : '+'));
+        symbolsvg.replace('#3388ff',fillc) + ' ' + from.toFixed(2) + (to ? '&nbsp;&ndash;&nbsp;' + to.toFixed(2) : '+'));
     }
 
     div.innerHTML = fieldname + "<br>";
@@ -193,6 +206,21 @@ function handleclick(id){
     return data;
 } 
 
+// function to caculate color map
+function colormap(geojson,opts){
+    var values = geojson.features.map(
+        e=>e.properties[opts.valueProperty]
+        );
+        //console.log(values);
+      var limits = chroma.limits(values, opts.mode, opts.steps - 1)
+    //console.log(limits)
+     var colorlist = (opts.colors && opts.colors.length === limits.length ?
+                    opts.colors :
+                    chroma.scale(opts.scale).colors(limits.length))
+    //console.log(colors);
+    return [limits,colorlist];
+}
+
 // load data by url
 async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
     var data = await getdata(dataurl);
@@ -203,6 +231,7 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
     }
     
     var newLayer;
+    var legend,limits,colorlist;
     if (!popup_fields || popup_fields.length === 0) {
         popup_fields = ["Name"];
     }
@@ -229,6 +258,17 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
         // load sink data
         // change sink symbol
         sink_shapeMakerOptions['shape'] = datasymbol;
+        // the default one is the data style
+        // caculate the limits and color first
+        var opts={};
+        opts["valueProperty"] = datastyle;
+        //q for quantile, e for equidistant, k for k-means
+        mode = {"q":'quantile','e':'equidistant'};
+        opts['mode']='q';
+        opts['steps']= 5;
+        opts['scale']= ['green','yellow','red'];
+        opts['colors']=[];  
+        [limits, colorlist] = colormap(data,opts);
         newLayer = new L.geoJSON(data,{
             pointToLayer: function (feature, latlng) {
             var content_str="<strong>Sink: <br>"
@@ -237,10 +277,11 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
             }
             content_str += "</strong>";
             var color_value = feature.properties[datastyle];
-            var fillcolor = getColor(color_value);
+            //var fillcolor = getColor(color_value);
+            var fillcolor = getcolor(feature.properties[opts.valueProperty],limits,colorlist);
             //var mymarker = L.circleMarker(latlng, sinkMarkerOptions);
             var mymarker = L.shapeMarker(latlng, sink_shapeMakerOptions);
-            mymarker.setStyle({'fillColor':fillcolor});
+            mymarker.setStyle({'fillColor':fillcolor,fillOpacity:'0.8'});
             mymarker.bindTooltip(content_str);
             return mymarker;       
           },
@@ -254,6 +295,7 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
         //   },
         //   onEachFeature: onEachFeatureClosure(popup_fields),
         // });
+        legend = createLegend(datastyle,datasymbol,limits,colorlist);
     }
     else {
         newLayer = new L.geoJSON(data);
@@ -284,7 +326,6 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
     maplayers[datadesc['dataid']] = newLayer;
     // ignore the source style for now
     if (datastyle && datadesc['type'] != 'source') {       // generate legend
-            var legend = createLegend(datastyle,datasymbol);
             document.getElementById("layercontrol").appendChild(legend);   
         } 
        
