@@ -73,14 +73,6 @@ var sinkMarkerOptions = {
 };
 
 
-// function getcolor
-function getColor1(d) {
-    return d > 10.0 ? '#f50000' :
-            d > 5.0  ? '#fdff00' :
-            d > 0.0  ? '#00f905' :
-                        '#FFEDA0';
-}
-
 function getcolor(featureValue,limits,colorlist){
     if (!isNaN(featureValue)) {
         // Find the bucket/step/limit that this value is less than and give it that color
@@ -94,15 +86,14 @@ function getcolor(featureValue,limits,colorlist){
 }
 
 // create a legend for coloring field
-//function createLegend(fieldname,symbol)
-function createLegend(fieldname,symbol,limits,colorlist)
+function createLegend(datasetid,fieldname,symbol,limits,colorlist)
 {
     //var div = L.DomUtil.create('div', 'info legend'),
     var div = L.DomUtil.create('div'),
     labels = [],
     from, to;
+    div.id = datasetid+"_legend";
     var symbolsvg;
-    console.log(symbol);
     switch(symbol) {
         case 'square':
             symbolsvg='<svg width="19" height="19"><rect width="19" height="19" style="fill:#3388ff;stroke:black;stroke-width:3;fill-opacity:0.6;stroke-opacity:1" /></svg>';
@@ -127,7 +118,6 @@ function createLegend(fieldname,symbol,limits,colorlist)
             symbolsvg = '<svg width="20" height="20"><circle cx="10" cy="10" r="9" style="fill:#3388ff;stroke:black;stroke-width:2;fill-opacity:0.6;stroke-opacity:1" /></svg>';
     };
     var fillc;
-    console.log(limits,colorlist);
     for (var i = 0; i < limits.length; i++) {
     from = limits[i];
     to = limits[i+1];
@@ -276,26 +266,18 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
                 content_str += entry + ": " + feature.properties[entry] + "<br>";
             }
             content_str += "</strong>";
-            var color_value = feature.properties[datastyle];
+            //var color_value = feature.properties[datastyle];
             //var fillcolor = getColor(color_value);
             var fillcolor = getcolor(feature.properties[opts.valueProperty],limits,colorlist);
             //var mymarker = L.circleMarker(latlng, sinkMarkerOptions);
             var mymarker = L.shapeMarker(latlng, sink_shapeMakerOptions);
-            mymarker.setStyle({'fillColor':fillcolor,fillOpacity:'0.8'});
+            mymarker.setStyle({'fillColor':fillcolor});
             mymarker.bindTooltip(content_str);
             return mymarker;       
           },
           onEachFeature: sinkOnEachFeature,
         });
-       
-        // newLayer = new L.geoJSON(data, {style: function(feature){
-        //     var color_value = feature.properties[datastyle];
-        //     var fillcolor = getColor(color_value); 
-        //     return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.5,pane: "polygonsPane"};
-        //   },
-        //   onEachFeature: onEachFeatureClosure(popup_fields),
-        // });
-        legend = createLegend(datastyle,datasymbol,limits,colorlist);
+        legend = createLegend(datadesc['dataid'],datastyle,datasymbol,limits,colorlist);
     }
     else {
         newLayer = new L.geoJSON(data);
