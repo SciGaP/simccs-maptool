@@ -135,7 +135,6 @@ function createLegend(datasetid,fieldname,symbol,limits,colorlist)
 // function show/hide legend
 function showlegend(legendid) {
     var legenddiv = document.getElementById(legendid + "_legend");
-    console.log(legenddiv);
     if (legenddiv.style.display == "none") 
     {
         legenddiv.style.display = "block";
@@ -146,6 +145,60 @@ function showlegend(legendid) {
     }
 }
 
+// modify style of a given layer
+function modifystyle(stylelayerid) {
+    var legenddiv = document.getElementById(stylelayerid + "_legend");
+    legenddiv.style.display = "none";
+    var stylediv = document.getElementById(stylelayerid + "_style");
+
+    const fieldlist=["fieldCap (MtCO2)","costFix ($M)","fixO&M ($M/yr)","wellCap (MtCO2/yr)",	"wellCostFix ($M)",	"wellFixO&M ($M/yr)","varO&M ($/tCO2)"];
+    stylediv.innerHTML = "<label >Select field: </label>"
+    var selectTag = document.createElement("SELECT");
+    selectTag.id = stylelayerid + "_style_field";
+    fieldlist.forEach(function(item, index, array) {
+        var opt = document.createElement("option");
+        opt.text = item;
+        opt.value = item;
+        selectTag.add(opt);
+     });
+     stylediv.appendChild(selectTag);
+
+     const methodslist = [{label:'quantile',value:'q'},{label:"equidistant",value:'e'}];
+     stylediv.innerHTML += "<br>"
+     stylediv.innerHTML += "<label >Method: </label>"
+     var selectmethod = document.createElement("SELECT");
+     selectmethod.id = stylelayerid + "_style_method";
+     methodslist.forEach(function(item, index, array) {
+        var opt = document.createElement("option");
+        opt.text = item.label;
+        opt.value = item.value;
+        selectmethod.add(opt);
+     });
+     stylediv.appendChild(selectmethod);
+
+     stylediv.innerHTML += "<br>"
+     stylediv.innerHTML += "<label >Steps: </label>"
+     var selectstep = document.createElement("SELECT");
+     selectstep.id = stylelayerid + "_style_step";
+     for (let i = 3; i < 11; i++) { 
+        var opt = document.createElement("option");
+        opt.text = i.toString();
+        opt.value = i.toString();
+        selectstep.add(opt);
+     }
+     stylediv.appendChild(selectstep);
+     stylediv.innerHTML += "<br>"
+     stylediv.innerHTML += "<label >Colors: </label>"
+
+     stylediv.innerHTML +="<br>";
+     stylediv.innerHTML += '<button type="button" class="btn btn-primary btn-sm">Update Style</button>';
+     stylediv.innerHTML += '<button type="button" class="btn btn-primary btn-sm">Cancel</button>';
+     stylediv.innerHTML += "<br>";
+
+    // show style
+    stylediv.style.display = "block";
+
+}
 // for source
 function sourceOnEachFeature(feature, layer) {
     //bind click
@@ -305,8 +358,8 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
         <button class="btn btn-sm dropdown-toggle" type="button" data-toggle="dropdown"> \
         <span STYLE="font-size:18px">&#8286;</span></button> \
         <ul class="dropdown-menu"> \
-          <li><a class="dropdown-item" id='+ datadesc['dataid'] +' onclick=showlegend(this.id) href="#">Show/Hide Legend</a></li> \
-          <li><a class="dropdown-item" href="#">Modify Style</a></li> \
+          <li><a class="dropdown-item" onclick=showlegend('+datadesc['dataid']+') href="#">Show/Hide Legend</a></li> \
+          <li><a class="dropdown-item" onclick=modifystyle('+datadesc['dataid']+') href="#">Modify Style</a></li> \
         </ul> \
       </div>';
     }
@@ -332,7 +385,13 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
     newLayer.addTo(map);
     maplayers[datadesc['dataid']] = newLayer;
     // ignore the source style for now
-    if (datastyle && datadesc['type'] != 'source') {       // generate legend
+    if (datastyle && datadesc['type'] != 'source') {  
+            // atach an empty div for modify style
+            var stylediv = L.DomUtil.create('div');
+            // legend_div: id_legend
+            stylediv.id = datadesc['dataid'] + "_style";
+            stylediv.style.display = "none";
+            document.getElementById("layercontrol").appendChild(stylediv);
             document.getElementById("layercontrol").appendChild(legend);   
         } 
        
