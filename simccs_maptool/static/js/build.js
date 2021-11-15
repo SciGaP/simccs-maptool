@@ -192,12 +192,19 @@ function modifystyle(stylelayerid) {
 
      stylediv.innerHTML +="<br>";
      stylediv.innerHTML += '<button type="button" class="btn btn-primary btn-sm">Update Style</button>';
-     stylediv.innerHTML += '<button type="button" class="btn btn-primary btn-sm">Cancel</button>';
+     stylediv.innerHTML += '<button type="button" class="btn btn-primary btn-sm" onclick="cancel_style('+stylelayerid+')">Cancel</button>';
      stylediv.innerHTML += "<br>";
 
     // show style
     stylediv.style.display = "block";
 
+}
+
+function cancel_style(stylelayerid){
+    var legenddiv = document.getElementById(stylelayerid + "_legend");
+    legenddiv.style.display = "block";
+    var stylediv = document.getElementById(stylelayerid + "_style");
+    stylediv.style.display = "none";
 }
 // for source
 function sourceOnEachFeature(feature, layer) {
