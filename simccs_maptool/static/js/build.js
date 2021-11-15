@@ -363,7 +363,7 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
     if (datastyle && datadesc['type'] != 'source') {
         radiostr += '<div style="margin-left: 10px;display: inline-block"; class="dropdown"> \
         <button class="btn btn-sm dropdown-toggle" type="button" data-toggle="dropdown"> \
-        <span STYLE="font-size:18px">&#8286;</span></button> \
+        <i class="fas fa-layer-group"></i></button> \
         <ul class="dropdown-menu"> \
           <li><a class="dropdown-item" onclick=showlegend('+datadesc['dataid']+') href="#">Show/Hide Legend</a></li> \
           <li><a class="dropdown-item" onclick=modifystyle('+datadesc['dataid']+') href="#">Modify Style</a></li> \
