@@ -204,7 +204,7 @@ function modifystyle(stylelayerid) {
      stylediv.innerHTML +="<br>";
      stylediv.innerHTML += '<button type="button" class="btn btn-primary btn-sm" onclick="update_style('+stylelayerid+')">Update Style</button>';
      stylediv.innerHTML += '<button type="button" class="btn btn-primary btn-sm" onclick="cancel_style('+stylelayerid+')">Cancel</button>';
-     stylediv.innerHTML += "<br>";
+     stylediv.innerHTML += "<br><br>";
 
     // show style
     stylediv.style.display = "block";
@@ -219,6 +219,27 @@ function update_style(stylelayerid) {
     var color_step = document.getElementById(stylelayerid + "_style_step").value;
     var color_theme = document.getElementById(stylelayerid + "_style_color").value;
     //console.log([color_field,color_method,color_step,color_theme]);
+    var color_theme_list=color_theme.split(",");
+    var color_layer = maplayers[stylelayerid];
+    var color_field_value = [];
+    color_layer.eachLayer(function(layer) {
+        color_field_value.push(layer.feature.properties[color_field]); 
+    }); 
+    //console.log(color_field_value.every(Number.isFinite));
+    if (! color_field_value.every(Number.isFinite)) {
+        alert(color_field + " has no valid numberic value, please choose another field for coloring.");
+        return;
+    }
+    var newlimits = chroma.limits(color_field_value, color_method, color_step - 1);
+    var newcolorlist = chroma.scale(color_theme_list).colors(newlimits.length);
+    //console.log(newlimits);
+    //console.log(newcolorlist);
+
+    // recoloring layers
+    color_layer.eachLayer(function(layer) {
+        var fillcolor = getcolor(layer.feature.properties[color_field],newlimits,newcolorlist);
+        layer.setStyle({'fillColor':fillcolor});
+    });
 }
 
 // cancel style
