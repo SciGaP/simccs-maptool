@@ -187,11 +187,22 @@ function modifystyle(stylelayerid) {
         selectstep.add(opt);
      }
      stylediv.appendChild(selectstep);
+
      stylediv.innerHTML += "<br>"
      stylediv.innerHTML += "<label >Colors: </label>"
+     var selectcolor = document.createElement("SELECT");
+     selectcolor.id = stylelayerid + "_style_color";
+     const colorthemelist = ["red,yellow,green","green,yellow,red","white,yellow,red","red,yellow,white","white,yellow,green","green,yellow,white"];
+     colorthemelist.forEach(function(item, index, array) {
+        var opt = document.createElement("option");
+        opt.text = item;
+        opt.value = item;
+        selectcolor.add(opt);
+     });
+     stylediv.appendChild(selectcolor);
 
      stylediv.innerHTML +="<br>";
-     stylediv.innerHTML += '<button type="button" class="btn btn-primary btn-sm">Update Style</button>';
+     stylediv.innerHTML += '<button type="button" class="btn btn-primary btn-sm" onclick="update_style('+stylelayerid+')">Update Style</button>';
      stylediv.innerHTML += '<button type="button" class="btn btn-primary btn-sm" onclick="cancel_style('+stylelayerid+')">Cancel</button>';
      stylediv.innerHTML += "<br>";
 
@@ -200,6 +211,17 @@ function modifystyle(stylelayerid) {
 
 }
 
+// update style for a layer
+function update_style(stylelayerid) {
+    // get options
+    var color_field = document.getElementById(stylelayerid + "_style_field").value; 
+    var color_method = document.getElementById(stylelayerid + "_style_method").value;
+    var color_step = document.getElementById(stylelayerid + "_style_step").value;
+    var color_theme = document.getElementById(stylelayerid + "_style_color").value;
+    //console.log([color_field,color_method,color_step,color_theme]);
+}
+
+// cancel style
 function cancel_style(stylelayerid){
     var legenddiv = document.getElementById(stylelayerid + "_legend");
     legenddiv.style.display = "block";
