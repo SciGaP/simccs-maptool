@@ -121,15 +121,15 @@ def generate_mps(request):
         try:
             # If no candidate network provided, check if there is a candidate
             # network for the entire dataset that can be used instead
-            if candidate_network is None:
-                dataset_candidate_network = datasets.get_dataset_candidate_network(
-                    dataset_id
-                )
-                if dataset_candidate_network is not None:
-                    with open(
-                        os.path.join(dataset_dir, dataset_candidate_network)
-                    ) as candidate_network_file:
-                        candidate_network = candidate_network_file.read()
+            # if candidate_network is None:
+            #     dataset_candidate_network = datasets.get_dataset_candidate_network(
+            #         dataset_id
+            #     )
+            #     if dataset_candidate_network is not None:
+            #         with open(
+            #             os.path.join(dataset_dir, dataset_candidate_network)
+            #         ) as candidate_network_file:
+            #             candidate_network = candidate_network_file.read()
 
             # Create the scenario directory
             scenario_dir = simccs_helper.create_scenario_dir(
