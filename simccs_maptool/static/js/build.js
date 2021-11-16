@@ -89,11 +89,21 @@ function getcolor(featureValue,limits,colorlist){
 function createLegend(datasetid,fieldname,symbol,limits,colorlist)
 {
     //var div = L.DomUtil.create('div', 'info legend'),
-    var div = L.DomUtil.create('div'),
-    labels = [],
+    var element = document.getElementById(datasetid+"_legend");
+    var div;
+    //If it isn't "undefined" and it isn't "null", then it exists.
+    if (!(typeof(element) != 'undefined' && element != null)){
+        //alert('Element does not exist!');
+        div = L.DomUtil.create('div');
+        // legend_div: id_legend
+        div.id = datasetid+"_legend";
+    } else {
+        element.innerHTML = "";
+        div = element;
+    }
+    var labels = [],
     from, to;
-    // legend_div: id_legend
-    div.id = datasetid+"_legend";
+
     var symbolsvg;
     switch(symbol) {
         case 'square':
@@ -204,7 +214,7 @@ function modifystyle(stylelayerid) {
 
      stylediv.innerHTML +="<br>";
      stylediv.innerHTML += '<button type="button" class="btn btn-primary btn-sm" onclick="update_style('+stylelayerid+')">Update Style</button>';
-     stylediv.innerHTML += '<button type="button" class="btn btn-primary btn-sm" onclick="cancel_style('+stylelayerid+')">Cancel</button>';
+     stylediv.innerHTML += '<button type="button" class="btn btn-primary btn-sm" onclick="cancel_style('+stylelayerid+')">Close</button>';
      stylediv.innerHTML += "<br><br>";
 
     // show style
@@ -243,7 +253,15 @@ function update_style(stylelayerid) {
     });
     
     //regenerate color legend
-    //createLegend(stylelayerid,color_field,symbol,newlimits,newcolorlist)
+    var symbol = document.getElementById(stylelayerid+"_legend_symbol").value;
+    createLegend(stylelayerid,color_field,symbol,newlimits,newcolorlist);
+    // turn on legend if not
+    var legenddiv = document.getElementById(stylelayerid + "_legend");
+    if (legenddiv.style.display == "none") 
+    {
+        legenddiv.style.display = "block";
+    }
+  
 }
 
 // cancel style
