@@ -395,7 +395,7 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
         //q for quantile, e for equidistant, k for k-means
         mode = {"q":'quantile','e':'equidistant'};
         opts['mode']='q';
-        opts['steps']= 10;
+        opts['steps']= 5;
         opts['scale']= ['green','yellow','red'];
         opts['colors']=[];  
         [limits, colorlist] = colormap(data,opts);
