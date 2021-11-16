@@ -126,8 +126,9 @@ function createLegend(datasetid,fieldname,symbol,limits,colorlist)
     labels.push(
         symbolsvg.replace('#3388ff',fillc) + ' ' + from.toFixed(2) + (to ? '&nbsp;&ndash;&nbsp;' + to.toFixed(2) : '+'));
     }
-
-    div.innerHTML = fieldname + "<br>";
+    var symbol_id = div.id + "_symbol";
+    div.innerHTML = `<input type="hidden" id=${symbol_id}  value=${symbol}></input>`;
+    div.innerHTML += fieldname + "<br>";
     div.innerHTML += labels.join('<br>');
     return div;
 }
@@ -240,6 +241,9 @@ function update_style(stylelayerid) {
         var fillcolor = getcolor(layer.feature.properties[color_field],newlimits,newcolorlist);
         layer.setStyle({'fillColor':fillcolor});
     });
+    
+    //regenerate color legend
+    //createLegend(stylelayerid,color_field,symbol,newlimits,newcolorlist)
 }
 
 // cancel style
