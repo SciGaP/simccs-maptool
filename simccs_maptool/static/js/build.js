@@ -238,7 +238,15 @@ function update_style(stylelayerid) {
     }); 
     //console.log(color_field_value.every(Number.isFinite));
     if (! color_field_value.every(Number.isFinite)) {
-        alert(color_field + " has no valid numberic value, please choose another field for coloring.");
+        alert(color_field + " has no valid numeric value, please choose another field for coloring.");
+        // disable the field 
+        Array.from(document.getElementById(stylelayerid + "_style_field").options).forEach(function(option_element) {
+            let option_value = option_element.value;
+            if (option_value == color_field) {
+                option_element.disabled = true;
+            }
+        });
+        
         return;
     }
     var newlimits = chroma.limits(color_field_value, color_method, color_step - 1);
