@@ -45,7 +45,7 @@ var source_shapeMakerOptions = {
     radius: sourceRadius,
     shape: "arrowhead",
     fillColor: "blue",
-    fillOpacity: 0.6,
+    fillOpacity: 0.8,
     color: "grey",
     weight:1,
     pane: "toppointsPane"
@@ -55,7 +55,7 @@ var sink_shapeMakerOptions = {
     radius: sinkRadius,
     shape: "square",
     fillColor: "blue",
-    fillOpacity: 0.6,
+    fillOpacity: 0.8,
     color: "grey",
     weight:1,
     pane: "pointsPane"
@@ -73,24 +73,38 @@ var sinkMarkerOptions = {
 };
 
 
-// function getcolor
-function getColor(d) {
-    return d > 10.0 ? '#f50000' :
-            d > 5.0  ? '#fdff00' :
-            d > 0.0  ? '#00f905' :
-                        '#FFEDA0';
+function getcolor(featureValue,limits,colorlist){
+    if (!isNaN(featureValue)) {
+        // Find the bucket/step/limit that this value is less than and give it that color
+        for (var i = 0; i < limits.length; i++) {
+          if (featureValue <= limits[i]) {
+            return colorlist[i]
+            break
+          }
+        }
+    }
 }
 
 // create a legend for coloring field
-function createLegend(fieldname,symbol)
+function createLegend(datasetid,fieldname,symbol,limits,colorlist)
 {
     //var div = L.DomUtil.create('div', 'info legend'),
-    var div = L.DomUtil.create('div'),
-    grades = [0, 5, 10],
-    labels = [],
+    var element = document.getElementById(datasetid+"_legend");
+    var div;
+    //If it isn't "undefined" and it isn't "null", then it exists.
+    if (!(typeof(element) != 'undefined' && element != null)){
+        //alert('Element does not exist!');
+        div = L.DomUtil.create('div');
+        // legend_div: id_legend
+        div.id = datasetid+"_legend";
+    } else {
+        element.innerHTML = "";
+        div = element;
+    }
+    var labels = [],
     from, to;
+
     var symbolsvg;
-    console.log(symbol);
     switch(symbol) {
         case 'square':
             symbolsvg='<svg width="19" height="19"><rect width="19" height="19" style="fill:#3388ff;stroke:black;stroke-width:3;fill-opacity:0.6;stroke-opacity:1" /></svg>';
@@ -115,19 +129,156 @@ function createLegend(fieldname,symbol)
             symbolsvg = '<svg width="20" height="20"><circle cx="10" cy="10" r="9" style="fill:#3388ff;stroke:black;stroke-width:2;fill-opacity:0.6;stroke-opacity:1" /></svg>';
     };
     var fillc;
-    for (var i = 0; i < grades.length; i++) {
-    from = grades[i];
-    to = grades[i + 1];
-    fillc = getColor(from + 1);
+    for (var i = 0; i < limits.length; i++) {
+    from = limits[i];
+    to = limits[i+1];
+    fillc = colorlist[i];
     labels.push(
-        symbolsvg.replace('#3388ff',fillc) + ' ' + from + (to ? '&nbsp;&ndash;&nbsp;' + to : '+'));
+        symbolsvg.replace('#3388ff',fillc) + ' ' + from.toFixed(2) + (to ? '&nbsp;&ndash;&nbsp;' + to.toFixed(2) : '+'));
     }
-
-    div.innerHTML = fieldname + "<br>";
+    var symbol_id = div.id + "_symbol";
+    div.innerHTML = `<input type="hidden" id=${symbol_id}  value=${symbol}></input>`;
+    div.innerHTML += fieldname + "<br>";
     div.innerHTML += labels.join('<br>');
     return div;
 }
 
+// function show/hide legend
+function showlegend(legendid) {
+    var legenddiv = document.getElementById(legendid + "_legend");
+    if (legenddiv.style.display == "none") 
+    {
+        legenddiv.style.display = "block";
+    }
+    else 
+    {
+        legenddiv.style.display = "none";
+    }
+}
+
+// modify style of a given layer
+function modifystyle(stylelayerid) {
+    var legenddiv = document.getElementById(stylelayerid + "_legend");
+    legenddiv.style.display = "none";
+    var stylediv = document.getElementById(stylelayerid + "_style");
+
+    const fieldlist=["fieldCap (MtCO2)","costFix ($M)","fixO&M ($M/yr)","wellCap (MtCO2/yr)",	"wellCostFix ($M)",	"wellFixO&M ($M/yr)","varO&M ($/tCO2)"];
+    stylediv.innerHTML = "<label >Select field: </label>"
+    var selectTag = document.createElement("SELECT");
+    selectTag.id = stylelayerid + "_style_field";
+    fieldlist.forEach(function(item, index, array) {
+        var opt = document.createElement("option");
+        opt.text = item;
+        opt.value = item;
+        selectTag.add(opt);
+     });
+     stylediv.appendChild(selectTag);
+
+     const methodslist = [{label:'quantile',value:'q'},{label:"equidistant",value:'e'}];
+     stylediv.innerHTML += "<br>"
+     stylediv.innerHTML += "<label >Method: </label>"
+     var selectmethod = document.createElement("SELECT");
+     selectmethod.id = stylelayerid + "_style_method";
+     methodslist.forEach(function(item, index, array) {
+        var opt = document.createElement("option");
+        opt.text = item.label;
+        opt.value = item.value;
+        selectmethod.add(opt);
+     });
+     stylediv.appendChild(selectmethod);
+
+     stylediv.innerHTML += "<br>"
+     stylediv.innerHTML += "<label >Steps: </label>"
+     var selectstep = document.createElement("SELECT");
+     selectstep.id = stylelayerid + "_style_step";
+     for (let i = 3; i < 11; i++) { 
+        var opt = document.createElement("option");
+        opt.text = i.toString();
+        opt.value = i.toString();
+        selectstep.add(opt);
+     }
+     stylediv.appendChild(selectstep);
+
+     stylediv.innerHTML += "<br>"
+     stylediv.innerHTML += "<label >Colors: </label>"
+     var selectcolor = document.createElement("SELECT");
+     selectcolor.id = stylelayerid + "_style_color";
+     const colorthemelist = ["red,yellow,green","green,yellow,red","white,yellow,red","red,yellow,white","white,yellow,green","green,yellow,white"];
+     colorthemelist.forEach(function(item, index, array) {
+        var opt = document.createElement("option");
+        opt.text = item;
+        opt.value = item;
+        selectcolor.add(opt);
+     });
+     stylediv.appendChild(selectcolor);
+
+     stylediv.innerHTML +="<br>";
+     stylediv.innerHTML += '<button type="button" class="btn btn-primary btn-sm" onclick="update_style('+stylelayerid+')">Update Style</button>';
+     stylediv.innerHTML += '<button type="button" class="btn btn-primary btn-sm" onclick="cancel_style('+stylelayerid+')">Close</button>';
+     stylediv.innerHTML += "<br><br>";
+
+    // show style
+    stylediv.style.display = "block";
+
+}
+
+// update style for a layer
+function update_style(stylelayerid) {
+    // get options
+    var color_field = document.getElementById(stylelayerid + "_style_field").value; 
+    var color_method = document.getElementById(stylelayerid + "_style_method").value;
+    var color_step = document.getElementById(stylelayerid + "_style_step").value;
+    var color_theme = document.getElementById(stylelayerid + "_style_color").value;
+    //console.log([color_field,color_method,color_step,color_theme]);
+    var color_theme_list=color_theme.split(",");
+    var color_layer = maplayers[stylelayerid];
+    var color_field_value = [];
+    color_layer.eachLayer(function(layer) {
+        color_field_value.push(layer.feature.properties[color_field]); 
+    }); 
+    //console.log(color_field_value.every(Number.isFinite));
+    if (! color_field_value.every(Number.isFinite)) {
+        alert(color_field + " has no valid numeric value, please choose another field for coloring.");
+        // disable the field 
+        Array.from(document.getElementById(stylelayerid + "_style_field").options).forEach(function(option_element) {
+            let option_value = option_element.value;
+            if (option_value == color_field) {
+                option_element.disabled = true;
+            }
+        });
+        
+        return;
+    }
+    var newlimits = chroma.limits(color_field_value, color_method, color_step - 1);
+    var newcolorlist = chroma.scale(color_theme_list).colors(newlimits.length);
+    //console.log(newlimits);
+    //console.log(newcolorlist);
+
+    // recoloring layers
+    color_layer.eachLayer(function(layer) {
+        var fillcolor = getcolor(layer.feature.properties[color_field],newlimits,newcolorlist);
+        layer.setStyle({'fillColor':fillcolor});
+    });
+    
+    //regenerate color legend
+    var symbol = document.getElementById(stylelayerid+"_legend_symbol").value;
+    createLegend(stylelayerid,color_field,symbol,newlimits,newcolorlist);
+    // turn on legend if not
+    var legenddiv = document.getElementById(stylelayerid + "_legend");
+    if (legenddiv.style.display == "none") 
+    {
+        legenddiv.style.display = "block";
+    }
+  
+}
+
+// cancel style
+function cancel_style(stylelayerid){
+    var legenddiv = document.getElementById(stylelayerid + "_legend");
+    legenddiv.style.display = "block";
+    var stylediv = document.getElementById(stylelayerid + "_style");
+    stylediv.style.display = "none";
+}
 // for source
 function sourceOnEachFeature(feature, layer) {
     //bind click
@@ -193,6 +344,21 @@ function handleclick(id){
     return data;
 } 
 
+// function to caculate color map
+function colormap(geojson,opts){
+    var values = geojson.features.map(
+        e=>e.properties[opts.valueProperty]
+        );
+        //console.log(values);
+      var limits = chroma.limits(values, opts.mode, opts.steps - 1)
+    //console.log(limits)
+     var colorlist = (opts.colors && opts.colors.length === limits.length ?
+                    opts.colors :
+                    chroma.scale(opts.scale).colors(limits.length))
+    //console.log(colors);
+    return [limits,colorlist];
+}
+
 // load data by url
 async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
     var data = await getdata(dataurl);
@@ -203,6 +369,7 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
     }
     
     var newLayer;
+    var legend,limits,colorlist;
     if (!popup_fields || popup_fields.length === 0) {
         popup_fields = ["Name"];
     }
@@ -229,6 +396,17 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
         // load sink data
         // change sink symbol
         sink_shapeMakerOptions['shape'] = datasymbol;
+        // the default one is the data style
+        // caculate the limits and color first
+        var opts={};
+        opts["valueProperty"] = datastyle;
+        //q for quantile, e for equidistant, k for k-means
+        mode = {"q":'quantile','e':'equidistant'};
+        opts['mode']='q';
+        opts['steps']= 5;
+        opts['scale']= ['green','yellow','red'];
+        opts['colors']=[];  
+        [limits, colorlist] = colormap(data,opts);
         newLayer = new L.geoJSON(data,{
             pointToLayer: function (feature, latlng) {
             var content_str="<strong>Sink: <br>"
@@ -236,8 +414,9 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
                 content_str += entry + ": " + feature.properties[entry] + "<br>";
             }
             content_str += "</strong>";
-            var color_value = feature.properties[datastyle];
-            var fillcolor = getColor(color_value);
+            //var color_value = feature.properties[datastyle];
+            //var fillcolor = getColor(color_value);
+            var fillcolor = getcolor(feature.properties[opts.valueProperty],limits,colorlist);
             //var mymarker = L.circleMarker(latlng, sinkMarkerOptions);
             var mymarker = L.shapeMarker(latlng, sink_shapeMakerOptions);
             mymarker.setStyle({'fillColor':fillcolor});
@@ -246,22 +425,25 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
           },
           onEachFeature: sinkOnEachFeature,
         });
-       
-        // newLayer = new L.geoJSON(data, {style: function(feature){
-        //     var color_value = feature.properties[datastyle];
-        //     var fillcolor = getColor(color_value); 
-        //     return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.5,pane: "polygonsPane"};
-        //   },
-        //   onEachFeature: onEachFeatureClosure(popup_fields),
-        // });
+        legend = createLegend(datadesc['dataid'],datastyle,datasymbol,limits,colorlist);
     }
     else {
         newLayer = new L.geoJSON(data);
     }
 
     var radiostr='<input class="form-check-input"  type="radio" id="'+datadesc['dataid']+'" checked="checked" onclick=handleclick(this.id)>';
-    radiostr += '<label class="form-check-label" for="'+datadesc['dataid']+'">'+ datadesc['type'].charAt(0).toUpperCase() + datadesc['type'].slice(1)+":"+datadesc['name']+'</label><br>';
-    
+    radiostr += '<label class="form-check-label" for="'+datadesc['dataid']+'">'+ datadesc['type'].charAt(0).toUpperCase() + datadesc['type'].slice(1)+":"+datadesc['name']+"</label>";
+    if (datastyle && datadesc['type'] != 'source') {
+        radiostr += '<div style="margin-left: 10px;display: inline-block"; class="dropdown"> \
+        <button class="btn btn-sm dropdown-toggle" type="button" data-toggle="dropdown"> \
+        <i class="fas fa-layer-group"></i></button> \
+        <ul class="dropdown-menu"> \
+          <li><a class="dropdown-item" onclick=showlegend('+datadesc['dataid']+') href="#">Show/Hide Legend</a></li> \
+          <li><a class="dropdown-item" onclick=modifystyle('+datadesc['dataid']+') href="#">Modify Style</a></li> \
+        </ul> \
+      </div>';
+    }
+    radiostr += "<br>";
     $('#layercontrol').append(radiostr);
     // add selector
     if (datadesc['type'] == 'source') {
@@ -283,8 +465,13 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
     newLayer.addTo(map);
     maplayers[datadesc['dataid']] = newLayer;
     // ignore the source style for now
-    if (datastyle && datadesc['type'] != 'source') {       // generate legend
-            var legend = createLegend(datastyle,datasymbol);
+    if (datastyle && datadesc['type'] != 'source') {  
+            // atach an empty div for modify style
+            var stylediv = L.DomUtil.create('div');
+            // legend_div: id_legend
+            stylediv.id = datadesc['dataid'] + "_style";
+            stylediv.style.display = "none";
+            document.getElementById("layercontrol").appendChild(stylediv);
             document.getElementById("layercontrol").appendChild(legend);   
         } 
        
