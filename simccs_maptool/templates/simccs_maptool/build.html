@@ -51,6 +51,9 @@
       .experiment-list li {
             margin-bottom: .25rem;
       }
+      .experiment-list li:hover {
+            background-color: var(--light);
+      }
       .experiment-list .experiment {
             display: flex;
             align-items: flex-start;
@@ -716,7 +719,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
 
                         // Create a link to the experiment summary page
                         var list_view_experiment = document.getElementById("list_view_experiment_" + panelid);
-                        const li = create_experiment_listitem(ex_dict);
+                        const li = create_experiment_listitem(panelid, ex_dict);
                         list_view_experiment.appendChild(li);
 
                         // var caseViewExperimentLink = document.getElementById("case_view_experiment_" + panelid);
@@ -922,7 +925,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             // add experiments data
             var list_view_experiment = document.getElementById("list_view_experiment_" + panelid);
             for (const entry of scenario_data['experiments']) {
-                  const li = create_experiment_listitem(entry);
+                  const li = create_experiment_listitem(panelid, entry);
                   list_view_experiment.appendChild(li);
             }
             experiment_panel[panelid] = scenario_data['experiments'];
@@ -932,7 +935,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             scenario_title_panel[panelid] = title;
       }
 
-      function create_experiment_listitem(scenario_experiment) {
+      function create_experiment_listitem(panelid, scenario_experiment) {
 
             // Main structure
             // <li>
@@ -967,15 +970,22 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             errorDiv.classList.add('error');
             li.appendChild(errorDiv);
             if (scenario_experiment["experiment_result"]) {
-                  const button = document.createElement('button');
-                  button.innerHTML = `<i class="fas fa-plus"></i> Add`;
-                  button.classList.add("btn", "btn-sm", "btn-primary", "btn-block");
-                  button.dataset.showing = "false";
-                  button.dataset.experimentId = scenario_experiment["experiment_id"];
-                  button.dataset.experimentName = scenario_experiment["experiment_name"];
+                  const addButton = document.createElement('button');
+                  addButton.innerHTML = `<i class="fas fa-plus"></i> Add`;
+                  addButton.classList.add("btn", "btn-sm", "btn-primary", "btn-block");
+                  addButton.dataset.showing = "false";
+                  addButton.dataset.experimentId = scenario_experiment["experiment_id"];
+                  addButton.dataset.experimentName = scenario_experiment["experiment_name"];
                   // TODO: pass experiment_result and solution_summary into handle_experiment_add_remove_click?
-                  button.addEventListener('click', handle_experiment_add_remove_click);
-                  actions.appendChild(button);
+                  addButton.addEventListener('click', handle_experiment_add_remove_click);
+                  actions.appendChild(addButton);
+
+                  // add a download button that calls download_shapefiles
+                  const downloadShpButton = document.createElement('button');
+                  downloadShpButton.innerHTML = `<i class="fas fa-download"></i> .shp`;
+                  downloadShpButton.classList.add("btn", "btn-sm", "btn-primary", "btn-block", "mt-1");
+                  downloadShpButton.addEventListener('click', download_shapefiles.bind(null, {panelid, scenario_experiment}));
+                  actions.appendChild(downloadShpButton);
             }
             var a = document.createElement('a');
             a.href = scenario_experiment['experiment_url'];
@@ -1006,6 +1016,26 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             name.appendChild(badge);
 
             return li;
+      }
+
+      async function download_shapefiles({panelid, scenario_experiment}) {
+
+            // fetch experiment-result to force generation of shapefiles
+            await AiravataAPI.utils.FetchUtils.get(scenario_experiment['experiment_result']);
+            // construct download-experiments request: rename shapefiles based on (scenario title) + (experiment name)
+            const resp = await AiravataAPI.utils.FetchUtils.post("/sdk/download-experiments/", {
+                  experiments: [
+                        {
+                              experiment_id: scenario_experiment['experiment_id'],
+                              path: "shapeFiles",
+                              includes: [{
+                                    pattern: "Network.*", 
+                                    rename: `${scenario_title_panel[panelid]} ${scenario_experiment['experiment_name']}$ext`
+                              }],
+                        },
+                  ],
+            });
+            window.location.assign(resp.download_url);
       }
 
       async function handle_experiment_add_remove_click(e) {
