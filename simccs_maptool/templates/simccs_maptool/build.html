@@ -1028,10 +1028,20 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                         {
                               experiment_id: scenario_experiment['experiment_id'],
                               path: "shapeFiles",
-                              includes: [{
-                                    pattern: "Network.*", 
-                                    rename: `${scenario_title_panel[panelid]} ${scenario_experiment['experiment_name']}$ext`
-                              }],
+                              includes: [
+                                    {
+                                          pattern: "Network.*", 
+                                          rename: `${scenario_title_panel[panelid]}_solution_network_${scenario_experiment['experiment_name']}$ext`
+                                    },
+                                    {
+                                          pattern: "Sources.*", 
+                                          rename: `${scenario_title_panel[panelid]}_sources_${scenario_experiment['experiment_name']}$ext`
+                                    },
+                                    {
+                                          pattern: "Sinks.*", 
+                                          rename: `${scenario_title_panel[panelid]}_sinks_${scenario_experiment['experiment_name']}$ext`
+                                    },
+                              ],
                         },
                   ],
             });
