@@ -4,10 +4,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
 {% block css %}
-<!-- 
-<link rel="stylesheet" type="text/css" href="{% static 'css/MarkerCluster.css' %}" />
-<link rel="stylesheet" type="text/css" href="{% static 'css/MarkerCluster_Default.css' %}" />
--->
 <link rel="stylesheet" type="text/css" href="{% static 'css/leaflet.css' %}" />
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
 <style type="text/css">
@@ -89,9 +85,6 @@
       var bootstrapTooltip = $.fn.tooltip.noConflict();
 </script>
 <script src="{% static 'js/leaflet.js' %}"></script>
-<!--
-<script src="{% static 'js/leaflet.markercluster-src.js' %}"></script>
--->
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 <script src="{% static 'js/L.TileLayer.BetterWMS.js' %}" ></script>
 <script src="{% static 'js/leafletMap.js' %}" ></script>
@@ -1256,96 +1249,6 @@
                   //   layer.openPopup();
                   //       }
                   });});
-            //      map.on('draw:created', function(e) {
-            //       // // clear map, remove all layers
-            //       map.eachLayer(function (layer) {
-            //       //             //keep the basemap layer
-            //       if (layer != osm) {map.removeLayer(layer);layercontrol.removeLayer(layer);};
-            //              });
-            //       //layercontrol.remove();
-            //       layercontrol = L.control.layers(null,null,{collapsed:false});
-            //       layercontrol.remove();
-
-            //      var type = e.layerType,
-            //      layer = e.layer;
-            //      editableLayers.addLayer(layer);
-            //      var geom = layer.toGeoJSON()['geometry']['coordinates'];
-            //      if (type == 'circle') {layer.addTo(map);} 
-            //      var lbounds=layer.getBounds().pad(0.1);
-            //      //alert(lbounds.getCenter());
-            //      //alert(JSON.stringify(geom));
-            //      var coordstr=[];
-            //      for (i = 0, len = geom[0].length; i < len; i++) {
-            //      coordstr[i]= (geom[0][i].toString()).replace(',',' ');} 
-            //      //alert(coordstr.join(','));
-            //      var geourl='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&maxFeatures=500&outputFormat=text%2Fjavascript&format_options=callback:loadjson';
-            //      geourl += '&typeName=' + querylayers;
-            //      var cqlfilter = '&cql_filter=Intersects(the_geom,Polygon((';
-            //      cqlfilter += coordstr.join(',');
-            //      cqlfilter += ')))';
-            //      if (type == 'circle'){
-            //            cqlfilter = '&cql_filter=DWithin(the_geom,Point(';
-            //            cqlfilter += geom[0].toString() + ' '+geom[1].toString()+'),';
-            //            var latitude = geom[1];
-            //            var radius = 0.90 * layer.getRadius()/(111.32 * 1000 * Math.cos(latitude * (3.1415926 / 180)));
-            //            cqlfilter += radius.toString() + ',kilometers)';
-            //      }
-            //      geourl += cqlfilter;
-            //      //alert(cqlfilter);
-            //      //alert(geourl);
-            //      //get source layer
-            //      $.ajax({
-            //            url: geourl,
-            //            jsonp: "callback",
-            //            dataType: "jsonp"
-            //      });
-            //      //get sink layer
-            //      //var sinkurl='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:SCO2T_SALINE_Test&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
-            //      var sinkurl='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:SCO2T_v3_1_2_LowCost_SimCCS_10K&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer';
-            //      sinkurl += cqlfilter.replace("the_geom","geometry");
-            //      $.ajax({
-            //            url: sinkurl,
-            //            jsonp: "callback",
-            //            dataType: "jsonp"
-            //      });
-            //      var sinkurl2='https://simccs.org/geoserver/SimCCS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SimCCS:NATCARB_OG&maxFeatures=5000&outputFormat=text%2Fjavascript&format_options=callback:loadsinklayer2';
-            //      sinkurl2 += cqlfilter;
-            //      //$.ajax({
-            //      //      url: sinkurl2,
-            //      //      jsonp: "callback",
-            //      //      dataType: "jsonp"
-            //      //});
-            //      layer.remove();
-            //      //layer.setStyle({'color':'grey','fillOpacity': 0.0});
-            //      map.removeControl(drawControl);
-            //      drawControl=0;
-            //      layercontrol.addTo(map);
-            //      layercontrol.expand();
-            //      //hide allmap div
-            //      document.getElementById("allmap").style.display="none";
-            //      document.getElementById("casestudies_menu").style.display="none";     
-            //      document.getElementById("workingarea").style.display="block";
-            //      // interface for non-login user
-            //      if (! userIsAuthenticated) {
-            //       document.getElementById("loginuser_tools").style.display="none";
-            //       document.getElementById("nologinuser_msg").style.display="block";
-            //       //document.getElementById("southeastUS_div").style.display="block";
-            //       }
-            //       // pull the experiments result
-            //       if ( userIsAuthenticated) {
-            //       document.getElementById("loginuser_tools").style.display="block";      
-            //       document.getElementById("nologinuser_msg").style.display="none";
-            //       }
-
-            //      //testing code, add geotiff layer
-            //      var cost_image_url="https://simccs.org/geoserver/ows?service=WCS&version=2.0.0&request=GetCoverage&coverageId=SimCCS__cost&format=png";
-            //      // &subset=Lat(29.920588,33.381122)&subset=Long(-89.251876,-83.277539)";
-            //      cost_image_url += "&subset=Lat(" +lbounds.getSouth() +","+lbounds.getNorth() +")";
-            //      cost_image_url += "&subset=Long("+lbounds.getWest() + ","+lbounds.getEast() + ")";
-            //      var cost_image_bounds = lbounds;
-            //      var cost_surface =L.imageOverlay(cost_image_url,cost_image_bounds).addTo(map);
-            //      layercontrol.addOverlay(cost_surface,"Cost");
-            // });
            };
 
          function user_layer_control(event){
@@ -2925,77 +2828,6 @@
                               <strong>CO<sub>2</sub> Source Data</strong>
                         </div>
                         <div class="card-body" >
-                           <!--<label style="font-size: 12px;">Source</label>-->
-                           <!--
-                           <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_chemical" autocomplete="off">
-                              <label style="font-size: 100%;" class="form-check-label" for="source_sink_chemical">Chemical</label>
-                           </div>
-                           <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_coal" autocomplete="off">
-                              <label style="font-size: 100%;" class="form-check-label" for="source_sink_coal">Coal</label>
-                           </div>
-                           <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_flourinated" autocomplete="off">
-                              <label style="font-size: 100%;" class="form-check-label" for="source_sink_flourinated">Flourinated GHCs</label>
-                           </div>
-                           <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_industrial_gas" autocomplete="off">
-                              <label style="font-size: 100%;" class="form-check-label" for="source_sink_industrial_gas">Industrial Gas</label>
-                           </div>
-                           <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_co2_injecton" autocomplete="off">
-                              <label style="font-size: 100%;" class="form-check-label" for="source_sink_co2_injecton">Co2 Injection</label>
-                           </div>
-                           <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_metals" autocomplete="off">
-                              <label style="font-size: 100%;" class="form-check-label" for="source_sink_metals">Metals</label>
-                           </div>
-                           <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_minerals" autocomplete="off">
-                              <label style="font-size: 100%;" class="form-check-label" for="source_sink_minerals">Minerals</label>
-                           </div>
-                           <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_natural_gas" autocomplete="off">
-                              <label style="font-size: 100%;" class="form-check-label" for="source_sink_natural_gas">Natural Gas</label>
-                           </div>
-                           <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_others" autocomplete="off">
-                              <label style="font-size: 100%;" class="form-check-label" for="source_sink_others">Others</label>
-                           </div>
-                           <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_petroleum" autocomplete="off">
-                              <label style="font-size: 100%;" class="form-check-label" for="source_sink_petroleum">Petroleum Products</label>
-                           </div>
-                           <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_petro_natural" autocomplete="off">
-                              <label style="font-size: 100%;" class="form-check-label" for="source_sink_petro_natural">Petroleum & Natural Gas</label>
-                           </div>
-                           <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_power_plants" autocomplete="off">
-                              <label style="font-size: 100%;" class="form-check-label" for="source_sink_power_plants">Power Plants</label>
-                           </div>
-                           <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_pulp_paper" autocomplete="off">
-                              <label style="font-size: 100%;" class="form-check-label" for="source_sink_pulp_paper">Pulp/Paper</label>
-                           </div>
-                           <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_refineries" autocomplete="off">
-                              <label style="font-size: 100%;" class="form-check-label" for="source_sink_refineries">Refineries</label>
-                           </div>
-                           <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_co2_suppliers" autocomplete="off">
-                              <label style="font-size: 100%;" class="form-check-label" for="source_sink_co2_suppliers">Co2 Suppliers</label>
-                           </div>
-                           <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_waste" autocomplete="off">
-                              <label style="font-size: 100%;" class="form-check-label" for="source_sink_waste">Waste</label>
-                           </div>
-                           <div class="form-check form-check-inline">
-                              <input class="form-check-input" type="radio" id="source_sink_all_the_above" autocomplete="off">
-                              <label style="font-size: 100%;" class="form-check-label" for="source_sink_all_the_above">All the above</label>
-                           </div>
-                        -->                           
                         <div class="form-check form-check-inline">
                               <input class="form-check-input" type="radio" id="source_all_test" autocomplete="off">
                               <label style="font-size: 100%;" class="form-check-label" for="source_all_test"><strong>Sources</strong></label>
