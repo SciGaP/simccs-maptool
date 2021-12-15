@@ -50,7 +50,7 @@ MAPTOOL_SETTINGS = {
 ## Creating DB migrations
 
 ```
-django-admin makemigrations --pythonpath . --settings tests.test_settings simccs_maptool
+django-admin makemigrations --pythonpath . --settings simccs_maptool.tests.settings simccs_maptool
 ```
 
 ## Building the Vue.js frontend code
