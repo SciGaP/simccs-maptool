@@ -25,6 +25,8 @@ router.register(r"cases", views.CaseViewSet, basename="case")
 router.register(r"datasets", views.DatasetViewSet, basename="dataset")
 router.register(r"projects", views.SimccsProjectViewSet, basename="simccs-project")
 router.register(r"workspaces", views.WorkspaceViewSet, basename="workspace")
+router.register(r"notes", views.ScenarioExperimentNoteViewSet, basename="note")
+
 app_name = "simccs_maptool"
 urlpatterns = [
     re_path(r"^$", views.HomeView.as_view(), name="home"),

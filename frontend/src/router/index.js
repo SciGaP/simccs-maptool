@@ -10,6 +10,7 @@ import NewProjectContainer from "../components/NewProjectContainer.vue";
 import ProjectCasesContainer from "../components/ProjectCasesContainer.vue";
 import ProjectContainer from "../components/ProjectContainer.vue";
 import ProjectDatasetsContainer from "../components/ProjectDatasetsContainer.vue";
+import ProjectExperimentsContainer from "../components/ProjectExperimentsContainer.vue";
 import ProjectsHomeContainer from "../components/ProjectsHomeContainer.vue";
 import ProjectViewContainer from "../components/ProjectViewContainer.vue";
 import ViewDatasetContainer from "../components/ViewDatasetContainer.vue";
@@ -65,6 +66,12 @@ const routes = [
             path: "datasets",
             component: ProjectDatasetsContainer,
             name: "project-datasets",
+            props: true,
+          },
+          {
+            path: "experiments",
+            component: ProjectExperimentsContainer,
+            name: "project-experiments",
             props: true,
           },
         ],

@@ -177,6 +177,27 @@ class ScenarioExperiment(models.Model):
     dataset_versions = models.ManyToManyField(
         DatasetVersion, through="ScenarioExperimentDatasetVersion")
 
+    @staticmethod
+    def filter_by_user(request):
+        "Filter by project owner or current user is member of project's group"
+        group_ids = get_user_group_membership_ids(request)
+        # return SimccsProjects where the current user is a member of the
+        # project's group or the owner
+        return ScenarioExperiment.objects.filter(
+            Q(scenario__workspace__case__simccs_project__owner=request.user) |
+            Q(scenario__workspace__case__simccs_project__group__in=group_ids))
+
+
+class ScenarioExperimentNote(models.Model):
+    note_text = models.TextField()
+    experiment = models.ForeignKey(
+        ScenarioExperiment,
+        on_delete=models.CASCADE,
+        related_name="notes")
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
 
 class ScenarioExperimentDatasetVersion(models.Model):
     experiment = models.ForeignKey(ScenarioExperiment,

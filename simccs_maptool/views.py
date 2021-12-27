@@ -759,3 +759,18 @@ class WorkspaceViewSet(viewsets.ModelViewSet):
         if owner is not None:
             queryset = queryset.filter(owner__username=owner)
         return queryset
+
+
+class ScenarioExperimentNoteViewSet(viewsets.ModelViewSet):
+    serializer_class = serializers.ScenarioExperimentNoteSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        # only return Experiments that the user is the case's project's owner or
+        # the user is a member of the case's project's group
+        request = self.request
+        group_ids = models.get_user_group_membership_ids(request)
+        queryset = models.ScenarioExperimentNote.objects.filter(
+            Q(experiment__scenario__workspace__case__simccs_project__owner=request.user) |
+            Q(experiment__scenario__workspace__case__simccs_project__group__in=group_ids))
+        return queryset

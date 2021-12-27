@@ -1,6 +1,7 @@
 import io
 import logging
 import os
+from datetime import datetime
 
 from django.db import transaction
 from django.conf import settings
@@ -179,13 +180,19 @@ class SimccsProjectPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
         return models.SimccsProject.filter_by_user(request)
 
 
+class ScenarioExperimentPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
+    def get_queryset(self):
+        request = self.context['request']
+        return models.ScenarioExperiment.filter_by_user(request)
+
+
 class DatasetVersionSerializer(serializers.ModelSerializer):
 
     url = serializers.SerializerMethodField()
     original_url = serializers.SerializerMethodField()
     original_filename = serializers.SerializerMethodField()
-    dataset = serializers.HyperlinkedRelatedField(view_name='simccs_maptool:dataset-detail',
-                                                  read_only=True)
+    dataset = serializers.HyperlinkedRelatedField(
+        view_name='simccs_maptool:dataset-detail', read_only=True)
 
     class Meta:
         model = models.DatasetVersion
@@ -317,7 +324,11 @@ class DatasetSerializer(serializers.ModelSerializer):
     def _transform_text_file(self, input_file, dataset_type):
         # assume the delimiter is "tab"
         rawdata = pd.read_csv(input_file, sep="\t", index_col=False)
-        rawdata.rename(columns=partial(self._map_column_names, dataset_type=dataset_type), inplace=True)
+        rawdata.rename(
+            columns=partial(
+                self._map_column_names,
+                dataset_type=dataset_type),
+            inplace=True)
         self._verify_all_columns_exist(rawdata, dataset_type)
         # convert to a geopandas object
         geodata = gpd.GeoDataFrame(
@@ -580,14 +591,31 @@ class ScenarioSinkSerializer(serializers.ModelSerializer):
         fields = ('sink_id', 'dataset')
 
 
+class ScenarioExperimentNoteSerializer(serializers.ModelSerializer):
+    owner = serializers.SlugRelatedField(slug_field='username', read_only=True)
+    experiment = ScenarioExperimentPrimaryKeyRelatedField()
+
+    class Meta:
+        model = models.ScenarioExperimentNote
+        fields = ('id', 'note_text', 'experiment', 'created', 'updated', 'owner')
+        read_only_fields = ('owner',)
+
+    def create(self, validated_data):
+        request = self.context['request']
+        note = models.ScenarioExperimentNote.objects.create(
+            owner=request.user, **validated_data)
+        return note
+
+
 class ScenarioExperimentSerializer(serializers.ModelSerializer):
     experiment_id = serializers.CharField(max_length=255)
     parameters = ParametersSerializer()
     dataset_versions = DatasetVersionSerializer(many=True, read_only=True)
+    notes = ScenarioExperimentNoteSerializer(many=True, read_only=True)
 
     class Meta:
         model = models.ScenarioExperiment
-        fields = ('experiment_id', 'parameters', 'dataset_versions')
+        fields = ('id', 'experiment_id', 'parameters', 'dataset_versions', 'notes')
 
     def to_representation(self, instance):
         request = self.context['request']
@@ -604,6 +632,8 @@ class ScenarioExperimentSerializer(serializers.ModelSerializer):
             result['experiment_name'] = experiment.experimentName
             result['experiment_state'] = ExperimentState._VALUES_TO_NAMES[
                 experiment.experimentStatus[-1].state]
+            result['experiment_created'] = datetime.utcfromtimestamp(
+                experiment.creationTime / 1000).isoformat() + "Z"
             has_soln_file = [o
                              for o in experiment.experimentOutputs
                              if o.name == "Cplex-solution"]

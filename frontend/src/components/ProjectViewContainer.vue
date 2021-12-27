@@ -19,6 +19,15 @@
         }"
         >Datasets</b-nav-item
       >
+      <b-nav-item
+        exact-active-class="active"
+        exact
+        :to="{
+          name: 'project-experiments',
+          params: { projectId },
+        }"
+        >Experiments</b-nav-item
+      >
     </b-nav>
     <router-view></router-view>
   </b-card>
