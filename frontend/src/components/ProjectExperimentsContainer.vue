@@ -30,13 +30,7 @@
     </template>
 
     <template #cell(case)="data">
-      <small
-        v-if="cases[workspaceExperimentMapping[data.item.experiment_id].case]"
-      >
-        {{
-          cases[workspaceExperimentMapping[data.item.experiment_id].case].title
-        }}
-      </small>
+      <small>{{ data.value }}</small>
     </template>
 
     <template #cell(experiment_created)="data">
@@ -106,7 +100,9 @@
       </b-card>
       <b-card>
         <b-textarea v-model="row.item.new_note" class="mb-2" />
-        <b-button size="sm" @click="addNote(row.item)" variant="primary">Add Note</b-button>
+        <b-button size="sm" @click="addNote(row.item)" variant="primary"
+          >Add Note</b-button
+        >
       </b-card>
     </template>
   </b-table>
@@ -126,7 +122,7 @@ export default {
       workspaces: null,
       checkedExperiments: [],
       selectAll: false,
-      cases: {},
+      cases: [],
     };
   },
   created() {
@@ -138,13 +134,12 @@ export default {
         `/maptool/api/workspaces/?project=${encodeURIComponent(this.projectId)}`
       );
 
-      for (const workspace of this.workspaces) {
-        if (!Object.prototype.hasOwnProperty.call(this.cases, workspace.case)) {
-          this.cases[workspace.case] = await utils.FetchUtils.get(
-            `/maptool/api/cases/${workspace.case}/`
-          );
-        }
-      }
+      const caseIds = [...new Set(this.workspaces.map((w) => w.case))];
+      this.cases = await Promise.all(
+        caseIds.map((caseId) =>
+          utils.FetchUtils.get(`/maptool/api/cases/${caseId}/`)
+        )
+      );
     },
     async downloadExperiments(experimentIds) {
       // fetch experiment-result to force generation of shapefiles
@@ -260,11 +255,38 @@ export default {
       }
       return mapping;
     },
+    caseExperimentMapping() {
+      const mapping = {};
+      if (
+        this.workspaces &&
+        this.workspaces.length > 0 &&
+        this.cases &&
+        this.cases.length > 0
+      ) {
+        for (const workspace of this.workspaces) {
+          for (const scenario of workspace.scenarios) {
+            for (const experiment of scenario.experiments) {
+              mapping[experiment.experiment_id] = this.cases.find(
+                (c) => c.id === workspace.case
+              );
+            }
+          }
+        }
+      }
+      return mapping;
+    },
     fields() {
       return [
         { key: "checked", label: "" },
         { key: "experiment_name", label: "Name" },
-        { key: "case", sortable: true },
+        {
+          key: "case",
+          sortable: true,
+          sortByFormatted: true,
+          formatter: (value, key, item) => {
+            return this.caseExperimentMapping[item.experiment_id]?.title;
+          },
+        },
         {
           key: "experiment_created",
           label: "Created",
