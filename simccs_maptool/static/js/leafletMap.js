@@ -122,13 +122,14 @@ var sink_sco2t_layer = L.tileLayer.betterWms("https://simccs.org/geoserver/SimCC
     format: 'image/png',
     transparent: true,
     attribution: "SimCCS",
-    propertyName: 'name,sinkcapacity,sinkfixedcost,wellfixedcost,wellvarom',
+    propertyName: 'Sink_ID,fieldCap_M,wellCap_Mt,varOM_d_tC',
     zIndex: 2
 });
 
-var sink_oil_eor_layer = L.tileLayer.wms("https://simccs.org/geoserver/SimCCS/wms?", {
+var sink_oil_eor_layer = L.tileLayer.betterWms("https://simccs.org/geoserver/SimCCS/wms?", {
     layers: 'SimCCS:NATCARB_OG_Test',
     format: 'image/png',
     transparent: true,
+    propertyName: 'FIELD_NAME,VOL_LOW,wellCap',
     zIndex: 3
 });
