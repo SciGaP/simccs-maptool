@@ -105,7 +105,7 @@ var source_all_test_layer_1 = L.tileLayer.betterWms("https://simccs.org/geoserve
     format: 'image/png',
     transparent: true,
     attribution: "SimCCS",
-    propertyName: 'Name,Type',
+    propertyName: 'Name,Type,Total_CO2_',
     zIndex: 99
 });
 
