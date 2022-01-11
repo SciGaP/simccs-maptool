@@ -639,7 +639,7 @@ function generatecandidatenetwork(panelid) {
     formData.set('sources', sourcedata);
     formData.set('sinks', sinkdata);
     formData.set('dataset', "Lower48US");
-    return AiravataAPI.utils.FetchUtils.post("/maptool/candidate-network/", formData).then(function( data ) {
+    const request = AiravataAPI.utils.FetchUtils.post("/maptool/candidate-network/", formData).then(function( data ) {
         // Note: 'data' includes Sinks and Sources but since those are
         // already displayed I'm opting to only display the Network
         var candidateNetworkLayer = L.geoJSON(null, {style:{color:"black",opacity:0.6,weight:3}});
@@ -653,7 +653,6 @@ function generatecandidatenetwork(panelid) {
         // save candidateNetworkLayer
         dynmaplayers['candidate_network_layer'] = candidateNetworkLayer;
         candidatenetwork_panel[panelid] = candidateNetworkLayer;
-        candidatenetwork_cached[panelid] = data["CandidateNetwork"];
         
         //console.log(candidatenetwork_panel);
         // Cache the candidate network
@@ -670,6 +669,9 @@ function generatecandidatenetwork(panelid) {
 
         return data;
   }).catch(display_error_modal);
+    // Cache the request for this candidate network so we only request it once
+    candidatenetwork_cached[panelid] = request;
+    return request;
 }
 
 function getSourceIds(selections) {
