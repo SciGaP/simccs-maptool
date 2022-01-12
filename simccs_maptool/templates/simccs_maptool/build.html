@@ -175,7 +175,7 @@ var sourceselection_panel = {}; // panelid:data
 var sinkselection_panel = {}; // panelid:data
 var experiment_panel = {}; //panelid: [eperiment]
 var candidatenetwork_panel = {}; // panelid: network layer
-var candidatenetwork_cached = {} // panelid: network data 
+var candidatenetwork_cached = {} // panelid: network request (Promise object)
 var solution_configs = new Map();
 var result_solutionNetworkLayers = new Map();
 // panelid: "Sources": data.sources, "Sinks": data.sinks,"Cplex-input-file": data.mps, "Dataset-id": current_dataset_id
@@ -533,7 +533,7 @@ function generatempsfile(panelid,showmodal=1,paras=[], filename=null) {
     // Use the cachedCandidateNetwork if the selected sources and sinks are the same
     var candidateNetworkRequest = null;
     if (candidatenetwork_cached.hasOwnProperty(panelid)) {
-          candidateNetworkRequest = Promise.resolve(candidatenetwork_cached[panelid]);
+          candidateNetworkRequest = candidatenetwork_cached[panelid].then(data => data["CandidateNetwork"]);
     } else {
           candidateNetworkRequest = generatecandidatenetwork(panelid).then(data => data["CandidateNetwork"]);
     }
