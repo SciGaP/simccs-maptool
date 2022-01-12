@@ -99,7 +99,7 @@ map.createPane("polygonsPane");
 map.createPane("linesPane");
 map.createPane("pointsPane");
 
-// hand grab cursor on map is good for click
+// hand grab cursor on map is not good for click
 document.getElementById('map').style.cursor = 'default';
 
 var source_all_test_layer_1 = L.tileLayer.betterWms("https://simccs.org/geoserver/SimCCS/ows?", {

@@ -21,7 +21,7 @@ map.createPane("toppointsPane");
 // for drawing
 map.createPane("drawingPane");
 
-// hand grab cursor on map is good for click
+// hand grab cursor on map is not good for click
 document.getElementById('map').style.cursor = 'default';
 
  // create the sidebar instance and add it to the map
