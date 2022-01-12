@@ -21,6 +21,9 @@ map.createPane("toppointsPane");
 // for drawing
 map.createPane("drawingPane");
 
+// hand grab cursor on map is good for click
+document.getElementById('map').style.cursor = 'default';
+
  // create the sidebar instance and add it to the map
  var sidebar = L.control.sidebar({ autopan: true, container: 'sidebar' }).addTo(map);
 
