@@ -99,6 +99,8 @@ map.createPane("polygonsPane");
 map.createPane("linesPane");
 map.createPane("pointsPane");
 
+document.getElementById('map').style.cursor = 'default';
+
 var source_all_test_layer_1 = L.tileLayer.betterWms("https://simccs.org/geoserver/SimCCS/ows?", {
     //layers: 'SimCCS_Sources_Snapper',
     layers: 'Sources_082819_SimCCS_Format',
