@@ -1661,9 +1661,12 @@
             sourceLayer.clearLayers();
            sinkLayer.clearLayers();
 
-            layercontrol = L.control.layers(null,null,{collapsed:ture});
+            layercontrol = L.control.layers(null,null,{collapsed:true});
             layercontrol.remove(map);
           //layercontrol.layers()._update;
+            if (solutionSummaryControl) {
+                  solutionSummaryControl.remove();
+            }
          };
       
       // references to all of the experiments solution and candidate network layers, keyed by experiment id
