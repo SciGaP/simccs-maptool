@@ -1,0 +1,3 @@
+recursive-include simccs_maptool/static *
+recursive-include simccs_maptool/templates *
+recursive-include simccs_maptool/simccs *

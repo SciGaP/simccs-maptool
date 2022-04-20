@@ -33,6 +33,7 @@ setuptools.setup(
     version="0.0.1",
     description="SimCCS MapTool plugin to Airavata Django Portal",
     packages=setuptools.find_packages(),
+    include_package_data=True,
     install_requires=[
         'django>=1.11.16',
         'cython',
