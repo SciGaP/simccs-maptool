@@ -3,23 +3,25 @@ import os
 import subprocess
 
 import setuptools
-from setuptools.command.sdist import sdist
+from setuptools.command.develop import develop
+from setuptools.command.install import install
 
 
 def build_js():
-    subprocess.check_call(
-        ["yarn", "install"],
-        cwd=os.path.join(os.getcwd(), "frontend"))
-    subprocess.check_call(
-        ["yarn", "run", "build"],
-        cwd=os.path.join(os.getcwd(), "frontend"))
+    subprocess.check_call(["yarn", "install"], cwd=os.path.join(os.getcwd(), "frontend"))
+    subprocess.check_call(["yarn", "run", "build"], cwd=os.path.join(os.getcwd(), "frontend"))
+
 
 # Build JS code when this package is installed in virtual env
 # https://stackoverflow.com/a/36902139
-# https://stackoverflow.com/a/39910257
+class BuildJSDevelopCommand(develop):
+    def run(self):
+        self.announce("Building JS code", level=distutils.log.INFO)
+        build_js()
+        super().run()
 
 
-class BuildSdistCommand(sdist):
+class BuildJSInstallCommand(install):
     def run(self):
         self.announce("Building JS code", level=distutils.log.INFO)
         build_js()
@@ -50,6 +52,7 @@ simccs_maptool = simccs_maptool.apps:MapToolConfig
 cplex-solution-link = simccs_maptool.output_views:SolutionLinkProvider
 """,
     cmdclass={
-        'sdist': BuildSdistCommand,
+        'develop': BuildJSDevelopCommand,
+        'install': BuildJSInstallCommand,
     }
 )

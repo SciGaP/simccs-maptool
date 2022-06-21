@@ -5,4 +5,3 @@ venv/
 .DS_Store
 *.class
 dist
-build
