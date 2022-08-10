@@ -22,7 +22,7 @@ from django.http import JsonResponse
 from django.urls import reverse
 from django.views.generic import TemplateView
 from rest_framework import parsers, permissions, viewsets
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 
 from simccs_maptool import datasets, models, serializers
@@ -493,6 +493,7 @@ def _write_shapefile_to_geojson(shapefile, geojson_f):
     )
 
 
+@api_view(['POST'])
 @max_concurrent_java_calls
 def candidate_network(request):
 

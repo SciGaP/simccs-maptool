@@ -743,12 +743,30 @@
     </div>
   </div>
 </div>`;
-            $(m_html)
-                  .appendTo('body')
-                  .modal('show')
-                  .on('hidden.bs.modal', (e) => $(e.target).remove())
-                  .find(".error-message")
-                  .text(message);
+            const $modal = $(m_html)
+                              .appendTo('body')
+                              .modal('show')
+                              .on('hidden.bs.modal', (e) => $(e.target).remove());
+            if (AiravataAPI.errors.ErrorUtils.isUnauthenticatedError(error)) {
+                  $modal.find(".error-message").html(build_unauthenticated_error_message_html());
+            } else {
+                  $modal.find(".error-message").text(message);
+            }
+      }
+
+      function build_unauthenticated_error_message_html() {
+          let currentURL = window.location.pathname;
+          if (window.location.search) {
+            currentURL += "?" + window.location.search;
+          }
+          const loginURL = `/auth/login?next=${encodeURIComponent(currentURL)}`;
+          return `Your login session has expired. Please
+            <a href="${loginURL}">log in again</a>. You can also
+            <a href="/auth/login" target="_blank">login in a separate tab
+                  <i class="fa fa-external-link-alt" aria-hidden="true"></i
+            ></a>
+            and then return to this tab and try again.
+          `;
       }
 
       function clear_invalid_feedback(elem) {
