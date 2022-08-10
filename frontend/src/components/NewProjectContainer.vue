@@ -1,16 +1,20 @@
 <template>
-  <project-editor
-    :value="project"
-    :serverValidationErrors="serverValidationErrors"
-    @submit="onSubmit"
-  />
+  <div>
+    <notifications-display />
+    <project-editor
+      :value="project"
+      :serverValidationErrors="serverValidationErrors"
+      @submit="onSubmit"
+    />
+  </div>
 </template>
 
 <script>
 import ProjectEditor from "./ProjectEditor.vue";
 const { errors, utils } = AiravataAPI;
+const { NotificationsDisplay } = window.CommonUI || {};
 export default {
-  components: { ProjectEditor },
+  components: { ProjectEditor, NotificationsDisplay },
 
   data() {
     return {

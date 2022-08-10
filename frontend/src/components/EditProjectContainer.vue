@@ -1,19 +1,23 @@
 <template>
-  <project-editor
-    v-if="project"
-    :value="project"
-    :serverValidationErrors="serverValidationErrors"
-    @submit="onSubmit"
-    @transferOwnership="onTransferOwnership"
-  />
+  <div>
+    <notifications-display />
+    <project-editor
+      v-if="project"
+      :value="project"
+      :serverValidationErrors="serverValidationErrors"
+      @submit="onSubmit"
+      @transferOwnership="onTransferOwnership"
+    />
+  </div>
 </template>
 
 <script>
 import ProjectEditor from "./ProjectEditor.vue";
 
 const { errors, utils } = AiravataAPI;
+const { NotificationsDisplay } = window.CommonUI || {};
 export default {
-  components: { ProjectEditor },
+  components: { ProjectEditor, NotificationsDisplay },
   props: {
     projectId: {
       type: [String, Number],
