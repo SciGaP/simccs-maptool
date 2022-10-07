@@ -747,7 +747,7 @@
                               .appendTo('body')
                               .modal('show')
                               .on('hidden.bs.modal', (e) => $(e.target).remove());
-            if (AiravataAPI.errors.ErrorUtils.isUnauthenticatedError(error)) {
+            if (isUnauthenticatedError(error)) {
                   $modal.find(".error-message").html(build_unauthenticated_error_message_html());
             } else {
                   $modal.find(".error-message").text(message);
@@ -755,18 +755,15 @@
       }
 
       function build_unauthenticated_error_message_html() {
-          let currentURL = window.location.pathname;
-          if (window.location.search) {
-            currentURL += window.location.search;
-          }
-          const loginURL = `/auth/login?next=${encodeURIComponent(currentURL)}`;
-          return `Your login session has expired. Please
-            <a href="${loginURL}">log in again</a>. You can also
-            <a href="/auth/login" target="_blank">login in a separate tab
-                  <i class="fa fa-external-link-alt" aria-hidden="true"></i
+            const loginURLWithNext = AiravataAPI.errors.ErrorUtils.buildLoginUrl(true);
+            const loginURL = AiravataAPI.errors.ErrorUtils.buildLoginUrl(false);
+            return `Your login session has expired. Please
+            <a href="${loginURLWithNext}">log in again</a>. You can also
+            <a href="${loginURL}" target="_blank">login in a separate tab
+                        <i class="fa fa-external-link-alt" aria-hidden="true"></i
             ></a>
             and then return to this tab and try again.
-          `;
+            `;
       }
 
       function clear_invalid_feedback(elem) {
@@ -1774,7 +1771,7 @@
             } catch (error) {
                   // experiment_result_errors.set(experiment_id, error.message);
                   // If user isn't logged in, display modal instead of an inline error message
-                  if (AiravataAPI.errors.ErrorUtils.isUnauthenticatedError(error)) {
+                  if (isUnauthenticatedError(error)) {
                         display_error_modal(error);
                   } else {
                         render_experiment_list({[experiment_id]: error.message});

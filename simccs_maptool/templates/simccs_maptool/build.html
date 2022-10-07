@@ -1100,7 +1100,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
       function render_experiment_listitem_error(button, error) {
 
             // If user isn't logged in, display modal instead of an inline error message, and return
-            if (AiravataAPI.errors.ErrorUtils.isUnauthenticatedError(error)) {
+            if (isUnauthenticatedError(error)) {
                   display_error_modal(error);
                   return;
             }
