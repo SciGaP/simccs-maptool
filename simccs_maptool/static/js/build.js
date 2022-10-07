@@ -720,7 +720,7 @@ function display_error_modal(error, message) {
 function build_unauthenticated_error_message_html() {
     let currentURL = window.location.pathname;
     if (window.location.search) {
-    currentURL += "?" + window.location.search;
+    currentURL += window.location.search;
     }
     const loginURL = `/auth/login?next=${encodeURIComponent(currentURL)}`;
     return `Your login session has expired. Please

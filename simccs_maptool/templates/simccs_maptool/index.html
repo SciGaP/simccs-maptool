@@ -112,11 +112,11 @@
          // TODO: replace with global user session object
          var userIsAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
          $(document).ready(function() {
-      
+
            load_current_experiment();
            //map.addLayer(ordos_source_cluster);
            //map.addLayer(france_source_cluster);
-         
+
            //$('#species_selector').selectpicker();
            $( "#slider-range" ).slider({
       range: true,
@@ -229,10 +229,10 @@
                              case "user_cost": map.removeLayer(user_cost_surface); break;
                              case "result_sourceLayer": map.removeLayer(result_sourceLayer); break;
                              case "result_sinkLayer": map.removeLayer(result_sinkLayer); break;
-                             case "result_networkLayer": map.removeLayer(result_networkLayer); break;        
-                             case "result_candidnetworkLayer": map.removeLayer(result_candidnetworkLayer); break;        
+                             case "result_networkLayer": map.removeLayer(result_networkLayer); break;
+                             case "result_candidnetworkLayer": map.removeLayer(result_candidnetworkLayer); break;
                          }
-         
+
                      } else {
                          isChecked = true;
                          switch(radio_button_id){
@@ -261,7 +261,7 @@
                  }
              }
          })());
-         
+
          // continue document ready funtion
             $('#checkbox_southeastUS').change(function(){
 			if(this.checked) {
@@ -280,7 +280,7 @@
                               //keep the basemap layer
                               if (layer != osm) {layercontrol.removeLayer(layer);map.removeLayer(layer);};
                               });
-                        
+
                   }
             });
         // continue document ready funtion
@@ -292,12 +292,12 @@
                         remove_experiment_result(this.value);
                   }
             });
- 
+
             // conitune document ready function
             $('#user_select_names').on('changed.bs.select', function (e) {
                   var selected_ids = $(this).val();
                   var elayer;
-                  // first handle deselect all 
+                  // first handle deselect all
                   if (selected_ids.length == 0) {
                     for (elayer of selection) {
                         elayer.setStyle(geojsonMarkerOptions);
@@ -329,14 +329,14 @@
 
             //var legend = createLegend('Capture Cost($/tCO2)');
             var legend = createLegendbyList('Capture Cost($/tCO2)',[["green","0 - 5"],["yellow","5 - 25"],["red","25 +"]]);
-            document.getElementById("sink_saline_div").appendChild(legend); 
+            document.getElementById("sink_saline_div").appendChild(legend);
             var linebreak = document.createElement("br");
             document.getElementById("sink_saline_div").appendChild(linebreak);
             legend = createLegendbyList("CO2 Storage",[["red","Low"],["yellow","Med"],["green","High"]]);
             document.getElementById("sink_OG_div").appendChild(legend);
 
          }); // end of document ready function
-         
+
          var geojsonMarkerOptions = {
          radius: 8,
          fillColor: "red",
@@ -346,7 +346,7 @@
          fillOpacity: 0.8,
          pane: "pointsPane"
          };
-         
+
          var geojsonMarkerOptions_green = {
          radius: 8,
          fillColor: "blue",
@@ -356,7 +356,7 @@
          fillOpacity: 0.8,
          pane: "pointsPane"
          };
-      
+
          var selection=[];
          var selection_green=[];
          var sinkselection=[];
@@ -370,7 +370,7 @@
                  selection.push(e.target);}
            document.dispatchEvent(new Event("source-selection-change"));
          })};
-         
+
          function sinkOnEachFeature(feature, layer) {
          //bind click
          //layer.bindTooltip("<strong>Saline Sink: <br>Name: "+feature.properties['name']+"<br>"+"fieldCap(MtCO2): "+feature.properties['fieldcap_mtco2'].toString()+"<br>"+"varO&M($/tCO2): "+feature.properties['varom_d_tco2'].toString()+"<strong>");
@@ -382,7 +382,7 @@
                  sinkselection.push(e.target);}
            document.dispatchEvent(new Event("sink-selection-change"));
          })};
-         
+
          function sinkOnEachFeature2(feature, layer) {
          //bind click
          layer.bindTooltip("<strong>Oil/Gas Sink: <br>Name: "+ feature.properties.FIELD_NAME + "<br>CO2_Low(t):"+feature.properties.VOL_LOW.toString()+"<strong>");
@@ -401,33 +401,33 @@
            var mymarker = L.circleMarker(latlng, geojsonMarkerOptions);
            //mymarker.bindPopup(mypopup);
            mymarker.bindTooltip(content_str);
-           return mymarker;       
+           return mymarker;
          },
          //pane: "pointsPane",
          onEachFeature: sourceOnEachFeature
          });
-         
+
          var sinkLayer = new L.geoJSON('',{style: function(feature){
            var co2 = feature.properties['varOM_d_tC'];
-           var fillcolor = ''; 
-           if (co2 > 25.0) {fillcolor = 'red';} 
+           var fillcolor = '';
+           if (co2 > 25.0) {fillcolor = 'red';}
            else if (co2 > 5.0 && co2 <= 25.0) {fillcolor ='yellow'}
            else {fillcolor = 'green'}
            return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.6,pane: "polygonsPane"};
          },
-         
+
          onEachFeature: sinkOnEachFeature
          })
-         
+
          var sinkLayer2 = new L.geoJSON('',{style: function(feature){
            var co2 = feature.properties.VOL_LOW;
-           var fillcolor = ''; 
-           if (co2 <=10) {fillcolor = '#f50000';} 
+           var fillcolor = '';
+           if (co2 <=10) {fillcolor = '#f50000';}
            else if (co2 >10 && co2 <= 50) {fillcolor ='#fdff00'}
            else {fillcolor = '#00f905'}
            return {'color':'grey','weight':1,'fillColor':fillcolor,'fillOpacity': 0.6,pane: "polygonsPane"};
          },
-         
+
          onEachFeature: sinkOnEachFeature2
          })
 
@@ -451,13 +451,13 @@
                }
                // If there is a cachedCandidateNetwork and the cached sources
                // and sinks haven't changed, disable the button
-               else if (Maptool.cachedCandidateNetwork 
-                        && setsAreEqual(sources, Maptool.cachedCandidateNetworkSourceIds) 
+               else if (Maptool.cachedCandidateNetwork
+                        && setsAreEqual(sources, Maptool.cachedCandidateNetworkSourceIds)
                         && setsAreEqual(sinks, Maptool.cachedCandidateNetworkSinkIds)) {
                      disabled = true;
                }
                // Update button
-               var button = isCase ? 
+               var button = isCase ?
                         document.querySelector("#bn_case_generatecandidatenetwork") :
                         document.querySelector("#bn_generatecandidatenetwork");
                if (button) {
@@ -475,7 +475,7 @@
                      disabled = true;
                }
                // Update button
-               var button = isCase ? 
+               var button = isCase ?
                         document.querySelector("#bn_case_generatemps") :
                         document.querySelector("#bn_generatemps");
                if (button) {
@@ -495,14 +495,14 @@
                  for (entry of data['features']) {
                   ukey = entry['properties']['ID'];
                   uvalue = entry['properties']['Name'].trim();
-                  // pick up first 15 
+                  // pick up first 15
                   if (uvalue.length > 20) {uvalue = uvalue.slice(0,20) + "...";}
                   namelists.push('<option value="'+ ukey +'">'+ uvalue +'</option>');
                   }
                   $('#user_select_names').append(namelists.join(''));
                   $('#user_select_names').selectpicker('refresh');
            }
-         
+
            function loadsinklayer(data) {
                  sinkLayer.addData(data);
                  sinkLayer.addTo(map);
@@ -522,7 +522,7 @@
                  $('#slider-range-user-sinkcost').slider( "option", "values", [cost_min,cost_max]);
                  $( "#amount-user-sinkcost" ).val( cost_min.toFixed(1) + " - " + cost_max.toFixed(2));
             }
-           
+
            function loadsinklayer2(data) {
                  sinkLayer2.addData(data);
                  sinkLayer2.addTo(map);
@@ -556,12 +556,12 @@
            var mymarker = L.circleMarker(latlng, geojsonMarkerOptions);
            //mymarker.bindPopup(mypopup);
            mymarker.bindTooltip(content_str);
-           return mymarker;       
+           return mymarker;
          },
          //pane: "pointsPane",
          onEachFeature: sourceOnEachFeature
          });
-      
+
            function case_loadsource(data) {
                  case_sourceLayer.addData(data);
                  case_sourceLayer.addTo(map);
@@ -586,7 +586,7 @@
            var mymarker = L.circleMarker(latlng, geojsonMarkerOptions_green);
            //mymarker.bindPopup(mypopup);
            mymarker.bindTooltip(content_str);
-           return mymarker;       
+           return mymarker;
          },
          //pane: "pointsPane",
          onEachFeature: sourceOnEachFeature_green
@@ -609,7 +609,7 @@
                   case_sinkLayer.eachLayer(function(layer) {
                         var target_id = selection_green.indexOf(layer);
                         if (target_id <0) {layer.remove();};
-                  }); 
+                  });
                   $("#case_hideunselected_btn").html("Show unselected data");
                   $("#case_hideunselected_btn").val("unhide");}
             else {
@@ -620,12 +620,12 @@
                   case_sinkLayer.eachLayer(function(layer) {
                         var target_id = selection_green.indexOf(layer);
                         if (target_id <0) {layer.addTo(map);};
-                  }); 
+                  });
                   $("#case_hideunselected_btn").html("Hide unselected data");
                   $("#case_hideunselected_btn").val("hide");
             }
       };
-      
+
       function case_generateinputfile() {
             if (selection.length == 0 ) {alert('No soruces are selected!');return}
             if (selection_green.length == 0 ) {alert('No sinks are selected!');return}
@@ -634,11 +634,11 @@
 
             // generate generate Sinks.txt
             var sinkdata=case_generatesinkdata();
-            downloadcsv(sourcedata, "Sources.txt", "text/plain","case_sources_input"); 
-            downloadcsv(sinkdata, "Sinks.txt", "text/plain","case_sinks_input"); 
+            downloadcsv(sourcedata, "Sources.txt", "text/plain","case_sources_input");
+            downloadcsv(sinkdata, "Sinks.txt", "text/plain","case_sinks_input");
             document.getElementById("case_downloadsource_div").style.display="block";
             document.getElementById("case_downloadsink_div").style.display="block";
-     
+
       }
 
       function case_generatesourcedata() {
@@ -677,7 +677,7 @@
             }
             return sinkdata;
       }
-      
+
       function case_generatecandidatenetwork() {
 
             if (selection.length == 0 ) {alert('No sources are selected!');return}
@@ -757,7 +757,7 @@
       function build_unauthenticated_error_message_html() {
           let currentURL = window.location.pathname;
           if (window.location.search) {
-            currentURL += "?" + window.location.search;
+            currentURL += window.location.search;
           }
           const loginURL = `/auth/login?next=${encodeURIComponent(currentURL)}`;
           return `Your login session has expired. Please
@@ -839,7 +839,7 @@
             formData.set('dataset', current_dataset_id);
             // Use the cachedCandidateNetwork if the selected sources and sinks are the same
             if (Maptool.cachedCandidateNetwork
-                        && setsAreEqual(case_getSourceIds(), Maptool.cachedCandidateNetworkSourceIds) 
+                        && setsAreEqual(case_getSourceIds(), Maptool.cachedCandidateNetworkSourceIds)
                         && setsAreEqual(case_getSinkIds(), Maptool.cachedCandidateNetworkSinkIds)) {
                   formData.set('candidateNetwork', Maptool.cachedCandidateNetwork);
             }
@@ -875,7 +875,7 @@
                   "Cplex-input-file": data.mps,
                   "Dataset-id": current_dataset_id,
                   "Candidate-Network": data['candidate-network'],
-            }; 
+            };
             var submitExpButton = document.querySelector("#bn_case_submitexp");
             submitExpButton.disabled = false;
 
@@ -885,7 +885,7 @@
             })
             .then((result) => result.text())
             .then(mpsFile => {
-                  downloadcsv(mpsFile, "cap.mps", "text/plain","case_download_mps"); 
+                  downloadcsv(mpsFile, "cap.mps", "text/plain","case_download_mps");
                   document.getElementById("case_download_mps").style.display = 'inline';
             });
 
@@ -998,21 +998,21 @@
 
       }
 
-           
+
            //get the list of selected source layers
            function get_selectedsourcelayers(){
                   // find all radio button id start with "source_"
                   var queryfields=[];
                   var source_dict = {};
                   source_dict['source_sink_chemical']='SimCCS:Source_Chemicals';
-                  source_dict['source_sink_coal']='SimCCS:Source_Coal-based_Liquid_Fuel_Supply';	
+                  source_dict['source_sink_coal']='SimCCS:Source_Coal-based_Liquid_Fuel_Supply';
                   source_dict['source_sink_flourinated']='SimCCS:Source_Import_and_Export_of_Equipment_Containing_Fluorintaed_GHGs';
-                  source_dict['source_sink_industrial_gas']='SimCCS:Source_Industrial_Gas_Suppliers';	
-                  source_dict['source_sink_co2_injecton']='SimCCS:Source_Injection_of_CO2';	
-                  source_dict['source_sink_metals']='SimCCS:Source_Metals';	
-                  source_dict['source_sink_minerals']='SimCCS:Source_Minerals';	
+                  source_dict['source_sink_industrial_gas']='SimCCS:Source_Industrial_Gas_Suppliers';
+                  source_dict['source_sink_co2_injecton']='SimCCS:Source_Injection_of_CO2';
+                  source_dict['source_sink_metals']='SimCCS:Source_Metals';
+                  source_dict['source_sink_minerals']='SimCCS:Source_Minerals';
                   source_dict['source_sink_natural_gas']='SimCCS:Source_Natural_Gas_and_Natural_Gas_Liquids_Suppliers';
-                  source_dict['source_sink_others']='SimCCS:Source_Other';	
+                  source_dict['source_sink_others']='SimCCS:Source_Other';
                   source_dict['source_sink_petroleum']='SimCCS:Source_Petroleum_Product_Suppliers';
                   source_dict['source_sink_petro_natural']='SimCCS:Source_Petroleum_and_Natural_Gas_Systems';
                   source_dict['source_sink_power_plants']='SimCCS:Source_Power_Plants';
@@ -1038,11 +1038,11 @@
             //alert(layer.toGeoJSON()['geometry']['coordinates']);
             var selecteddata = L.layerGroup();
             var searchlayerflag = false;
-            if (map.hasLayer(searchlayer)) { 
+            if (map.hasLayer(searchlayer)) {
                   searchlayerflag = true;
                   searchlayer.eachLayer(function(elayer) {
                   var contains = turf.inside(elayer.toGeoJSON(), layer.toGeoJSON());
-                  if (contains){ 
+                  if (contains){
                         selecteddata.addLayer(elayer);
                   }});}
             // then clean map
@@ -1054,16 +1054,16 @@
             var geom = layer.toGeoJSON()['geometry']['coordinates'];
             var coordstr=[];
             for (i = 0, len = geom[0].length; i < len; i++) {
-             coordstr[i]= (geom[0][i].toString()).replace(',',' ');} 
+             coordstr[i]= (geom[0][i].toString()).replace(',',' ');}
             var geom_str = coordstr.join(',');
             //callback:loadjson
             //load sources layer
-            if (searchlayerflag) { 
+            if (searchlayerflag) {
                   loadjson(selecteddata.toGeoJSON());
 
             } else {
                   $.getJSON("/maptool/get-data",{geom:geom_str,method:'data',layer:'source'})
-                  .done(function(data){loadjson(data)}); 
+                  .done(function(data){loadjson(data)});
             }
             // load loadsinklayer
             var ex_cql_filter = "";
@@ -1085,7 +1085,7 @@
             lbounds=layer.getBounds().pad(0.2);
             map.fitBounds(lbounds);
             document.getElementById("allmap").style.display="none";
-            document.getElementById("casestudies_menu").style.display="none";     
+            document.getElementById("casestudies_menu").style.display="none";
             document.getElementById("workingarea").style.display="block";
             // set radio button checked
             document.getElementById("user_cost").checked = true;
@@ -1101,7 +1101,7 @@
             }
             // pull the experiments result
             if ( userIsAuthenticated) {
-            document.getElementById("loginuser_tools").style.display="block";      
+            document.getElementById("loginuser_tools").style.display="block";
             document.getElementById("nologinuser_msg").style.display="none";
             }
 
@@ -1142,7 +1142,7 @@
             var geom = layer.toGeoJSON()['geometry']['coordinates'];
             var coordstr=[];
             for (i = 0, len = geom[0].length; i < len; i++) {
-             coordstr[i]= (geom[0][i].toString()).replace(',',' ');} 
+             coordstr[i]= (geom[0][i].toString()).replace(',',' ');}
             var geom_str = coordstr.join(',');
             var totalsource=0;
             var totalcapturable = 0;
@@ -1165,7 +1165,7 @@
                   var pop_str='';
                   pop_str+='<p style="font-size:14px">';
                   pop_str += "Area: "+ (area/1000000.0).toFixed(2) + " km2" + '<br>';
-                  if (map.hasLayer(searchlayer)) { 
+                  if (map.hasLayer(searchlayer)) {
                         pop_str += "No. of Sources: " + totalsource.toString() + "<br>";
                         pop_str += "Capturable CO2: " + totalcapturable.toFixed(2) + " MtCO2/yr<br>";
                   } else {
@@ -1202,9 +1202,9 @@
            function show_drawingtool(){
                   var querylayers = '';
                   querylayers = get_selectedsourcelayers();
-                 //if (querylayers == ''){alert("Please select at least one source!"); return;} 
+                 //if (querylayers == ''){alert("Please select at least one source!"); return;}
                  // load source layer if not selected
-                 if (map.hasLayer(searchlayer)) { querylayers = "searchlayer";} 
+                 if (map.hasLayer(searchlayer)) { querylayers = "searchlayer";}
                  else {
                         if (querylayers == '') {
                               // load source layer
@@ -1253,7 +1253,7 @@
                   if (content !== null) {
                         layer.bindPopup(content);
                   }
-                  editableLayers.addLayer(layer);  
+                  editableLayers.addLayer(layer);
                   //layer.openPopup();
                  }
                  );
@@ -1272,7 +1272,7 @@
          function user_layer_control(event){
             var isChecked = event.checked;
             alert(isChecked);
-         } 
+         }
 
          function hideunselected() {
             var btn_status = $("#hideunselected_btn").val();
@@ -1329,12 +1329,12 @@
 
             var sinkdata=generatesinkdata();
 
-            downloadcsv(sourcedata, "Sources.txt", "text/plain","sources_input"); 
-            downloadcsv(sinkdata, "Sinks.txt", "text/plain","sinks_input"); 
-            
+            downloadcsv(sourcedata, "Sources.txt", "text/plain","sources_input");
+            downloadcsv(sinkdata, "Sinks.txt", "text/plain","sinks_input");
+
             document.getElementById("downloadsource_div").style.display="block";
             document.getElementById("downloadsink_div").style.display="block";
-   
+
          }
 
          function generatesourcedata() {
@@ -1358,7 +1358,7 @@
                   //tempstr += (i+1).toString();
                   tempstr += selection[i].feature.properties["Name"]+"\t";
                   sourcedata += tempstr + "\n";
-            } 
+            }
             return sourcedata;
          }
 
@@ -1375,7 +1375,7 @@
             var center_latlon;
             for (i = 0; i < sinkselection.length; i++) {
                   tempstr = "";
-                  if (saline_flag){ 
+                  if (saline_flag){
                         // field 0-1: ID
                         tempstr += (i+1).toString()+"\t";
                         tempstr += (i+1).toString()+"\t";
@@ -1399,7 +1399,7 @@
                         tempstr += sinkselection[i].feature.properties['Longitude'] + "\t";
                         //11: Lat "LAT"
                         tempstr += sinkselection[i].feature.properties['Latitude'] + "\t";
-                        //12: 0 
+                        //12: 0
                         tempstr += '0' + "\t";
                         //13: 0
                         tempstr += '0' + "\t";
@@ -1435,7 +1435,7 @@
                         tempstr += sinkselection[i].feature.properties['LON'] + "\t";
                         //11: Lat "LAT"
                         tempstr += sinkselection[i].feature.properties['LAT'] + "\t";
-                        //12: 0 
+                        //12: 0
                         tempstr += '0' + "\t";
                         //13: 0
                         tempstr += '0' + "\t";
@@ -1450,8 +1450,8 @@
                   //caculate lon lat
                   //center_latlon = (sinkselection[i].getBounds()).getCenter();
                   //tempstr += center_latlon.lng +"\t";
-                  //tempstr += center_latlon.lat +"\t";  
-                 
+                  //tempstr += center_latlon.lat +"\t";
+
                   sinkdata += tempstr + "\n";
             }
             for (i = 0; i < sinkselection2.length; i++) {
@@ -1480,7 +1480,7 @@
                         tempstr += sinkselection2[i].feature.properties['Longitude'] + "\t";
                         //11: Lat "LAT"
                         tempstr += sinkselection2[i].feature.properties['Latitude'] + "\t";
-                        //12: 0 
+                        //12: 0
                         tempstr += '0' + "\t";
                         //13: 0
                         tempstr += '0' + "\t";
@@ -1490,16 +1490,16 @@
                         tempstr += '0' + "\t";
                         //16: NAME "NAME"
                         tempstr += sinkselection2[i].feature.properties['FIELD_NAME'];
-                  
+
 
                   //caculate lon lat
                   //center_latlon = (sinkselection[i].getBounds()).getCenter();
                   //tempstr += center_latlon.lng +"\t";
-                  //tempstr += center_latlon.lat +"\t";  
-                 
+                  //tempstr += center_latlon.lat +"\t";
+
                   sinkdata += tempstr + "\n";
             }
-            
+
             return sinkdata;
          }
 
@@ -1615,7 +1615,7 @@
             // Use the cachedCandidateNetwork if the selected sources and sinks are the same
             var candidateNetworkRequest = null;
             if (Maptool.cachedCandidateNetwork
-                        && setsAreEqual(getSourceIds(), Maptool.cachedCandidateNetworkSourceIds) 
+                        && setsAreEqual(getSourceIds(), Maptool.cachedCandidateNetworkSourceIds)
                         && setsAreEqual(getSinkIds(), Maptool.cachedCandidateNetworkSinkIds)) {
                   candidateNetworkRequest = Promise.resolve(Maptool.cachedCandidateNetwork);
             } else {
@@ -1686,7 +1686,7 @@
                   solutionSummaryControl.remove();
             }
          };
-      
+
       // references to all of the experiments solution and candidate network layers, keyed by experiment id
       var result_solutionLayers = new Map();
       var result_candidnetworkLayers = new Map();
@@ -1695,7 +1695,7 @@
       var experiments_list = [];
       var project = null;
       const MAX_DISPLAYED_RESULTS = 5;
-      
+
       function csvToArray(str, delimiter = "\t") {
             // slice from start of text to the first \n index
             // use split to create an array from string by delimiter
@@ -1772,9 +1772,13 @@
                   solution_configs.set(experiment_id, solution_config);
                   render_experiment_list();
             } catch (error) {
-                  console.log(error);
                   // experiment_result_errors.set(experiment_id, error.message);
-                  render_experiment_list({[experiment_id]: error.message});
+                  // If user isn't logged in, display modal instead of an inline error message
+                  if (AiravataAPI.errors.ErrorUtils.isUnauthenticatedError(error)) {
+                        display_error_modal(error);
+                  } else {
+                        render_experiment_list({[experiment_id]: error.message});
+                  }
             }
       };
 
@@ -1812,7 +1816,7 @@
                   content_str += "</span>";
                   var mypopup = L.popup().setContent(content_str);
                   mymarker.bindPopup(mypopup);
-                  return mymarker;       
+                  return mymarker;
                   }
             });
             var result_sourceLayer = new L.geoJSON(data["Sources"], {
@@ -1826,18 +1830,18 @@
                   if (namestr.length > 0) { content_str += "Name: " + namestr + "<br/>";}
                   content_str += "CO<sub>2</sub> captured: " + feature.properties.CO2Cptrd + "<br/>";
                   content_str += "Max Supply: " + feature.properties.MxSpply;
-                  content_str += "</span>";                 
+                  content_str += "</span>";
                   var mypopup = L.popup().setContent(content_str);
                   mymarker.bindPopup(mypopup);
-                  return mymarker;       
+                  return mymarker;
                   }
             });
- 
+
             var result_networkLayer = new L.geoJSON(data["Network"],{style:{color:solution_config.color,opacity:0.7,weight:4,pane:"linesPane"},
             });
             // reset style
             // 0-0.25, 0.25-5, 5-7.5, 10
-            result_networkLayer.eachLayer(function(layer) { 
+            result_networkLayer.eachLayer(function(layer) {
                 var fv = layer.feature.properties['Flow'];
                 var lw = 1;
                 if (fv <= 0.25) {lw = 1;}
@@ -1852,7 +1856,7 @@
             map.on('click', show_solution_network_popup);
 
             var result_solutionLayer = new L.featureGroup([result_sinkLayer, result_sourceLayer, result_networkLayer]);
-            
+
             var r_candidateNetwork = new L.geoJSON(data["CandidateNetwork"],{style:{color:"black",opacity:0.7,weight:1,pane:"polygonsPane"}});
             var r_candidateSources = new L.geoJSON(data['CandidateSources'],{
                   pointToLayer: function (feature,latlng) {
@@ -1866,14 +1870,14 @@
                         var mymarker = L.circleMarker(latlng,{radius: 5,fillColor: "white",
                           color: "blue",weight: 2,opacity: 1,fillOpacity: 0.8,pane: "polygonsPane"});
                         return mymarker;
-                  }                        
+                  }
             });
             var result_candidnetworkLayer = new L.featureGroup([r_candidateNetwork,r_candidateSinks,r_candidateSources]);
 
             map.addLayer(result_solutionLayer);
             map.addLayer(result_candidnetworkLayer);
             layercontrol.addTo(map);
-            layercontrol.addOverlay(result_solutionLayer, `${solution_config.label} 
+            layercontrol.addOverlay(result_solutionLayer, `${solution_config.label}
                   <span style="background-color:${solution_config.color}; display: inline-block;
                         margin-bottom: 2px; width: 2em; height: 4px; opacity: 0.7;"></span> Solution`);
             layercontrol.addOverlay(result_candidnetworkLayer, `${solution_config.label} Candidate`);
@@ -1917,7 +1921,7 @@
                                           ${solution_config.label}
                                           <span style="background-color:${solution_config.color}; display: inline-block;
                                                 margin-bottom: 2px; width: 2em; height: 4px; opacity: 0.7;"></span>
-                                          Solution 
+                                          Solution
                                     </b>
                                     <br/>Flow: ${feature.properties.Flow}
                                     <br/>Length (KM): ${feature.properties.LengKM}
@@ -1970,7 +1974,7 @@
             //       lookup: "{{ cplex_application_id }}",
             // });
             const {results} = await AiravataAPI.services.ExperimentSearchService.list({
-                  // limit: 5, 
+                  // limit: 5,
                   [AiravataAPI.models.ExperimentSearchFields.USER_NAME.name]: AiravataAPI.session.Session.username,
                   [AiravataAPI.models.ExperimentSearchFields.APPLICATION_ID.name]: experiment.executionId,
                   [AiravataAPI.models.ExperimentSearchFields.STATUS.name]: AiravataAPI.models.ExperimentState.COMPLETED.name,
@@ -2107,7 +2111,7 @@
       }
 
       // global variable to record current case
-      var current_case = {}; 
+      var current_case = {};
       function case_studies(val) {
 
             current_case ['case']= val;
@@ -2194,11 +2198,11 @@
                               document.getElementById("case_loginuser").style.display="block";
                               document.getElementById("case_nologinuser_msg").style.display="none";
                         }
-           
+
       }
-      
+
       //ednbale user edit the existing case
-      function user_edit_case(val){ 
+      function user_edit_case(val){
             // clear map
             map.eachLayer(function (layer) {
                               //keep the basemap layer
@@ -2210,7 +2214,7 @@
             case_sinkLayer.clearLayers();
             document.getElementById("case_studies_display_body").style.display = "none";
             document.getElementById("case_studies_editor_Southeast_US").style.display = "block";
-            
+
             //alert(current_case['case']);
             //alert(current_case['sources']);
             //alert(current_case['sinks']);
@@ -2221,8 +2225,8 @@
             $.getJSON(current_case['candidatenetwork'],function (data) {
                     var result_candidnetworkLayer = new L.geoJSON(data,{style:{color:"black",opacity:0.5,weight:1,pane:"linesPane"}});
                     map.addLayer(result_candidnetworkLayer);
-                    layercontrol.addOverlay(result_candidnetworkLayer,"Candidate");   
-                    //alert(result_candidnetworkLayer._leaflet_id);            
+                    layercontrol.addOverlay(result_candidnetworkLayer,"Candidate");
+                    //alert(result_candidnetworkLayer._leaflet_id);
                 });
 
       }
@@ -2268,20 +2272,20 @@
                               case "Pulp, paperboard, and saw mills":
                                     fill_color = "#865dc8";
                                     break;
-                              
+
                               default:
                                     fill_color = "grey";
                         }
                         var mymarker = L.circleMarker(latlng,{"fillColor":fill_color,"fillOpacity":0.8,"radius":7,"color":"black","weight":2,"opacity":1.0});
                         //mymarker.bindPopup(mypopup);
                         mymarker.bindTooltip(content_str);
-                        return mymarker;       
+                        return mymarker;
                         }
                   });
 
                   map.addLayer(searchlayer);
                   map.fitBounds(searchlayer.getBounds(),{maxZoom:10});
-                  // remove source layer 
+                  // remove source layer
                   if (map.hasLayer(source_all_test_layer_1)) {map.removeLayer(source_all_test_layer_1);}
              }
             else {
@@ -2289,7 +2293,7 @@
             }
       }
 
-      // generate cql-filters 
+      // generate cql-filters
       function searchsourceFilters(layerid, searchstring) {
 
             // test if extra filter in on
@@ -2302,9 +2306,9 @@
                   cqlfilter_str = "&cql_filter=strToLowerCase(Name) like '" + encodeURIComponent("%" + cleanstr + "%'");
                   showSearchResults(layerid, cqlfilter_str);
                   return;
-            } 
+            }
       }
-      
+
       function refresh_saline() {
             var fixedcost_0 = $("#slider-range-sinkcost").slider("values", 0);
             var fixedcost_1 = $("#slider-range-sinkcost").slider("values", 1);
@@ -2435,7 +2439,7 @@
                   cqlfilter_str = "&cql_filter=" + filter_array[0];
             }
             if (filter_array.length > 1) {
-                  cqlfilter_str = "&cql_filter=("; 
+                  cqlfilter_str = "&cql_filter=(";
                   cqlfilter_str += "(" + filter_array.join(") AND (") + ")";
                   cqlfilter_str += ")"
             }
@@ -2446,7 +2450,7 @@
 
       //A simple seach function
       function showSearchResults(layerid, filter_str) {
-            
+
             var searchlayer;
             switch(layerid) {
                   case "source_all_test":
@@ -2469,18 +2473,18 @@
             //       cleanstr = query_list[1].trim();
             //       geourl +=  "(strToLowerCase(Type) like '" + encodeURIComponent("%" + cleanstr + "%'")
             //       geourl += " ))";
-            //       //alert(geourl);              
+            //       //alert(geourl);
             // } else {
             // cleanstr = searchstring.trim();
             // geourl += "&cql_filter=strToLowerCase(Name) like '" + encodeURIComponent("%" + cleanstr + "%'");
-            // }     
+            // }
             //alert(geourl);
             $.ajax({
                        url: geourl,
                        jsonp: "callback",
                        dataType: "jsonp"
                  });
-      } 
+      }
 
       // selection all sources for testing case
       function case_selectallsource() {
@@ -2493,7 +2497,7 @@
             document.dispatchEvent(new Event("source-selection-change"));
       }
       // selection all sources for testing case
-      
+
       function case_selectallsink() {
             //clear selection array first
             selection_green = [];
@@ -2540,7 +2544,7 @@
             for (elayer of sinkselection) {
                   elayer.setStyle({weight:1,color:'grey',fillOpacity:0.4});
             }
-            sinkselection = [];   
+            sinkselection = [];
             var sinkcost;
             sinkLayer.eachLayer(function(layer) {
                   sinkcost = layer.feature.properties['varOM_d_tC'];
@@ -2559,7 +2563,7 @@
             for (elayer of sinkselection2) {
                   elayer.setStyle({weight:1,color:'grey',fillOpacity:0.4});
             }
-            sinkselection2 = [];   
+            sinkselection2 = [];
             var sinkcapacity;
             sinkLayer2.eachLayer(function(layer) {
                   sinkcapacity = layer.feature.properties['VOL_LOW'];
@@ -2572,7 +2576,7 @@
       }
 
       function user_clearselected() {
-            // clear all selected 
+            // clear all selected
             var r = confirm("Clear all the selected?");
             // do nothing if cancelled
             if (r == false) {return;}
@@ -2620,7 +2624,7 @@
             map.addLayer(drawnItems);
             map.once('draw:created', function (e) {
             var count_source = 0, count_sink = 0;
-            var draw_type = e.layerType,draw_layer = e.layer;     
+            var draw_type = e.layerType,draw_layer = e.layer;
             if (map.hasLayer(sourceLayer)) {
                   // empty selection
                   selection = [];
@@ -2658,10 +2662,10 @@
             //draw_layer.remove();
             drawnItems.clearLayers(draw_layer);
             map.removeLayer(drawnItems);
-            polygonDrawer.disable();   
+            polygonDrawer.disable();
         }
         );
-            var polygonDrawer = new L.Draw.Polygon(map, polygon_options);     
+            var polygonDrawer = new L.Draw.Polygon(map, polygon_options);
             polygonDrawer.enable();
 
       }
@@ -2707,10 +2711,10 @@
             //draw_layer.remove();
             drawnItems.clearLayers(draw_layer);
             map.removeLayer(drawnItems);
-            polygonDrawer.disable();   
+            polygonDrawer.disable();
         }
         );
-            var polygonDrawer = new L.Draw.Polygon(map, polygon_options);     
+            var polygonDrawer = new L.Draw.Polygon(map, polygon_options);
             polygonDrawer.enable();
       }
 
@@ -2765,11 +2769,11 @@
             document.dispatchEvent(new Event("sink-selection-change"));
             //draw_layer.remove();
             drawnItems1.clearLayers(draw_layer);
-            map.removeLayer(drawnItems1); 
-            polygonDrawer1.disable();   
+            map.removeLayer(drawnItems1);
+            polygonDrawer1.disable();
             }
             );
-            var polygonDrawer1 = new L.Draw.Polygon(map, polygon_options);     
+            var polygonDrawer1 = new L.Draw.Polygon(map, polygon_options);
             polygonDrawer1.enable();
             }
 
@@ -2809,7 +2813,7 @@
                   for (i = 0; i < colorlist.length; i++) {
                      labels.push('<i style="background:' + colorlist[i][0] + '"></i> ' +
                   '&nbsp;&nbsp;' + colorlist[i][1]);
-                  } 
+                  }
                   div.innerHTML = fieldname + "<br>";
                   div.innerHTML += labels.join('<br>');
                   return div;
@@ -2834,10 +2838,10 @@
                               <div class="dropdown-menu" id="case_studies_menu" aria-labelledby="dropdownMenuButton">
                                     <button class="dropdown-item" value="Southeast_US_2012" onclick="case_studies(this.value)">Southeast US 2012</button>
                                     <button class="dropdown-item" value="Midwest_2011_3" onclick="case_studies(this.value)">Midwest 2011</button>
-                                    <button class="dropdown-item" value="GulfCoast_2013_4" onclick="case_studies(this.value)">GulfCoast 2013</button>   
-                                    <button class="dropdown-item" value="TexasPanhandle_2011_5" onclick="case_studies(this.value)">Texas Panhandle 2011</button>   
-                                    <button class="dropdown-item" value="IllinoisBasin_2015_11" onclick="case_studies(this.value)">Illinois Basin 2015</button>   
-                                    <button class="dropdown-item" value="OrdosBasin_2014_10" onclick="case_studies(this.value)">Ordos Basin 2014</button>   
+                                    <button class="dropdown-item" value="GulfCoast_2013_4" onclick="case_studies(this.value)">GulfCoast 2013</button>
+                                    <button class="dropdown-item" value="TexasPanhandle_2011_5" onclick="case_studies(this.value)">Texas Panhandle 2011</button>
+                                    <button class="dropdown-item" value="IllinoisBasin_2015_11" onclick="case_studies(this.value)">Illinois Basin 2015</button>
+                                    <button class="dropdown-item" value="OrdosBasin_2014_10" onclick="case_studies(this.value)">Ordos Basin 2014</button>
                               </div>
                   </div>
             <div id="start-over" class="mb-3" style="display: none;">
@@ -2856,7 +2860,7 @@
                         <br><small>(Sources_082819_SimCCS_Format)</small>
                         <div class="btn-toolbar mb-3" role="toolbar" aria-label="Toolbar with button groups">
                               <div class="input-group">
-                                <input type="text" placeholder="search by name" name="searchString" id="search-name-value" size="20" value="" onchange="searchsourceFilters('source_all_test',this.value)" /> 
+                                <input type="text" placeholder="search by name" name="searchString" id="search-name-value" size="20" value="" onchange="searchsourceFilters('source_all_test',this.value)" />
                               </div>
                               <div class="btn-group mr-2" role="group" aria-label="First group">
                                     <button type="button" title="" class="btn btn-light"  data-toggle="collapse" aria-expanded="false" data-target="#searchsourcediv"><span data-toggle="tooltip" title="more search functions"><i class="fas fa-plus"></i></span></button>
@@ -2864,7 +2868,7 @@
                         </div>
                         <div id="searchsourcediv" class="collapse" >
                               <div>
-                              Select sources by Types: 
+                              Select sources by Types:
                               <div>
                               <select class="selectpicker" id="types_selector" title="Choose Types ..." data-live-search="true" multiple data-actions-box="true">
                                     <option>Ammonia/fertilizer</option>
@@ -2877,7 +2881,7 @@
                                     <option>Petroleum Refineries</option>
                                     <option>Pulp, paperboard, and saw mills</option>
                               </select>
-                              </div> 
+                              </div>
                               <br />
                               Capturable CO2 (MtCO2/y)
                               <input type="text" id="amount" style="border: 0; font-weight: bold;" size="20"/><br>
@@ -2893,8 +2897,8 @@
                               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="clear_filters()">Reset Filters</button>
                               <br/>
                               </div>
-                        </div> 
-      
+                        </div>
+
                         <div><img src="/static/images/sources_snapper_legend.jpg" alt="source_legend" width="80%" height="80%" style="border:1px solidblack"> </div>
                         </div>
                   </div>
@@ -2908,14 +2912,14 @@
                                  <label style="font-size: 100%;" class="form-check-label" for="sink_saline_formation"><strong>Saline Formation</strong></label>
                                  <br> <small>(SCO2T_National_v1_10k_rounded)</small>
                                  <div id="sink_saline_div" >
-                                    <label>Capture Cost ($/tCO2): 
+                                    <label>Capture Cost ($/tCO2):
                                     <input type="text" id="amount-sinkcost" style="border: 0; font-weight: bold;" size="10"/>
                               </label>
                               <table style="width:100%"><tr>
                                    <td width="80%"> <div id="slider-range-sinkcost" data-toggle="tooltip" title="set the min/max cost"></div></td><td width="5%"></td><td width="15%"><button type="button" data-toggle="tooltip" title="refresh map" class="btn btn-sm btn-light" onclick=refresh_saline()><i class="fas fa-redo"></i></span></button></td>
                               </tr>
                               </table>
-                              <label>Storage Capacity (MtCO2): 
+                              <label>Storage Capacity (MtCO2):
                                     <input type="text" id="amount-sinkcapacity" style="border: 0; font-weight: bold;" size="10"/>
                               </label>
                               <table style="width:100%"><tr>
@@ -2923,7 +2927,7 @@
                                </tr>
                                </table>
                                <!--
-                                    <img src="/static/images/Saline_legend_1.jpg" alt="saline_legend" width="130px" height="100px" style="border:1px solidblack"> 
+                                    <img src="/static/images/Saline_legend_1.jpg" alt="saline_legend" width="130px" height="100px" style="border:1px solidblack">
                               -->
                               </div>
                               </div>
@@ -2932,7 +2936,7 @@
                                  <label style="font-size: 100%;" class="form-check-label" for="sink_oil_reservoir"><strong>Oil/Gas Reservoir</strong></label>
                                  <br><small>(NATCARB_OG_082819)</small>
                                  <div id="sink_OG_div" >
-                                    <label>Storage Capacity (MtCO2): 
+                                    <label>Storage Capacity (MtCO2):
                                           <input type="text" id="og-amount-sinkcapacity" style="border: 0; font-weight: bold;" size="10"/>
                                     </label>
                                     <table style="width:100%"><tr>
@@ -2945,9 +2949,9 @@
                            </div>
                               <div class="card-footer"/>
                                 <button type="button" class="btn btn-primary btn-sm btn-block btn-success" data-toggle="tooltip" title="click to enable drawing tool on the top right of map" onclick="show_drawingtool()">Set up working area<center>Using drawing tool <img src="/static/images/drawing_tool.jpg"  alt="drawing-tool" /> </center></button>
-                                
+
                             </div>
-     
+
                   </div>
                </div>
                <!-- working area div-->
@@ -2969,7 +2973,7 @@
                                     <div>
                                           <select class="selectpicker" id="user_select_names" title="select by names ..." data-live-search="true" multiple data-actions-box="true" data-width="80%">
                                           </select>
-                                      </div> <br>                                   
+                                      </div> <br>
                         <div class="user_sinks_saline_div">
                                           <label><input type="radio" id="user_sinks_saline" checked /><strong>&nbsp;Saline Sinks</strong></label>
                                     </div>
@@ -2980,13 +2984,13 @@
                                           <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button> -->
                                     </div>
                                     <div>
-                                          <label>Capture Cost($/tCO2): 
+                                          <label>Capture Cost($/tCO2):
                                                 <input type="text" id="amount-user-sinkcost" style="border: 0; font-weight: bold;" size="10"/>
                                           </label>
                                           <table style="width:100%"><tr>
                                                <td width="80%"> <div id="slider-range-user-sinkcost"></div></td><td width="5%"></td><td width="15%"><button type="button" class="btn btn-sm btn-light" data-toggle="tooltip" title="select sinks by cost" onclick=select_saline_bycost()><i class="fas fa-redo"></i></span></button></td>
                                           </tr>
-                                          </table> </div>           
+                                          </table> </div>
                                     <div class="user_sinks_og_div">
                                           <label><input type="radio" id="user_sinks_og" checked /><strong>&nbsp;Oil/Gas Sinks</strong></label>
                                     </div>
@@ -2997,22 +3001,22 @@
                                           <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button> -->
                                     </div>
                                     <div>
-                                          <label>Storage Capacity(MtCO2): 
+                                          <label>Storage Capacity(MtCO2):
                                                 <input type="text" id="amount-user-sinkcapacity" style="border: 0; font-weight: bold;" size="10"/>
                                           </label>
                                           <table style="width:100%"><tr>
                                                <td width="80%"> <div id="slider-range-user-sinkcapacity"></div></td><td width="5%"></td><td width="15%"><button type="button" class="btn btn-sm btn-light" data-toggle="tooltip" title="select sinks by capacity" onclick=select_og_bycapacity()><i class="fas fa-redo"></i></span></button></td>
                                           </tr>
-                                          </table> </div>           
+                                          </table> </div>
 
                                </div>
                                     <div class="user_cost_div">
                                           <label><input type="radio" id="user_cost" checked /><strong>&nbsp;Cost Surface</strong></label>
                                     </div>
-            
+
                                     <button type="button" class="btn btn-primary btn-sm btn-block" id="ss_windowpicker_sink" data-toggle="tooltip" title="Select sources/sinks by drawing" value="sink" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_user()>
                                           Select sources/sinks by drawing <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
-                                    
+
                                     <button type="button" class="btn btn-primary btn-sm btn-block" id="hideunselected_btn" onclick="hideunselected()" value="hide">Hide unselected data</button>
                                     <button type="button" class="btn btn-primary btn-sm btn-block" id="user_clearselected_btn" onclick="user_clearselected()" value="hide">Clear all selections</button>
                                     <!-- <button type="button" class="btn btn-primary btn-sm btn-block" onclick="downloaddata()">Download data</button>
@@ -3024,7 +3028,7 @@
                                     <!--
                                     <button type="button" class="btn btn-primary btn-sm btn-block" onclick="resetworkingarea()">Reset Area of Interest</button>
                                     -->
-                                    Please use <img src="/static/images/maptool_icon.jpg" alt="maptool_icon" align="middle" width="37" height="30" style="border:1px solidblack"> on the left column to reset working area.         
+                                    Please use <img src="/static/images/maptool_icon.jpg" alt="maptool_icon" align="middle" width="37" height="30" style="border:1px solidblack"> on the left column to reset working area.
                         </div>
                   </div>
                   <div class="card border-info">
@@ -3134,8 +3138,8 @@
                                           <input class="form-check-input" type="radio" id="result_candidnetworkLayer" autocomplete="off" checked>
                                           <label style="font-size: 100%;" class="form-check-label" for="result_candidnetworkLayer">Candidate Network</label>
                                     </div>
-      
-            
+
+
                         <br>
                         </div>
                   </div>
@@ -3175,7 +3179,7 @@
                         </div>
                         <div class="card-body" id="case_studies_editor_Southeast_US" style="display: none" >
                               Use mouse-click to select source and sink data.<br><br>
-                              
+
                               <div class="btn-group btn-group-sm btn-block">
                               <button type="button" class="btn btn-primary btn-sm btn-block" onclick="case_selectallsource()" id="case_selectallsource_btn" value="hide">Select all sources</button>
                               <button type="button  btn-sm" id="ss_windowpicker_source" title="Select sources by drawing" value="source" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_source("case_study")>
@@ -3203,7 +3207,7 @@
                               <a href="" id="case_download_mps" style="display: none;">Download MPS</a>
                               <button type="button" id="bn_case_submitexp" class="btn btn-primary btn-sm btn-block mt-2" onclick="case_submitexperiment()" disabled>Submit Experiment</button>
                               <a href="" id="case_view_experiment" style="display: none;">View Experiment Summary</a>
-      
+
                         </div>
 
             </div></div>
