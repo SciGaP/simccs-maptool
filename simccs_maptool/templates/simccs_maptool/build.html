@@ -88,6 +88,10 @@
       .experiment-list a.btn {
             color: #fff;
       }
+      .modal {
+            /* place modal above the leaflet-sidebar */
+            z-index: 2050;
+      }
 </style>
 {% endblock css %}
 
@@ -128,7 +132,7 @@
          //Maptool.FeatureFlag = Maptool.FeatureFlag || {};
          // TODO: replace with global user session object
          var userIsAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
-         
+
          $(document).ready(function() {
             // set up data
             var queryParams = new URLSearchParams(document.location.search);
@@ -138,7 +142,7 @@
             }
             // has case ?
             if (queryParams.has('case')) {
-                  set_casedata(queryParams.get('case')); 
+                  set_casedata(queryParams.get('case'));
             }
 
             sidebar.open("home");
@@ -150,7 +154,7 @@
                   var selected_ids = $(this).val();
                   source_selectbynames(dataid,selected_ids);
             });
- 
+
             sidebar.on('content', function(e) {
                   // e.id contains the id of the opened panel
                   // update map based on opened panel
@@ -159,8 +163,8 @@
                   refreshmap(e.id);
 
             })
-            
-            }); // end of document ready 
+
+            }); // end of document ready
 
 // gloabl variables
 var case_id;
@@ -198,7 +202,7 @@ async function set_casedata(caseId) {
             //console.log(casejson);
       }
       document.getElementById("case_name").textContent=casejson["title"];
-      document.getElementById("case_description").textContent=casejson["description"]; 
+      document.getElementById("case_description").textContent=casejson["description"];
 
       // move map to bounding box
       var bbox = casejson["maptool"]["bbox"];
@@ -209,7 +213,7 @@ async function set_casedata(caseId) {
       {
             datasets[entry['id']]={'dataid':entry['id'],'name': entry['name'], 'description':entry['description'],'type':entry['type'],'url':entry['url'],'current_version':entry['current_version']};
       }
-      
+
       //load source/sink
       var dataurl, datastyle, datasymbol, datameta;
       for (entry of casejson['maptool']['data']) {
@@ -242,11 +246,11 @@ function generatesourcedata(selections) {
                   tempstr += "1"+"\t";
                   } else {
                         if (selections[i].feature.properties[col_dict[key]] == "-") {tempstr += "0\t";}
-                        else {tempstr += selections[i].feature.properties[col_dict[key]]+"\t";} 
-                  } 
+                        else {tempstr += selections[i].feature.properties[col_dict[key]]+"\t";}
+                  }
             }
             sourcedata += tempstr + "\n";
-      } 
+      }
       return sourcedata;
 }
 
@@ -267,10 +271,10 @@ function generatesinkdata (selections) {
                   } else {
                         if (selections[i].feature.properties[col_dict[key]] == "-") {tempstr += "0\t";}
                         else {tempstr += selections[i].feature.properties[col_dict[key]]+"\t";}
-                  } 
+                  }
             }
             sinkdata += tempstr + "\n";
-      } 
+      }
       return sinkdata;
 
 }
@@ -329,7 +333,7 @@ function displayselecteddata(panelid, options = {}) {
       div_source.innerHTML += '<div id='+ table_id +' style="overflow: auto;height: 200px; width: 95%; display: none" >'+arrayToTable(sourcetxt)+"</div>";
       // add source div to div
       div.appendChild(div_source);
-      
+
       // sinks
       var sinktxt = generatesinkdata(sinkselection);
       div.innerHTML += "<br>";
@@ -350,7 +354,7 @@ function displayselecteddata(panelid, options = {}) {
       div.innerHTML += "<br><br>";
 
       // grab model parameters
-      mp_list = ["Capital_Recovery_Rate","Project_Period","Capture_Target"]; 
+      mp_list = ["Capital_Recovery_Rate","Project_Period","Capture_Target"];
       var p_value,entry_newid;
       var mp_div = document.getElementById('model_parameters').outerHTML;
       mp_div = mp_div.replace("125%","100%");
@@ -383,7 +387,7 @@ function displayselecteddata(panelid, options = {}) {
 
 function create_scenario() {
       if (scenarioid > 5 ) {alert("Maximum number of scenarios reached!");return;};
-      
+
       // check if the source/sink are selected
       if (sourceselection.length == 0 ) {alert('No sources are selected!');return}
       if (sinkselection.length == 0 ) {alert('No sinks are selected!');return}
@@ -491,7 +495,7 @@ function generatempsfile(panelid,showmodal=1,paras=[], filename=null) {
     // extract any changes
     var source_selection = get_source_selection(panelid);
     var sink_selection = get_sink_selection(panelid);
-    
+
     //console.log(source_selection);
     //console.log(sink_selection);
 
@@ -569,7 +573,7 @@ $('body').append(m_html);
 //console.log(showmodal);
 if (showmodal == 1) {
       //$("#dynamicModal").modal();
-      //$("#dynamicModal").modal('show'); 
+      //$("#dynamicModal").modal('show');
       alert("MPS file was generated successfully.");
 }
 return {"Sources": data["sources"], "Sinks": data["sinks"],"Cplex-input-file": data["mps"], "Candidate-Network": data["candidate-network"], "Dataset-id": current_dataset_id,"capacityTarget":capacityTarget,"projectPeriod":numYears,"capitalRecoveryRate":crf};
@@ -603,7 +607,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             mpsRequest = generatempsfile(panelid,showmodal=0,paras,filename).then((result) => {cplexInputValues = result});
       }
 
-      mpsRequest.then(() => {     
+      mpsRequest.then(() => {
             var cplex_application_id = "{{ cplex_application_id }}";
             var hostname = "{{ cplex_hostname }}";
             const services = AiravataAPI.services;
@@ -668,7 +672,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                   if (user_experiment_name.trim() == '') {
                         experiment.experimentName = "CPLEX" + nameprefix + " on "+ new Date().toLocaleString();
                   } else {
-                        experiment.experimentName = user_experiment_name.trim() + nameprefix +  " on "  + new Date().toLocaleString();  
+                        experiment.experimentName = user_experiment_name.trim() + nameprefix +  " on "  + new Date().toLocaleString();
                   }
                   //"capacityTarget":capacityTarget,"projectPeriod":numYears,"capitalRecoveryRate":crf
                   experiment.description = "caseId:" + case_id + ", ";
@@ -715,7 +719,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                         // ex_dict['ExperimentURL'] = a.href;
                         // ex_dict['ExperimentState'] = '';
                         // ex_dict['ExperimentResult'] = '';
-                        experiment_panel[panelid].push(ex_dict); 
+                        experiment_panel[panelid].push(ex_dict);
 
                         // Create a link to the experiment summary page
                         var list_view_experiment = document.getElementById("list_view_experiment_" + panelid);
@@ -730,7 +734,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                         if (showmodal == 1) {
                               alert('Experiment was created successfully, please check "View Experiment Summary" for the progress.');
                         }
-            
+
                         // Save workspace so we keep a link between this workspace and the newly created experiment
                         save_workspace();
                  });
@@ -746,7 +750,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             var crf = $("#Capital_Recovery_Rate_" + panelid).val();
             var numYears = $("#Project_Period_" + panelid).val();
             var capacities = $("#Capture_Target_" + panelid).val();
-            var capacityArr; 
+            var capacityArr;
             if (capacities.includes(",")) { capacityArr = capacities.split(','); }
             else {
                   alert("Please input value,value,.. in Capture_Target.");
@@ -788,30 +792,30 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             var workspaceName = document.getElementById('workspace_name').value;
             if (workspaceName.trim() == '') {
                   workspaceName = "Workspace on " + new Date().toLocaleDateString();
-            } 
+            }
             wdict['name'] = workspaceName;
             wdict['description'] = document.getElementById('workspace_description').value;
             var workspace_id = document.getElementById('workspace_id').value;
             // skip Editing History
             // wdict['Time'] = new Date().toLocaleString();
-            
+
             // Buildtool: {CaseID, Scenarios}
             // Scenarios: [Scenario]
             // Scenario: {ScenarioID, ScenarioTitle,Sources,Sinks,Parameters, Experiments}
             // Parameters: {Capital_Recovery_Rate,Project_Period,Capture_Target}
             // Experiments: {Name, URL, State, Result}
-            
+
             // loop through scenarios
             var ScenariosList = [];
             var s_dict;
             for (const [key, value] of Object.entries(scenario_title_panel)) {
                   //key: panelid = ScenarioID
                   //value: ScenarioTitle
-                  s_dict = {}; 
+                  s_dict = {};
                   var panelid = key;
                   // id will be automatically assigned by the backend
                   s_dict['scenario_id'] = panelid;
-                  s_dict['title'] = value;                
+                  s_dict['title'] = value;
                   // get parameters
                   var crf = $("#Capital_Recovery_Rate_" + panelid).val();
                   var numYears = $("#Project_Period_" + panelid).val();
@@ -837,7 +841,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                   if (panelid in experiment_panel) {
                         s_dict['experiments'] = experiment_panel[panelid];
                   } else {
-                        s_dict['experiments'] = [];  
+                        s_dict['experiments'] = [];
                   }
 
                   ScenariosList.push(s_dict);
@@ -857,7 +861,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
       function re_create_scenario(scenario_data) {
             var panelid = scenario_data['scenario_id'];
             var title = scenario_data['title'];
-            
+
             // displayselecteddata(panelid)
             // sourceselection
             // sinkselection
@@ -875,10 +879,10 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             sourceLayer.eachLayer(function(layer) {
                   feature_id = layer.feature.properties['ID'].toString();
                   if (selected_ids.includes(feature_id)) {
-                        sourceselection.push(layer);  
+                        sourceselection.push(layer);
                   }
             });
-            
+
             var selected_dataset = {} // datasetid:selectedid
             for (const entry of scenario_data['sinks']) {
                   var datalayerid = entry['dataset'];
@@ -897,9 +901,9 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             sinkLayer.eachLayer(function(layer) {
                   feature_id = layer.feature.properties['ID'].toString();
                         if (selected_ids.includes(feature_id)) {
-                              sinkselection.push(layer);  
+                              sinkselection.push(layer);
                         }
-                  }); 
+                  });
             });
 
             var panediv = displayselecteddata(panelid, {
@@ -907,18 +911,18 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                   Project_Period: scenario_data.parameters.Project_Period,
                   Capture_Target: scenario_data.parameters.Capture_Target,
             });
-            
+
             // record data
             sourceselection_panel[panelid] = sourceselection.concat();
             sinkselection_panel[panelid] = sinkselection.concat();
-            
+
             sidebar.addPanel({
                   id:   panelid,
                   tab:  '<i class="fas fa-layer-group" aria-hidden="true"></i>',
                   title: title,
                   pane: '<div style="font-size: 125%">' + panediv.innerHTML +"</div>",
                   });
-            
+
             // simple show the data
             sidebar.open(panelid);
             scenarioid += 1;
@@ -1018,34 +1022,39 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             return li;
       }
 
-      async function download_shapefiles({panelid, scenario_experiment}) {
+      async function download_shapefiles({panelid, scenario_experiment}, event) {
 
-            // fetch experiment-result to force generation of shapefiles
-            await AiravataAPI.utils.FetchUtils.get(scenario_experiment['experiment_result']);
-            // construct download-experiments request: rename shapefiles based on (scenario title) + (experiment name)
-            const resp = await AiravataAPI.utils.FetchUtils.post("/sdk/download-experiments/", {
-                  experiments: [
-                        {
-                              experiment_id: scenario_experiment['experiment_id'],
-                              path: "shapeFiles",
-                              includes: [
-                                    {
-                                          pattern: "Network.*", 
-                                          rename: `${scenario_title_panel[panelid]}_solution_network_${scenario_experiment['experiment_name']}$ext`
-                                    },
-                                    {
-                                          pattern: "Sources.*", 
-                                          rename: `${scenario_title_panel[panelid]}_sources_${scenario_experiment['experiment_name']}$ext`
-                                    },
-                                    {
-                                          pattern: "Sinks.*", 
-                                          rename: `${scenario_title_panel[panelid]}_sinks_${scenario_experiment['experiment_name']}$ext`
-                                    },
-                              ],
-                        },
-                  ],
-            });
-            window.location.assign(resp.download_url);
+            const button = event.currentTarget;
+            try {
+                  // fetch experiment-result to force generation of shapefiles
+                  await AiravataAPI.utils.FetchUtils.get(scenario_experiment['experiment_result']);
+                  // construct download-experiments request: rename shapefiles based on (scenario title) + (experiment name)
+                  const resp = await AiravataAPI.utils.FetchUtils.post("/sdk/download-experiments/", {
+                        experiments: [
+                              {
+                                    experiment_id: scenario_experiment['experiment_id'],
+                                    path: "shapeFiles",
+                                    includes: [
+                                          {
+                                                pattern: "Network.*",
+                                                rename: `${scenario_title_panel[panelid]}_solution_network_${scenario_experiment['experiment_name']}$ext`
+                                          },
+                                          {
+                                                pattern: "Sources.*",
+                                                rename: `${scenario_title_panel[panelid]}_sources_${scenario_experiment['experiment_name']}$ext`
+                                          },
+                                          {
+                                                pattern: "Sinks.*",
+                                                rename: `${scenario_title_panel[panelid]}_sinks_${scenario_experiment['experiment_name']}$ext`
+                                          },
+                                    ],
+                              },
+                        ],
+                  });
+                  window.location.assign(resp.download_url);
+            } catch (e) {
+                  render_experiment_listitem_error(button, e);
+            }
       }
 
       async function handle_experiment_add_remove_click(e) {
@@ -1078,25 +1087,38 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                         badge.textContent = "";
                   }
             } catch (e) {
-                  const errorDiv = experimentDiv.querySelector('.error');
-                  if (errorDiv) {
-                        errorDiv.innerHTML = `
-                        <div class="alert alert-danger alert-dismissable fade show" role="alert">
-                              Failed to load <strong></strong><br/>
-                              <small></small>
-                              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                              </button>
-                        </div>
-                        `;
-                        errorDiv.querySelector('strong').textContent = button.dataset.experimentName;
-                        errorDiv.querySelector('small').textContent = e.message;
-                  }
+                  render_experiment_listitem_error(experimentDiv, e);
             }
 
             // Check if max selectable experiments are showing or not
             for (const notShowingButton of notShowingButtons) {
                   notShowingButton.disabled = solution_configs.size >= MAX_DISPLAYED_RESULTS;
+            }
+      }
+
+      // button is either the 'Add' or '.shp' button
+      function render_experiment_listitem_error(button, error) {
+
+            // If user isn't logged in, display modal instead of an inline error message, and return
+            if (isUnauthenticatedError(error)) {
+                  display_error_modal(error);
+                  return;
+            }
+
+            const experimentDiv = button.closest('.experiment');
+            const errorDiv = experimentDiv.closest('li').querySelector('.error');
+            if (errorDiv) {
+                  errorDiv.innerHTML = `
+                  <div class="alert alert-danger alert-dismissable fade show" role="alert">
+                        Failed to load <strong></strong><br/>
+                        <small></small>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                        </button>
+                  </div>
+                  `;
+                  errorDiv.querySelector('strong').textContent = button.dataset.experimentName;
+                  errorDiv.querySelector('small').textContent = error.message;
             }
       }
 
@@ -1147,7 +1169,7 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
                 <h1 class="leaflet-sidebar-header">
                     Build: <span id="case_name"></span>
                     <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
-                </h1>  
+                </h1>
                 <div><span  style="font-size: 150%" id="case_description"></span></div>
                 <div id="layercontrol" class="form-check" style="font-size: 150%"></div>
                 <br>
@@ -1166,25 +1188,25 @@ function case_submitexperiment(panelid,showmodal=1,batchmode=0,paras=[],namepref
             </div>
                 <!-- end of model parameters-->
                 <br/>
-                
+
                 <button type="button" class="btn btn-primary btn-sm btn-block" id="ss_windowpicker_build" title="Select sources/sinks by drawing" value="source" class="btn btn-light" aria-label="Left Align" onclick=sswindowpicker_build()>
                   Select sources/sinks by drawing <img class="img-responsive" src="/static/images/polygon_tool.jpg" width="20" height="20" alt="polygon-tool" /></button>
-                
-                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="create_scenario()"><strong>Create Scenario with the Selected</strong></button>  
-                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="clear_selection()"><strong>Clear the Selections</strong></button>  
+
+                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="create_scenario()"><strong>Create Scenario with the Selected</strong></button>
+                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="clear_selection()"><strong>Clear the Selections</strong></button>
             </div>
 
             <div class="leaflet-sidebar-pane" id="profile">
                   <h1 class="leaflet-sidebar-header">Profile<div class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></div></h1>
             </div>
- 
+
             <div class="leaflet-sidebar-pane" id="settings">
                 <h1 class="leaflet-sidebar-header">Settings<span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
                 <br>
                 <input class="form-control" id="workspace_name" name="" placeholder="Workspace Name (optional)" type="text">
                 <input class="form-control" id="workspace_description" name="" placeholder="Description (optional)" type="text">
                 <input class="form-control" id="workspace_id" name="" type="hidden">
-                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="save_workspace()"><strong>Save Current Workspace</strong></button>  
+                <button type="button" class="btn btn-primary btn-sm btn-block" onclick="save_workspace()"><strong>Save Current Workspace</strong></button>
             </div>
         </div>
     </div>

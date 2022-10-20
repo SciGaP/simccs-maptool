@@ -31,7 +31,7 @@ document.getElementById('map').style.cursor = 'default';
 map_layercontrol = L.control.layers(null, null, { collapsed: false });
 map_layercontrol.addTo(map);
 map_solutionSummaryControl = null;
- 
+
 // default point option (source)
 var sourceRadius = 9;
 var sinkRadius = 7;
@@ -126,7 +126,7 @@ function createLegend(datasetid,fieldname,symbol,limits,colorlist)
             break;
         case 'arrowhead-up':
             symbolsvg='<svg width="20" height="20"><polygon points="0,20 10,0 20,20 10,15" style="fill:#3388ff;stroke:black;stroke-width:2;fill-opacity:0.6;stroke-opacity:1" /></svg>';
-            break;       
+            break;
         default:
             // circle
             symbolsvg = '<svg width="20" height="20"><circle cx="10" cy="10" r="9" style="fill:#3388ff;stroke:black;stroke-width:2;fill-opacity:0.6;stroke-opacity:1" /></svg>';
@@ -149,11 +149,11 @@ function createLegend(datasetid,fieldname,symbol,limits,colorlist)
 // function show/hide legend
 function showlegend(legendid) {
     var legenddiv = document.getElementById(legendid + "_legend");
-    if (legenddiv.style.display == "none") 
+    if (legenddiv.style.display == "none")
     {
         legenddiv.style.display = "block";
     }
-    else 
+    else
     {
         legenddiv.style.display = "none";
     }
@@ -194,7 +194,7 @@ function modifystyle(stylelayerid) {
      stylediv.innerHTML += "<label >Steps: </label>"
      var selectstep = document.createElement("SELECT");
      selectstep.id = stylelayerid + "_style_step";
-     for (let i = 3; i < 11; i++) { 
+     for (let i = 3; i < 11; i++) {
         var opt = document.createElement("option");
         opt.text = i.toString();
         opt.value = i.toString();
@@ -228,7 +228,7 @@ function modifystyle(stylelayerid) {
 // update style for a layer
 function update_style(stylelayerid) {
     // get options
-    var color_field = document.getElementById(stylelayerid + "_style_field").value; 
+    var color_field = document.getElementById(stylelayerid + "_style_field").value;
     var color_method = document.getElementById(stylelayerid + "_style_method").value;
     var color_step = document.getElementById(stylelayerid + "_style_step").value;
     var color_theme = document.getElementById(stylelayerid + "_style_color").value;
@@ -237,19 +237,19 @@ function update_style(stylelayerid) {
     var color_layer = maplayers[stylelayerid];
     var color_field_value = [];
     color_layer.eachLayer(function(layer) {
-        color_field_value.push(layer.feature.properties[color_field]); 
-    }); 
+        color_field_value.push(layer.feature.properties[color_field]);
+    });
     //console.log(color_field_value.every(Number.isFinite));
     if (! color_field_value.every(Number.isFinite)) {
         alert(color_field + " has no valid numeric value, please choose another field for coloring.");
-        // disable the field 
+        // disable the field
         Array.from(document.getElementById(stylelayerid + "_style_field").options).forEach(function(option_element) {
             let option_value = option_element.value;
             if (option_value == color_field) {
                 option_element.disabled = true;
             }
         });
-        
+
         return;
     }
     var newlimits = chroma.limits(color_field_value, color_method, color_step - 1);
@@ -262,17 +262,17 @@ function update_style(stylelayerid) {
         var fillcolor = getcolor(layer.feature.properties[color_field],newlimits,newcolorlist);
         layer.setStyle({'fillColor':fillcolor});
     });
-    
+
     //regenerate color legend
     var symbol = document.getElementById(stylelayerid+"_legend_symbol").value;
     createLegend(stylelayerid,color_field,symbol,newlimits,newcolorlist);
     // turn on legend if not
     var legenddiv = document.getElementById(stylelayerid + "_legend");
-    if (legenddiv.style.display == "none") 
+    if (legenddiv.style.display == "none")
     {
         legenddiv.style.display = "block";
     }
-  
+
 }
 
 // cancel style
@@ -335,17 +335,17 @@ function handleclick(id){
     }
 }
 
- // Defining async function 
- async function getdata(url) { 
-    
-    // Storing response 
-    const response = await fetch(url); 
-    
-    // Storing data in form of JSON 
-    var data = await response.json(); 
+ // Defining async function
+ async function getdata(url) {
+
+    // Storing response
+    const response = await fetch(url);
+
+    // Storing data in form of JSON
+    var data = await response.json();
     //console.log(data);
     return data;
-} 
+}
 
 // function to caculate color map
 function colormap(geojson,opts){
@@ -370,7 +370,7 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
         feature.properties.dataset_id = datadesc['dataid'];
         feature.properties.dataset_version = datadesc['current_version'];
     }
-    
+
     var newLayer;
     var legend,limits,colorlist;
     if (!popup_fields || popup_fields.length === 0) {
@@ -390,7 +390,7 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
             //var mymarker = L.circleMarker(latlng, geojsonMarkerOptions);
             var mymarker = L.shapeMarker(latlng, source_shapeMakerOptions);
             mymarker.bindTooltip(content_str);
-            return mymarker;       
+            return mymarker;
           },
           onEachFeature: sourceOnEachFeature,
         });
@@ -408,7 +408,7 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
         opts['mode']='q';
         opts['steps']= 5;
         opts['scale']= ['green','yellow','red'];
-        opts['colors']=[];  
+        opts['colors']=[];
         [limits, colorlist] = colormap(data,opts);
         newLayer = new L.geoJSON(data,{
             pointToLayer: function (feature, latlng) {
@@ -424,7 +424,7 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
             var mymarker = L.shapeMarker(latlng, sink_shapeMakerOptions);
             mymarker.setStyle({'fillColor':fillcolor});
             mymarker.bindTooltip(content_str);
-            return mymarker;       
+            return mymarker;
           },
           onEachFeature: sinkOnEachFeature,
         });
@@ -455,7 +455,7 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
         for (entry of data['features']) {
             ukey = entry['properties']['ID'];
             uvalue = entry['properties']['NAME'].toString().trim();
-            // pick up first 15 
+            // pick up first 15
             if (uvalue.length > 20) {uvalue = uvalue.slice(0,20) + "...";}
             selector += '<option value="'+ ukey +'">'+ uvalue +'</option>';
             }
@@ -468,16 +468,16 @@ async function addcasedata(datadesc,dataurl,datastyle,popup_fields,datasymbol) {
     newLayer.addTo(map);
     maplayers[datadesc['dataid']] = newLayer;
     // ignore the source style for now
-    if (datastyle && datadesc['type'] != 'source') {  
+    if (datastyle && datadesc['type'] != 'source') {
             // atach an empty div for modify style
             var stylediv = L.DomUtil.create('div');
             // legend_div: id_legend
             stylediv.id = datadesc['dataid'] + "_style";
             stylediv.style.display = "none";
             document.getElementById("layercontrol").appendChild(stylediv);
-            document.getElementById("layercontrol").appendChild(legend);   
-        } 
-       
+            document.getElementById("layercontrol").appendChild(legend);
+        }
+
 }
 
 // load cost surface
@@ -510,9 +510,9 @@ function addcostsurface(bbox) {
 
 // clear the selected
 function clear_selection(needconfirm=true) {
-    // clear all selected 
+    // clear all selected
     var r;
-    if (needconfirm) { 
+    if (needconfirm) {
         r = confirm("Clear all the selected?");
         // do nothing if cancelled
         if (r == false) {return;} }
@@ -531,10 +531,10 @@ function clear_selection(needconfirm=true) {
     //document.dispatchEvent(new Event("sink-selection-change"));
 }
 
-// source selector 
+// source selector
 function source_selectbynames(dataid,selected_ids) {
     var elayer;
-    // first handle deselect all 
+    // first handle deselect all
     if (selected_ids.length == 0) {
       for (elayer of sourceselection) {
         elayer.setStyle(source_shapeMakerOptions);
@@ -564,11 +564,11 @@ function source_selectbynames(dataid,selected_ids) {
 
 }
 
-// hideunselected 
+// hideunselected
 // rmeove dyn layers, reset styles
 function removedynlayers() {
-    for (var key in dynmaplayers) { 
-        if (map.hasLayer(dynmaplayers[key])) { 
+    for (var key in dynmaplayers) {
+        if (map.hasLayer(dynmaplayers[key])) {
             switch (key) {
                 case "source_selection_layer":
                   dynmaplayers[key].setStyle(source_shapeMakerOptions);
@@ -578,7 +578,7 @@ function removedynlayers() {
                   break;
                 default:
                   break;
-              } 
+              }
             map.removeLayer(dynmaplayers[key]);
             map_layercontrol.removeLayer(dynmaplayers[key]);
         }
@@ -587,7 +587,7 @@ function removedynlayers() {
 
 function hideunselected(source_selection, sink_selection,network='') {
 
-    for (var key in maplayers) { 
+    for (var key in maplayers) {
         if (map.hasLayer(maplayers[key])) { map.removeLayer(maplayers[key]);}
     }
     removedynlayers();
@@ -621,17 +621,17 @@ function refreshmap(p_id) {
         // remove dynlayers
         removedynlayers();
         // add layers backs
-        for (var key in maplayers){ 
+        for (var key in maplayers){
             if (!map.hasLayer(maplayers[key])) { maplayers[key].addTo(map);}
-        } 
-        clear_selection(needconfirm=false);      
+        }
+        clear_selection(needconfirm=false);
     }
 
 }
 
 // generate candidate network
 function generatecandidatenetwork(panelid) {
-    
+
     var source_selection = sourceselection_panel[panelid];
     var sink_selection = sinkselection_panel[panelid];
     var sourcedata = generatesourcedata(source_selection);
@@ -656,7 +656,7 @@ function generatecandidatenetwork(panelid) {
         // save candidateNetworkLayer
         dynmaplayers['candidate_network_layer'] = candidateNetworkLayer;
         candidatenetwork_panel[panelid] = candidateNetworkLayer;
-        
+
         //console.log(candidatenetwork_panel);
         // Cache the candidate network
         //Maptool.cachedCandidateNetwork = data["CandidateNetwork"];
@@ -665,7 +665,7 @@ function generatecandidatenetwork(panelid) {
         //document.dispatchEvent(new CustomEvent("candidate-network-loaded", {detail: data}));
         // disbale button bn_generatecandidatenetwork_'+ panelid
         // create a temp download link
-        document.getElementById('bn_generatecandidatenetwork_'+ panelid).disabled = true; 
+        document.getElementById('bn_generatecandidatenetwork_'+ panelid).disabled = true;
         var download_div = document.getElementById('download_candidatenetwork_'+ panelid);
         var downloadlink = createdownloadlink("candidatenetwork.geojson",JSON.stringify(candidateNetworkLayer.toGeoJSON()),"Download Candidatenetwork");
         download_div.appendChild(downloadlink);
@@ -706,12 +706,27 @@ function display_error_modal(error, message) {
 </div>
 </div>
 </div>`;
-    $(m_html)
-          .appendTo('body')
-          .modal('show')
-          .on('hidden.bs.modal', (e) => $(e.target).remove())
-          .find(".error-message")
-          .text(message);
+    const $modal = $(m_html)
+                        .appendTo('body')
+                        .modal('show')
+                        .on('hidden.bs.modal', (e) => $(e.target).remove());
+    if (isUnauthenticatedError(error)) {
+            $modal.find(".error-message").html(build_unauthenticated_error_message_html());
+    } else {
+            $modal.find(".error-message").text(message);
+    }
+}
+
+function build_unauthenticated_error_message_html() {
+    const loginURLWithNext = AiravataAPI.errors.ErrorUtils.buildLoginUrl(true);
+    const loginURL = AiravataAPI.errors.ErrorUtils.buildLoginUrl(false);
+    return `Your login session has expired. Please
+    <a href="${loginURLWithNext}">log in again</a>. You can also
+    <a href="${loginURL}" target="_blank">login in a separate tab
+            <i class="fa fa-external-link-alt" aria-hidden="true"></i
+    ></a>
+    and then return to this tab and try again.
+    `;
 }
 
 function sswindowpicker_build() {
@@ -733,11 +748,11 @@ function sswindowpicker_build() {
     var drawnItems = new L.FeatureGroup();
     drawnItems.clearLayers();
     map.addLayer(drawnItems);
-    map.once('draw:created', function (e) {  
+    map.once('draw:created', function (e) {
         var count_source = 0, count_sink = 0;
         var count_sinklayer = 0;
         var draw_type = e.layerType,draw_layer = e.layer;
-        
+
         // go through all the data sets
         Object.keys(datasets).forEach(function(key) {
             //key is case id
@@ -773,10 +788,10 @@ function sswindowpicker_build() {
         count_sink = 0;
         drawnItems.clearLayers(draw_layer);
         map.removeLayer(drawnItems);
-        polygonDrawer.disable();   
+        polygonDrawer.disable();
     }
     );
-    var polygonDrawer = new L.Draw.Polygon(map, polygon_options);     
+    var polygonDrawer = new L.Draw.Polygon(map, polygon_options);
     polygonDrawer.enable();
 
 }
@@ -825,7 +840,7 @@ async function add_experiment_result_to_map(data, experiment_id, solution_config
     });
     // reset style
     // 0-0.25, 0.25-5, 5-7.5, 10
-    result_networkLayer.eachLayer(function(layer) { 
+    result_networkLayer.eachLayer(function(layer) {
         var fv = layer.feature.properties['Flow'];
         var lw = 1;
         if (fv <= 0.25) {lw = 1;}
@@ -840,7 +855,7 @@ async function add_experiment_result_to_map(data, experiment_id, solution_config
     map.on('click', show_solution_network_popup);
 
     map.addLayer(result_networkLayer);
-    map_layercontrol.addOverlay(result_networkLayer, `${solution_config.label} 
+    map_layercontrol.addOverlay(result_networkLayer, `${solution_config.label}
             <span style="background-color:${solution_config.color}; display: inline-block;
                 margin-bottom: 2px; width: 2em; height: 4px; opacity: 0.7;"></span> Solution`);
     map.fitBounds(result_networkLayer.getBounds(), {
@@ -880,7 +895,7 @@ function show_solution_network_popup(e) {
                                     ${solution_config.label}
                                     <span style="background-color:${solution_config.color}; display: inline-block;
                                         margin-bottom: 2px; width: 2em; height: 4px; opacity: 0.7;"></span>
-                                    Solution 
+                                    Solution
                             </b>
                             <br/>Flow: ${feature.properties.Flow}
                             <br/>Length (KM): ${feature.properties.LengKM}

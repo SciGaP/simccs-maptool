@@ -1,7 +1,7 @@
 /**
- * Return true if both sets are equal. 
- * @param {Set} s1 
- * @param {Set} s2 
+ * Return true if both sets are equal.
+ * @param {Set} s1
+ * @param {Set} s2
  */
 function setsAreEqual(s1, s2) {
     if (s1.size !== s2.size) {
@@ -51,7 +51,7 @@ function validate_model_parameters(source_selection, sink_selection, numYears, c
 
       if (numYears > max_project_period) {
             const fieldCapTotal = get_total_field_cap(sink_selection, fieldCapFieldName);
-            result.projectPeriod = 
+            result.projectPeriod =
                   `Total project storage exceeds available storage
                   (${fieldCapTotal.toFixed(2)}) of the sinks using current
                   project period and annual capture target`;
@@ -62,4 +62,12 @@ function validate_model_parameters(source_selection, sink_selection, numYears, c
 function is_float_string(value) {
       // https://stackoverflow.com/a/22100269
       return parseFloat(value) == value;
+}
+
+function isUnauthenticatedError(error) {
+
+      return (
+        AiravataAPI.errors.ErrorUtils.isUnauthenticatedError &&
+        AiravataAPI.errors.ErrorUtils.isUnauthenticatedError(error)
+      );
 }

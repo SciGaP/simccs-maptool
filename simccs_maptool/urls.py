@@ -37,7 +37,6 @@ urlpatterns = [
             views.experiment_result, name="experiment-result"),
     re_path(r"^solution-summary/(?P<experiment_id>[^/]+)$",
             views.solution_summary, name="solution-summary"),
-    re_path(r"^case/(?P<case_id>[^/]+)$", views.get_case),
     re_path(r"^build/projects/", views.ProjectsView.as_view(), name="projects"),
     re_path(r"^get-data", geoserver.get_data),
     re_path(r"^api/", include(router.urls)),
