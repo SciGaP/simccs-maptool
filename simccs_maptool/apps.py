@@ -72,6 +72,11 @@ class MapToolConfig(AppConfig):
         except Exception as e:
             logger.warning("Unable to register Lower48US cost surface cache: " + str(e))
 
+    def merge_settings(self, settings_module):
+        WEBPACK_LOADER = getattr(settings_module, "WEBPACK_LOADER", {})
+        WEBPACK_LOADER.update(Settings.WEBPACK_LOADER)
+        settings_module.WEBPACK_LOADER = WEBPACK_LOADER
+
 
 def init_pyjnius():
     if not jnius_config.vm_running:
