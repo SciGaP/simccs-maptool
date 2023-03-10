@@ -368,6 +368,10 @@ def experiment_scenario_dir(request, experiment):
         request, experiment, "Candidate-Network", input_file=True)
     solution = _get_experiment_file(request, experiment, "Cplex-solution")
     dataset_id = _get_experiment_value(experiment, "Dataset-id")
+    # FIXME: users can't specify the dataset id and it has no default, so it may
+    # not be set but we'll just assume that it is Lower48US
+    if not dataset_id:
+        dataset_id = "Lower48US"
     with tempfile.TemporaryDirectory() as datasets_basepath:
         dataset_dir = datasets.get_dataset_dir(dataset_id)
         # Create the scenario directory
