@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 import requests
 
 def wfs_call(layername, cqlfilter):
@@ -8,16 +8,20 @@ def wfs_call(layername, cqlfilter):
     PARAMS = {'service':'WFS','version':'1.0.0','request':'GetFeature',
         'maxFeatures':10000,'outputFormat':'application/json',
         'cql_filter':str(cqlfilter),'typeName':layername}
-    r = requests.get(url = geoserver_url, params = PARAMS) 
+    r = requests.get(url = geoserver_url, params = PARAMS)
     print(PARAMS['cql_filter'])
     print(r.url)
-    data = r.json() 
+    data = r.json()
 
     return data
 
 def get_data(request):
     # TODO get the query parameters from request.GET dictionary
     # TODO return JsonResponse(...)
+    if 'geom' not in request.GET:
+        return HttpResponseBadRequest("'geom' query parameter is required")
+    if 'method' not in request.GET:
+        return HttpResponseBadRequest("'method' query parameter is required")
     geom = request.GET["geom"]
     method = request.GET["method"]
     if "cql_filter"  in request.GET:
@@ -35,12 +39,12 @@ def get_data(request):
     # PARAMS = {'service':'WFS','version':'1.0.0','request':'GetFeature',
     #     'maxFeatures':500,'outputFormat':'application/json','typeName':'Sources_082819_SimCCS_Format',
     #     'cql_filter':cqlfilter}
-    
-    
+
+
     if method == "count":
         # sources
         data = wfs_call('Sources_082819_SimCCS_Format',cqlfilter)
-        # extracting data in json format 
+        # extracting data in json format
         # Number of Sources: #
         # Capturable CO2 of Sources: # MtCO2/yr
         # Number of Sinks: #
@@ -60,7 +64,7 @@ def get_data(request):
 
     if method == "data":
         layer = request.GET["layer"]
-        if layer == 'source': 
+        if layer == 'source':
             #cqlfilter = 'Intersects(the_geom,Polygon((' + geom + ")))"
             data = wfs_call('Sources_082819_SimCCS_Format',cqlfilter)
         if layer == 'sink_saline':
