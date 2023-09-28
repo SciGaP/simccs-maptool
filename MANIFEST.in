@@ -1,3 +1,5 @@
 recursive-include simccs_maptool/static *
 recursive-include simccs_maptool/templates *
 recursive-include simccs_maptool/simccs *
+recursive-include frontend *
+recursive-exclude frontend/node_modules *
